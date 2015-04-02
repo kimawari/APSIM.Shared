@@ -52,8 +52,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="JobManager.cs" />
+    <Compile Include="JobParallel.cs" />
     <Compile Include="JobSequence.cs" />
-    <Compile Include="JobSequenceParallel.cs" />
     <Compile Include="Math.cs" />
     <Compile Include="Met.cs" />
     <Compile Include="Path.cs" />

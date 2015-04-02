@@ -2,3 +2,5 @@ Utility/obj/
 packages/
 Bin/
 *.suo
+APSIM.Shared.Soils/obj/
+APSIM.Shared.Utility/obj/
