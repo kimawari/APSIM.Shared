@@ -5,19 +5,20 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{5BDAA3CD-C66F-4C91-94A2-31FB58177D4C}</ProjectGuid>
+    <ProjectGuid>{E243AE8D-35E3-4397-B180-EF1E8A91AE8C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Utility</RootNamespace>
-    <AssemblyName>Utility</AssemblyName>
+    <RootNamespace>APSIM.Shared</RootNamespace>
+    <AssemblyName>APSIM.Shared</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Bin\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -31,44 +32,52 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+    <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApsimTextFile.cs" />
-    <Compile Include="DataTable.cs" />
-    <Compile Include="Date.cs" />
-    <Compile Include="Directory.cs" />
-    <Compile Include="ExpressionEvaluator.cs" />
-    <Compile Include="FTPClient.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="JobManager.cs" />
-    <Compile Include="JobParallel.cs" />
-    <Compile Include="JobSequence.cs" />
-    <Compile Include="Math.cs" />
-    <Compile Include="Met.cs" />
-    <Compile Include="Path.cs" />
-    <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reflection.cs" />
-    <Compile Include="SQLite.cs" />
-    <Compile Include="StreamReaderRandomAccess.cs" />
-    <Compile Include="String.cs" />
-    <Compile Include="Web.cs" />
-    <Compile Include="Xml.cs" />
-    <Compile Include="Zip.cs" />
+    <Compile Include="Soils\Analysis.cs" />
+    <Compile Include="Soils\ApsimAttributes.cs" />
+    <Compile Include="Soils\InitialWater.cs" />
+    <Compile Include="Soils\Sample.cs" />
+    <Compile Include="Soils\Soil.cs" />
+    <Compile Include="Soils\SoilCrop.cs" />
+    <Compile Include="Soils\SoilOrganicMatter.cs" />
+    <Compile Include="Soils\SoilUtility.cs" />
+    <Compile Include="Soils\SoilWater.cs" />
+    <Compile Include="Soils\Water.cs" />
+    <Compile Include="Utility\ApsimTextFile.cs" />
+    <Compile Include="Utility\DataTable.cs" />
+    <Compile Include="Utility\Date.cs" />
+    <Compile Include="Utility\Directory.cs" />
+    <Compile Include="Utility\ExpressionEvaluator.cs" />
+    <Compile Include="Utility\FTPClient.cs" />
+    <Compile Include="Utility\JobManager.cs" />
+    <Compile Include="Utility\JobParallel.cs" />
+    <Compile Include="Utility\JobSequence.cs" />
+    <Compile Include="Utility\Math.cs" />
+    <Compile Include="Utility\Met.cs" />
+    <Compile Include="Utility\Path.cs" />
+    <Compile Include="Utility\Process.cs" />
+    <Compile Include="Utility\Reflection.cs" />
+    <Compile Include="Utility\SQLite.cs" />
+    <Compile Include="Utility\StreamReaderRandomAccess.cs" />
+    <Compile Include="Utility\String.cs" />
+    <Compile Include="Utility\Web.cs" />
+    <Compile Include="Utility\Xml.cs" />
+    <Compile Include="Utility\Zip.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Utility\packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

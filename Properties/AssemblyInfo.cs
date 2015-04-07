@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Utility")]
+[assembly: AssemblyTitle("APSIM.Shared")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("CSIRO")]
-[assembly: AssemblyProduct("Utility")]
-[assembly: AssemblyCopyright("Copyright © CSIRO 2014")]
+[assembly: AssemblyProduct("APSIM.Shared")]
+[assembly: AssemblyCopyright("Copyright © CSIRO 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("0537087c-f07a-44f4-9b34-27d66a54f11a")]
+[assembly: Guid("8cd35fd6-5312-47d1-aa06-69da63c43381")]
 
 // Version information for an assembly consists of the following four values:
 //
