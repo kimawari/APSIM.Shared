@@ -291,10 +291,6 @@ namespace APSIM.Shared.Utilities
 
         /// <summary>Executes a query that returns no results</summary>
         /// <param name="query">SQL query to execute</param>
-        /// <exception cref="Utility.SQLiteException">
-        /// SQLite database is not open.
-        /// or
-        /// </exception>
         public void ExecuteNonQuery(string query)
         {
             if (!_open)
@@ -319,7 +315,6 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         /// <param name="query">SQL query to execute</param>
         /// <returns>DataTable of results</returns>
-        /// <exception cref="Utility.SQLiteException">SQLite database is not open.</exception>
         public System.Data.DataTable ExecuteQuery(string query)
         {
             if (!_open)
@@ -474,7 +469,6 @@ namespace APSIM.Shared.Utilities
         /// <param name="query">The query.</param>
         /// <param name="ColumnNumber">The column number.</param>
         /// <returns></returns>
-        /// <exception cref="Utility.SQLiteException">SQLite database is not open.</exception>
         public int ExecuteQueryReturnInt(string query, int ColumnNumber)
         {
             if (!_open)
@@ -497,7 +491,6 @@ namespace APSIM.Shared.Utilities
         /// <summary>Prepares a SQL statement for execution</summary>
         /// <param name="query">SQL query</param>
         /// <returns>Pointer to SQLite prepared statement</returns>
-        /// <exception cref="Utility.SQLiteException"></exception>
         public IntPtr Prepare(string query)
         {
             IntPtr stmHandle;
@@ -511,7 +504,6 @@ namespace APSIM.Shared.Utilities
 
         /// <summary>Finalizes a SQLite statement</summary>
         /// <param name="stmHandle">Pointer to SQLite prepared statement</param>
-        /// <exception cref="Utility.SQLiteException"></exception>
         public void Finalize(IntPtr stmHandle)
         {
             int code = sqlite3_finalize(stmHandle);
@@ -525,7 +517,6 @@ namespace APSIM.Shared.Utilities
         /// <summary>Bind all parameters values to the specified query and execute the query.</summary>
         /// <param name="Query">The query.</param>
         /// <param name="Values">The values.</param>
-        /// <exception cref="Utility.SQLiteException"></exception>
         public void BindParametersAndRunQuery(IntPtr Query, object[] Values)
         {
             for (int i = 0; i < Values.Length; i++)

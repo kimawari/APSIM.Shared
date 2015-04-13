@@ -5,24 +5,39 @@ namespace APSIM.Shared.Soils
 {
 
     /// <summary>
-    /// These classes define the attributes used to provide metadata for the 
+    /// These classes define the attributes used to provide metadata for the
     /// APSIM Component properties and events.
     /// </summary>
-
     [AttributeUsage(AttributeTargets.Method)]
     public class EventHandler : Attribute
     {
+        /// <summary>
+        /// The _ event name
+        /// </summary>
         private string _EventName;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventHandler"/> class.
+        /// </summary>
         public EventHandler()
         {
             _EventName = "";
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventHandler"/> class.
+        /// </summary>
+        /// <param name="Name">The name.</param>
         public EventHandler(string Name)
         {
             _EventName = Name;
         }
+        /// <summary>
+        /// Gets or sets the name of the event.
+        /// </summary>
+        /// <value>
+        /// The name of the event.
+        /// </value>
         public string EventName
         {
             get { return _EventName; }
@@ -30,148 +45,84 @@ namespace APSIM.Shared.Soils
         }
     }
 
-    [AttributeUsage(AttributeTargets.Event)]
-    public class Event : Attribute
-    {
-    }
-
-
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
-    public class Param : Attribute
-    {
-        private string _Name = "";
-        private bool _Optional = false;
-        private double _MinVal = Double.NaN;
-        private double _MaxVal = Double.NaN;
-
-        public string Name
-        {
-            get { return _Name; }
-            set { _Name = value; }
-        }
-
-        public bool IsOptional
-        {
-            get { return _Optional; }
-            set { _Optional = value; }
-        }
-
-        public double MinVal
-        {
-            get { return _MinVal; }
-            set { _MinVal = value; }
-        }
-
-        public double MaxVal
-        {
-            get { return _MaxVal; }
-            set { _MaxVal = value; }
-        }
-
-    }
-
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
-    public class Input : Attribute
-    {
-        private bool Optional = false;
-
-        public bool IsOptional
-        {
-            get { return Optional; }
-            set { Optional = value; }
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
-    public class Output : Attribute
-    {
-        private bool _Immutable = false;
-        public String Name;
-        public Output()
-        {
-            Name = "";
-        }
-        public Output(String sName)
-        {
-            Name = sName;
-        }
-
-        public bool Immutable { get { return _Immutable; } set { _Immutable = value; } }
-    }
-
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
-    public class Writable : Attribute
-    {
-    }
-
+    /// <summary>
+    /// An attribute for specifying units.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
     public class Units : Attribute
     {
+        /// <summary>
+        /// The st
+        /// </summary>
         private String St;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Units"/> class.
+        /// </summary>
+        /// <param name="Units">The units.</param>
         public Units(String Units)
         {
             St = Units;
         }
+        /// <summary>
+        /// Returns a string that represents the current object.
+        /// </summary>
+        /// <returns>
+        /// A string that represents the current object.
+        /// </returns>
         public override String ToString()
         {
             return St;
         }
     }
 
+    /// <summary>
+    /// An attribute for specifying a description
+    /// </summary>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
     public class Description : Attribute
     {
+        /// <summary>
+        /// The st
+        /// </summary>
         private String St;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Description"/> class.
+        /// </summary>
+        /// <param name="Description">The description.</param>
         public Description(String Description)
         {
             St = Description;
         }
 
+        /// <summary>
+        /// Returns a string that represents the current object.
+        /// </summary>
+        /// <returns>
+        /// A string that represents the current object.
+        /// </returns>
         public override String ToString()
         {
             return St;
         }
     }
 
-
-
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public class Model : Attribute
-    {
-    }
-
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
-    public class Link : Attribute
-    {
-        private String _Path = null;
-        private bool _IsOptional = false;
-
-        //public Link() { }
-        //public Link(string NamePath, bool IsOptional) { _Path = NamePath; _IsOptional = IsOptional; }
-        public string NamePath
-        {
-            get { return _Path; }
-            set { _Path = value; }
-        }
-        public bool IsOptional
-        {
-            get { return _IsOptional; }
-            set { _IsOptional = value; }
-        }
-
-    }
-
-
     /// <summary>
-    /// This attribute is used in DotNetProxies.cs to provide a map between the 
+    /// This attribute is used in DotNetProxies.cs to provide a map between the
     /// proxy class and the component type.
     /// Usage: [ComponentType("Plant2")]
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class ComponentTypeAttribute : Attribute
     {
+        /// <summary>
+        /// The component class
+        /// </summary>
         public String ComponentClass;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ComponentTypeAttribute"/> class.
+        /// </summary>
+        /// <param name="CompClass">The comp class.</param>
         public ComponentTypeAttribute(String CompClass)
         {
             ComponentClass = CompClass;

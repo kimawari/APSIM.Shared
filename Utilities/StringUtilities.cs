@@ -625,7 +625,6 @@ namespace APSIM.Shared.Utilities
         /// Token-handling routines for use in parsing.  A token is either:
         ///   * a string made up of alphanumeric characters and/or the underscore
         ///   * any string enclosed in double quotes (the quotes are stripped) 
-        ///   * <=, >= or /=  (used as relational operators)
         ///   * a punctuation mark (other than double quotes) 
         // Token handling is case-insensitive.
 

@@ -23,6 +23,8 @@ namespace APSIM.Shared.Soils
         /// <summary>
         /// Create a soil object from the XML passed in.
         /// </summary>
+        /// <param name="Xml">The XML.</param>
+        /// <returns></returns>
         public static Soil FromXML(string Xml)
         {
             XmlSerializer x = new XmlSerializer(typeof(Soil));
@@ -33,6 +35,8 @@ namespace APSIM.Shared.Soils
         /// <summary>
         /// Write soil to XML
         /// </summary>
+        /// <param name="soil">The soil.</param>
+        /// <returns></returns>
         public static string ToXML(Soil soil)
         {
             XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
@@ -56,7 +60,9 @@ namespace APSIM.Shared.Soils
         /// Convert the specified thicknesses to mid points for plotting.
         /// </summary>
         /// <param name="Thickness">The thicknesses.</param>
-        /// <returns>The array of midpoints</returns>
+        /// <returns>
+        /// The array of midpoints
+        /// </returns>
         static public double[] ToMidPoints(double[] Thickness)
         {
             double[] CumThickness = ToCumThickness(Thickness);
@@ -75,7 +81,9 @@ namespace APSIM.Shared.Soils
         /// Convert the thickness to cumulative thickness.
         /// </summary>
         /// <param name="Thickness">The thickness.</param>
-        /// <returns>Cumulative thicknesses.</returns>
+        /// <returns>
+        /// Cumulative thicknesses.
+        /// </returns>
         static public double[] ToCumThickness(double[] Thickness)
         {
             // ------------------------------------------------
@@ -97,6 +105,8 @@ namespace APSIM.Shared.Soils
         /// Get or set the names of crops. Note: When setting, the crops will be reorded to match
         /// the setting list of names. Also new crops will be added / deleted as required.
         /// </summary>
+        /// <param name="soil">The soil.</param>
+        /// <returns></returns>
         public static string[] GetCropNames(Soil soil)
         {
             if (soil.Water == null || soil.Water.Crops == null)
@@ -112,6 +122,10 @@ namespace APSIM.Shared.Soils
         /// <summary>
         /// Return a specific crop to caller. Will throw if crop doesn't exist.
         /// </summary>
+        /// <param name="soil">The soil.</param>
+        /// <param name="cropName">Name of the crop.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Soil could not find crop:  + cropName</exception>
         public static SoilCrop Crop(Soil soil, string cropName)
         {
             if (soil.Water == null || soil.Water.Crops == null)
@@ -130,6 +144,13 @@ namespace APSIM.Shared.Soils
 
         #region Sample
 
+        /// <summary>
+        /// Sws the specified soil.
+        /// </summary>
+        /// <param name="soil">The soil.</param>
+        /// <param name="sample">The sample.</param>
+        /// <param name="toUnits">To units.</param>
+        /// <returns></returns>
         public static double[] SW(Soil soil, Sample sample, Sample.SWUnitsEnum toUnits)
         {
             if (toUnits != sample.SWUnits && sample.SW != null)
@@ -164,57 +185,179 @@ namespace APSIM.Shared.Soils
         #endregion
 
         #region Predicted Crops
+        /// <summary>
+        /// The black vertosol crop list
+        /// </summary>
         private static string[] BlackVertosolCropList = new string[] { "Wheat", "Sorghum", "Cotton" };
+        /// <summary>
+        /// The grey vertosol crop list
+        /// </summary>
         private static string[] GreyVertosolCropList = new string[] { "Wheat", "Sorghum", "Cotton" };
+        /// <summary>
+        /// The predicted thickness
+        /// </summary>
         private static double[] PredictedThickness = new double[] { 150, 150, 300, 300, 300, 300, 300 };
+        /// <summary>
+        /// The predicted xf
+        /// </summary>
         private static double[] PredictedXF = new double[] { 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 };
+        /// <summary>
+        /// The wheat kl
+        /// </summary>
         private static double[] WheatKL = new double[] { 0.06, 0.06, 0.06, 0.04, 0.04, 0.02, 0.01 };
+        /// <summary>
+        /// The sorghum kl
+        /// </summary>
         private static double[] SorghumKL = new double[] { 0.07, 0.07, 0.07, 0.05, 0.05, 0.04, 0.03 };
+        /// <summary>
+        /// The barley kl
+        /// </summary>
         private static double[] BarleyKL = new double[] { 0.07, 0.07, 0.07, 0.05, 0.05, 0.03, 0.02 };
+        /// <summary>
+        /// The chickpea kl
+        /// </summary>
         private static double[] ChickpeaKL = new double[] { 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06 };
+        /// <summary>
+        /// The mungbean kl
+        /// </summary>
         private static double[] MungbeanKL = new double[] { 0.06, 0.06, 0.06, 0.04, 0.04, 0.00, 0.00 };
+        /// <summary>
+        /// The cotton kl
+        /// </summary>
         private static double[] CottonKL = new double[] { 0.10, 0.10, 0.10, 0.10, 0.09, 0.07, 0.05 };
+        /// <summary>
+        /// The canola kl
+        /// </summary>
         private static double[] CanolaKL = new double[] { 0.06, 0.06, 0.06, 0.04, 0.04, 0.02, 0.01 };
+        /// <summary>
+        /// The pigeon pea kl
+        /// </summary>
         private static double[] PigeonPeaKL = new double[] { 0.06, 0.06, 0.06, 0.05, 0.04, 0.02, 0.01 };
+        /// <summary>
+        /// The maize kl
+        /// </summary>
         private static double[] MaizeKL = new double[] { 0.06, 0.06, 0.06, 0.04, 0.04, 0.02, 0.01 };
+        /// <summary>
+        /// The cowpea kl
+        /// </summary>
         private static double[] CowpeaKL = new double[] { 0.06, 0.06, 0.06, 0.04, 0.04, 0.02, 0.01 };
+        /// <summary>
+        /// The sunflower kl
+        /// </summary>
         private static double[] SunflowerKL = new double[] { 0.01, 0.01, 0.08, 0.06, 0.04, 0.02, 0.01 };
+        /// <summary>
+        /// The fababean kl
+        /// </summary>
         private static double[] FababeanKL = new double[] { 0.08, 0.08, 0.08, 0.08, 0.06, 0.04, 0.03 };
+        /// <summary>
+        /// The lucerne kl
+        /// </summary>
         private static double[] LucerneKL = new double[] { 0.01, 0.01, 0.01, 0.01, 0.09, 0.09, 0.09 };
+        /// <summary>
+        /// The perennial kl
+        /// </summary>
         private static double[] PerennialKL = new double[] { 0.01, 0.01, 0.01, 0.01, 0.09, 0.07, 0.05 };
 
+        /// <summary>
+        /// 
+        /// </summary>
         private class BlackVertosol
         {
+            /// <summary>
+            /// The cotton a
+            /// </summary>
             internal static double[] CottonA = new double[] { 0.832, 0.868, 0.951, 0.988, 1.043, 1.095, 1.151 };
+            /// <summary>
+            /// The sorghum a
+            /// </summary>
             internal static double[] SorghumA = new double[] { 0.699, 0.802, 0.853, 0.907, 0.954, 1.003, 1.035 };
+            /// <summary>
+            /// The wheat a
+            /// </summary>
             internal static double[] WheatA = new double[] { 0.124, 0.049, 0.024, 0.029, 0.146, 0.246, 0.406 };
 
+            /// <summary>
+            /// The cotton b
+            /// </summary>
             internal static double CottonB = -0.0070;
+            /// <summary>
+            /// The sorghum b
+            /// </summary>
             internal static double SorghumB = -0.0038;
+            /// <summary>
+            /// The wheat b
+            /// </summary>
             internal static double WheatB = 0.0116;
 
         }
+        /// <summary>
+        /// 
+        /// </summary>
         private class GreyVertosol
         {
+            /// <summary>
+            /// The cotton a
+            /// </summary>
             internal static double[] CottonA = new double[] { 0.853, 0.851, 0.883, 0.953, 1.022, 1.125, 1.186 };
+            /// <summary>
+            /// The sorghum a
+            /// </summary>
             internal static double[] SorghumA = new double[] { 0.818, 0.864, 0.882, 0.938, 1.103, 1.096, 1.172 };
+            /// <summary>
+            /// The wheat a
+            /// </summary>
             internal static double[] WheatA = new double[] { 0.660, 0.655, 0.701, 0.745, 0.845, 0.933, 1.084 };
+            /// <summary>
+            /// The barley a
+            /// </summary>
             internal static double[] BarleyA = new double[] { 0.847, 0.866, 0.835, 0.872, 0.981, 1.036, 1.152 };
+            /// <summary>
+            /// The chickpea a
+            /// </summary>
             internal static double[] ChickpeaA = new double[] { 0.435, 0.452, 0.481, 0.595, 0.668, 0.737, 0.875 };
+            /// <summary>
+            /// The fababean a
+            /// </summary>
             internal static double[] FababeanA = new double[] { 0.467, 0.451, 0.396, 0.336, 0.190, 0.134, 0.084 };
+            /// <summary>
+            /// The mungbean a
+            /// </summary>
             internal static double[] MungbeanA = new double[] { 0.779, 0.770, 0.834, 0.990, 1.008, 1.144, 1.150 };
+            /// <summary>
+            /// The cotton b
+            /// </summary>
             internal static double CottonB = -0.0082;
+            /// <summary>
+            /// The sorghum b
+            /// </summary>
             internal static double SorghumB = -0.007;
+            /// <summary>
+            /// The wheat b
+            /// </summary>
             internal static double WheatB = -0.0032;
+            /// <summary>
+            /// The barley b
+            /// </summary>
             internal static double BarleyB = -0.0051;
+            /// <summary>
+            /// The chickpea b
+            /// </summary>
             internal static double ChickpeaB = 0.0029;
+            /// <summary>
+            /// The fababean b
+            /// </summary>
             internal static double FababeanB = 0.02455;
+            /// <summary>
+            /// The mungbean b
+            /// </summary>
             internal static double MungbeanB = -0.0034;
         }
 
         /// <summary>
         /// Return a list of predicted crop names or an empty string[] if none found.
         /// </summary>
+        /// <param name="soil">The soil.</param>
+        /// <returns></returns>
         public string[] PredictedCropNames(Soil soil)
         {
             if (soil.SoilType != null)
@@ -230,6 +373,9 @@ namespace APSIM.Shared.Soils
         /// <summary>
         /// Return a predicted SoilCrop for the specified crop name or null if not found.
         /// </summary>
+        /// <param name="soil">The soil.</param>
+        /// <param name="CropName">Name of the crop.</param>
+        /// <returns></returns>
         private static SoilCrop PredictedCrop(Soil soil, string CropName)
         {
             double[] A = null;
@@ -331,6 +477,10 @@ namespace APSIM.Shared.Soils
         /// <summary>
         /// Calculate and return a predicted LL from the specified A and B values.
         /// </summary>
+        /// <param name="soil">The soil.</param>
+        /// <param name="A">a.</param>
+        /// <param name="B">The b.</param>
+        /// <returns></returns>
         private static double[] PredictedLL(Soil soil, double[] A, double B)
         {
             double[] DepthCentre = ToMidPoints(PredictedThickness);
@@ -361,11 +511,21 @@ namespace APSIM.Shared.Soils
 
         #region Mapping
 
+        /// <summary>
+        /// 
+        /// </summary>
         private enum MapType { Mass, Concentration, UseBD }
 
         /// <summary>
         /// Map soil variables from one layer structure to another.
         /// </summary>
+        /// <param name="FValues">The f values.</param>
+        /// <param name="FThickness">The f thickness.</param>
+        /// <param name="ToThickness">To thickness.</param>
+        /// <param name="MapType">Type of the map.</param>
+        /// <param name="soil">The soil.</param>
+        /// <param name="DefaultValueForBelowProfile">The default value for below profile.</param>
+        /// <returns></returns>
         private static double[] Map(double[] FValues, double[] FThickness,
                                     double[] ToThickness, MapType MapType,
                                     Soil soil,
@@ -468,6 +628,9 @@ namespace APSIM.Shared.Soils
         /// <summary>
         /// Bulk density - mapped to the specified layer structure. Units: mm/mm
         /// </summary>
+        /// <param name="soil">The soil.</param>
+        /// <param name="ToThickness">To thickness.</param>
+        /// <returns></returns>
         public static double[] BDMapped(Soil soil, double[] ToThickness)
         {
             return Map(soil.Water.BD, soil.Water.Thickness, ToThickness, MapType.Concentration, soil, soil.Water.BD.Last());
@@ -476,6 +639,9 @@ namespace APSIM.Shared.Soils
         /// <summary>
         /// AirDry - mapped to the specified layer structure. Units: mm/mm
         /// </summary>
+        /// <param name="soil">The soil.</param>
+        /// <param name="ToThickness">To thickness.</param>
+        /// <returns></returns>
         public static double[] AirDryMapped(Soil soil, double[] ToThickness)
         {
             return Map(soil.Water.AirDry, soil.Water.Thickness, ToThickness, MapType.Concentration, soil, soil.Water.AirDry.Last());
@@ -484,6 +650,9 @@ namespace APSIM.Shared.Soils
         /// <summary>
         /// Lower limit 15 bar - mapped to the specified layer structure. Units: mm/mm
         /// </summary>
+        /// <param name="soil">The soil.</param>
+        /// <param name="ToThickness">To thickness.</param>
+        /// <returns></returns>
         public static double[] LL15Mapped(Soil soil, double[] ToThickness)
         {
             return Map(soil.Water.LL15, soil.Water.Thickness, ToThickness, MapType.Concentration, soil, soil.Water.LL15.Last());
@@ -492,6 +661,9 @@ namespace APSIM.Shared.Soils
         /// <summary>
         /// Drained upper limit - mapped to the specified layer structure. Units: mm/mm
         /// </summary>
+        /// <param name="soil">The soil.</param>
+        /// <param name="ToThickness">To thickness.</param>
+        /// <returns></returns>
         public static double[] DULMapped(Soil soil, double[] ToThickness)
         {
             return Map(soil.Water.DUL, soil.Water.Thickness, ToThickness, MapType.Concentration, soil, soil.Water.DUL.Last());

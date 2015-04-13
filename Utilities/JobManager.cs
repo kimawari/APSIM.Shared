@@ -43,12 +43,6 @@ namespace APSIM.Shared.Utilities
         [NonSerialized]
         private BackgroundWorker schedulerThread = null;
 
-        /// <summary>The cpu usage counter</summary>
-        private PerformanceCounter cpuUsage;
-
-        /// <summary>The previous CPU sample</summary>
-        private CounterSample previousSample;
-
         /// <summary>
         /// Gets a value indicating whether there are more jobs to run.
         /// </summary>
@@ -74,7 +68,6 @@ namespace APSIM.Shared.Utilities
             if (NumOfProcessorsString != null)
                 MaximumNumOfProcessors = Convert.ToInt32(NumOfProcessorsString);
             MaximumNumOfProcessors = System.Math.Max(MaximumNumOfProcessors, 1);
-            cpuUsage = new PerformanceCounter("Processor", "% Processor Time", "_Total");
         }
 
         /// <summary>Add a job to the list of jobs that need running.</summary>
@@ -141,8 +134,6 @@ namespace APSIM.Shared.Utilities
         {
             BackgroundWorker bw = sender as BackgroundWorker;
             
-            CounterSample previousSample = cpuUsage.NextSample();
-
             // Main worker thread for keeping jobs running
             while (!bw.CancellationPending && MoreJobsToRun)
             {

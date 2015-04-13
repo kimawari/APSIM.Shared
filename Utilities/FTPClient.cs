@@ -11,15 +11,21 @@ namespace APSIM.Shared.Utilities
     using System.Text;
     using System.Net;
 
+    /// <summary>
+    /// An FTP client
+    /// </summary>
     public class FTPClient
         {
 
+        /// <summary>
+        /// Uploads the specified file.
+        /// </summary>
+        /// <param name="FullFileName">Full name of the file.</param>
+        /// <param name="FTPFullFileName">Name of the FTP full file.</param>
+        /// <param name="UserName">Name of the user.</param>
+        /// <param name="Password">The password.</param>
         public static void Upload(string FullFileName, string FTPFullFileName, string UserName, string Password)
             {
-            // ------------------------------------------------------------------
-            // Method to upload the specified FullFileName to the specified 
-            // FTPDirectory (e.g. ftp://www.apsim.info/apsim/temp)
-            // ------------------------------------------------------------------
             FileInfo File = new FileInfo(FullFileName);
 
             FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPFullFileName);
@@ -57,15 +63,16 @@ namespace APSIM.Shared.Utilities
             fs.Close();
             }
 
+        /// <summary>
+        /// Downloads the specified file.
+        /// </summary>
+        /// <param name="FTPFullFileName">Name of the FTP full file.</param>
+        /// <param name="DestFullFileName">Name of the dest full file.</param>
+        /// <param name="UserName">Name of the user.</param>
+        /// <param name="Password">The password.</param>
         public static void Download(string FTPFullFileName, string DestFullFileName,
                                     string UserName, string Password)
             {
-            // ------------------------------------------------------------------
-            // Download the specified FTPFullFileName 
-            // (e.g. ftp://www.apsim.info/apsim/temp/temp.xml) to the 
-            // DestFileName (full path).
-            // ------------------------------------------------------------------
-
             FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPFullFileName);
             FTP.Method = WebRequestMethods.Ftp.DownloadFile;
             FTP.UseBinary = true;
@@ -89,13 +96,14 @@ namespace APSIM.Shared.Utilities
             Response.Close();
             }
 
+        /// <summary>
+        /// Deletes the specified FTP file.
+        /// </summary>
+        /// <param name="FTPFullFileName">Name of the FTP full file.</param>
+        /// <param name="UserName">Name of the user.</param>
+        /// <param name="Password">The password.</param>
         public static void Delete(string FTPFullFileName, string UserName, string Password)
             {
-            // ------------------------------------------------------------------
-            // Delete the specified FTPFullFileName 
-            // (e.g. ftp://www.apsim.info/apsim/temp/temp.xml)
-            // ------------------------------------------------------------------
-
             FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPFullFileName);
 
             FTP.Credentials = new NetworkCredential(UserName, Password);
@@ -111,13 +119,16 @@ namespace APSIM.Shared.Utilities
             Response.Close();
             }
 
+        /// <summary>
+        /// Gets a directory listing.
+        /// </summary>
+        /// <param name="FTPDirectory">The FTP directory.</param>
+        /// <param name="Detailed">if set to <c>true</c> [detailed].</param>
+        /// <param name="UserName">Name of the user.</param>
+        /// <param name="Password">The password.</param>
+        /// <returns></returns>
         public static string[] DirectoryListing(string FTPDirectory, bool Detailed, string UserName, string Password)
             {
-            // ------------------------------------------------------------------
-            // Return a directory listing to caller for the specified 
-            // FTPDirectory (e.g. ftp://www.apsim.info/apsim/temp)
-            // If detailed = true then a detailed listing will be returned.
-            // ------------------------------------------------------------------
             FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPDirectory);
             FTP.Credentials = new NetworkCredential(UserName, Password);
             FTP.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
@@ -142,13 +153,15 @@ namespace APSIM.Shared.Utilities
             return Result.ToString().Split('\n');
             }
 
+        /// <summary>
+        /// Gets the size of a file.
+        /// </summary>
+        /// <param name="FTPFullFileName">Name of the FTP full file.</param>
+        /// <param name="UserName">Name of the user.</param>
+        /// <param name="Password">The password.</param>
+        /// <returns></returns>
         public static long FileSize(string FTPFullFileName, string UserName, string Password)
             {
-            // ------------------------------------------------------------------
-            // Get the size of the specified FTPFullFileName 
-            // (e.g. ftp://www.apsim.info/apsim/temp/test.xml)
-            // ------------------------------------------------------------------
-
             FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPFullFileName);
             FTP.Method = WebRequestMethods.Ftp.GetFileSize;
             FTP.UseBinary = true;
@@ -162,13 +175,15 @@ namespace APSIM.Shared.Utilities
             return FileSize;
             }
 
+        /// <summary>
+        /// Renames the specified FTP file.
+        /// </summary>
+        /// <param name="FTPFullFileName">Name of the FTP full file.</param>
+        /// <param name="NewFileName">New name of the file.</param>
+        /// <param name="UserName">Name of the user.</param>
+        /// <param name="Password">The password.</param>
         public static void Rename(string FTPFullFileName, string NewFileName, string UserName, string Password)
             {
-            // ------------------------------------------------------------------
-            // Rename the specified FTPFileName 
-            // (ftp://www.apsim.info/apsim/temp/test.xml) to the specified 
-            // NewFileName (no path)
-            // ------------------------------------------------------------------
             FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPFullFileName);
             FTP.Method = WebRequestMethods.Ftp.Rename;
             FTP.RenameTo = NewFileName;
@@ -180,11 +195,14 @@ namespace APSIM.Shared.Utilities
             Response.Close();
             }
 
+        /// <summary>
+        /// Creates the directory.
+        /// </summary>
+        /// <param name="FTPDirectory">The FTP directory.</param>
+        /// <param name="UserName">Name of the user.</param>
+        /// <param name="Password">The password.</param>
         public static void MakeDirectory(string FTPDirectory, string UserName, string Password)
             {
-            // ------------------------------------------------------------------
-            // Make the specified FTPDirectory (ftp://www.apsim.info/apsim/temp)
-            // ------------------------------------------------------------------
             FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPDirectory);
             FTP.Method = WebRequestMethods.Ftp.MakeDirectory;
             FTP.UseBinary = true;

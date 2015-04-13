@@ -20,7 +20,7 @@ namespace APSIM.Shared.Utilities
         /// <summary>Gets a value indicating whether this instance is computationally time consuming.</summary>
         public bool IsComputationallyTimeConsuming { get { return false; } }
 
-        /// <summary>A list of jobs that will be run in sequence.
+        /// <summary>A list of jobs that will be run in sequence.</summary>
         public List<JobManager.IRunnable> Jobs { get; set; }
         
         /// <summary>Gets a value indicating whether this job is completed. Set by JobManager.</summary>

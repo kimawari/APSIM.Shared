@@ -20,12 +20,19 @@ namespace APSIM.Shared.Utilities
     using System.Globalization;
     using System.Collections.Generic;
 
-    // ---------------------------------------------
-    // A simple type for encapsulating a constant
-    // ---------------------------------------------
+    /// <summary>
+    /// A simple type for encapsulating a constant
+    /// </summary>
     [Serializable]
     public class ApsimConstant
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApsimConstant"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="val">The value.</param>
+        /// <param name="units">The units.</param>
+        /// <param name="comm">The comm.</param>
         public ApsimConstant(string name, string val, string units, string comm)
         {
             Name = name;
@@ -34,9 +41,21 @@ namespace APSIM.Shared.Utilities
             Comment = comm;
         }
 
+        /// <summary>
+        /// The name
+        /// </summary>
         public string Name;
+        /// <summary>
+        /// The value
+        /// </summary>
         public string Value;
+        /// <summary>
+        /// The units
+        /// </summary>
         public string Units;
+        /// <summary>
+        /// The comment
+        /// </summary>
         public string Comment;
     }
 
@@ -47,21 +66,58 @@ namespace APSIM.Shared.Utilities
     [Serializable]
     public class ApsimTextFile
     {
+        /// <summary>
+        /// The _ file name
+        /// </summary>
         private string _FileName;
+        /// <summary>
+        /// The headings
+        /// </summary>
         public StringCollection Headings;
+        /// <summary>
+        /// The units
+        /// </summary>
         public StringCollection Units;
+        /// <summary>
+        /// The _ constants
+        /// </summary>
         private ArrayList _Constants = new ArrayList();
+        /// <summary>
+        /// The CSV
+        /// </summary>
         private bool CSV = false;
+        /// <summary>
+        /// The in
+        /// </summary>
         private StreamReaderRandomAccess In;
+        /// <summary>
+        /// The _ first date
+        /// </summary>
         private DateTime _FirstDate;
+        /// <summary>
+        /// The _ last date
+        /// </summary>
         private DateTime _LastDate;
+        /// <summary>
+        /// The first line position
+        /// </summary>
         private int FirstLinePosition;
+        /// <summary>
+        /// The words
+        /// </summary>
         private StringCollection Words = new StringCollection();
+        /// <summary>
+        /// The column types
+        /// </summary>
         private Type[] ColumnTypes;
 
-        /// <summary>A helper to cleanly get a DataTable from the contents of a file.</summary>
+        /// <summary>
+        /// A helper to cleanly get a DataTable from the contents of a file.
+        /// </summary>
         /// <param name="fileName">Name of the file.</param>
-        /// <returns>The data table.</returns>
+        /// <returns>
+        /// The data table.
+        /// </returns>
         public static System.Data.DataTable ToTable(string fileName)
         {
             ApsimTextFile file = new ApsimTextFile();
@@ -75,6 +131,8 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Open the file ready for reading.
         /// </summary>
+        /// <param name="FileName">Name of the file.</param>
+        /// <exception cref="System.Exception">Cannot find file:  + FileName</exception>
         public void Open(string FileName)
         {
             if (FileName == "")
@@ -89,7 +147,9 @@ namespace APSIM.Shared.Utilities
             Open();
         }
 
-        /// <summary>Opens the specified stream.</summary>
+        /// <summary>
+        /// Opens the specified stream.
+        /// </summary>
         /// <param name="stream">The stream.</param>
         public void Open(Stream stream)
         {
@@ -102,6 +162,11 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Open the file ready for reading.
         /// </summary>
+        /// <exception cref="System.Exception">
+        /// Cannot find headings and units line in  + _FileName
+        /// or
+        /// Cannot find last row of file:  + _FileName
+        /// </exception>
         private void Open()
         {
             _Constants.Clear();
@@ -148,9 +213,27 @@ namespace APSIM.Shared.Utilities
             In.Close();
         }
 
+        /// <summary>
+        /// Gets the first date.
+        /// </summary>
+        /// <value>
+        /// The first date.
+        /// </value>
         public DateTime FirstDate { get { return _FirstDate; } }
+        /// <summary>
+        /// Gets the last date.
+        /// </summary>
+        /// <value>
+        /// The last date.
+        /// </value>
         public DateTime LastDate { get { return _LastDate; } }
 
+        /// <summary>
+        /// Gets the constants.
+        /// </summary>
+        /// <value>
+        /// The constants.
+        /// </value>
         public ArrayList Constants
         {
             get
@@ -158,6 +241,11 @@ namespace APSIM.Shared.Utilities
                 return _Constants;
             }
         }
+        /// <summary>
+        /// Constants the specified constant name.
+        /// </summary>
+        /// <param name="ConstantName">Name of the constant.</param>
+        /// <returns></returns>
         public ApsimConstant Constant(string ConstantName)
         {
             // -------------------------------------
@@ -174,13 +262,20 @@ namespace APSIM.Shared.Utilities
             return null;
         }
 
-        /// <summary>Returns a constant as double.</summary>
+        /// <summary>
+        /// Returns a constant as double.
+        /// </summary>
         /// <param name="ConstantName">Name of the constant.</param>
         /// <returns></returns>
         public double ConstantAsDouble(string ConstantName)
         {
             return Convert.ToDouble(Constant(ConstantName).Value, CultureInfo.InvariantCulture);
         }
+        /// <summary>
+        /// Sets the constant.
+        /// </summary>
+        /// <param name="ConstantName">Name of the constant.</param>
+        /// <param name="ConstantValue">The constant value.</param>
         public void SetConstant(string ConstantName, string ConstantValue)
         {
             // -------------------------------------
@@ -193,6 +288,13 @@ namespace APSIM.Shared.Utilities
                     c.Value = ConstantValue;
             }
         }
+        /// <summary>
+        /// Adds the constant.
+        /// </summary>
+        /// <param name="ConstantName">Name of the constant.</param>
+        /// <param name="ConstantValue">The constant value.</param>
+        /// <param name="Units">The units.</param>
+        /// <param name="Comment">The comment.</param>
         public void AddConstant(string ConstantName, string ConstantValue, string Units, string Comment)
         {
             // -------------------------------------
@@ -204,6 +306,7 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Convert this file to a DataTable.
         /// </summary>
+        /// <returns></returns>
         public System.Data.DataTable ToTable()
         {
             System.Data.DataTable Data = new System.Data.DataTable();
@@ -232,6 +335,12 @@ namespace APSIM.Shared.Utilities
             }
             return Data;
         }
+        /// <summary>
+        /// Reads the apsim header lines.
+        /// </summary>
+        /// <param name="In">The in.</param>
+        /// <param name="ConstantLines">The constant lines.</param>
+        /// <param name="HeadingLines">The heading lines.</param>
         private void ReadApsimHeaderLines(StreamReaderRandomAccess In,
                                           ref StringCollection ConstantLines,
                                           ref StringCollection HeadingLines)
@@ -267,6 +376,7 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Add our constants to every row in the specified table beginning with the specified StartRow.
         /// </summary>
+        /// <param name="Table">The table.</param>
         public void AddConstantsToData(System.Data.DataTable Table)
         {
             foreach (ApsimConstant Constant in Constants)
@@ -286,10 +396,12 @@ namespace APSIM.Shared.Utilities
                 }
             }
         }
-        
+
         /// <summary>
         /// Read in the APSIM header - headings/units and constants.
         /// </summary>
+        /// <param name="In">The in.</param>
+        /// <exception cref="System.Exception">The number of headings and units doesn't match in file:  + _FileName</exception>
         private void ReadApsimHeader(StreamReaderRandomAccess In)
         {
             StringCollection ConstantLines = new StringCollection();
@@ -347,6 +459,9 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Determine and return the data types of the specfied words.
         /// </summary>
+        /// <param name="In">The in.</param>
+        /// <param name="Words">The words.</param>
+        /// <returns></returns>
         private Type[] DetermineColumnTypes(StreamReaderRandomAccess In, StringCollection Words)
         {
             Type[] Types = new Type[Words.Count];
@@ -363,6 +478,9 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Convert the specified words to the specified column types and return their values.
         /// </summary>
+        /// <param name="Words">The words.</param>
+        /// <param name="ColumnTypes">The column types.</param>
+        /// <returns></returns>
         private object[] ConvertWordsToObjects(StringCollection Words, Type[] ColumnTypes)
         {
             object[] Values = new object[Words.Count];
@@ -410,6 +528,10 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Return the next line in the file as a collection of words.
         /// </summary>
+        /// <param name="In">The in.</param>
+        /// <param name="Words">The words.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Invalid number of values on line:  + Line + \r\nin file:  + _FileName</exception>
         private bool GetNextLine(StreamReaderRandomAccess In, ref StringCollection Words)
         {
             if (In.EndOfStream)
@@ -439,6 +561,12 @@ namespace APSIM.Shared.Utilities
                 Words[i] = Words[i].Trim("\"".ToCharArray());
             return true;
         }
+        /// <summary>
+        /// Looks the ahead for non missing value.
+        /// </summary>
+        /// <param name="In">The in.</param>
+        /// <param name="w">The w.</param>
+        /// <returns></returns>
         private string LookAheadForNonMissingValue(StreamReaderRandomAccess In, int w)
         {
             if (In.EndOfStream)
@@ -462,6 +590,8 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Return the first date from the specified objects. Will return empty DateTime if not found.
         /// </summary>
+        /// <param name="Values">The values.</param>
+        /// <returns></returns>
         public DateTime GetDateFromValues(object[] Values)
         {
             int Year = 0;
@@ -500,7 +630,8 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Seek to the specified date. Will throw if date not found.
         /// </summary>
-        /// <param name="Date"></param>
+        /// <param name="Date">The date.</param>
+        /// <exception cref="System.Exception">Date  + Date.ToString() +  doesn't exist in file:  + _FileName</exception>
         public void SeekToDate(DateTime Date)
         {
             if (Date < _FirstDate)
@@ -519,6 +650,8 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Return the next line of data from the file as an array of objects.
         /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">End of file reached while reading file:  + _FileName</exception>
         public object[] GetNextLineOfData()
         {
             Words.Clear();

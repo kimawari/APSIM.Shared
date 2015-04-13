@@ -825,6 +825,7 @@ namespace APSIM.Shared.Utilities
 
         /// <summary>Deserialise from the specified file (XML)</summary>
         /// <param name="FileName">Name of the file.</param>
+        /// <param name="assembly">The assembly to search for types</param>
         /// <returns>Returns the newly created object or null if not found.</returns>
         /// <exception cref="System.Exception">Cannot deserialise from file:  + FileName + . File does not exist.</exception>
         public static object Deserialise(string FileName, Assembly assembly)
@@ -840,6 +841,7 @@ namespace APSIM.Shared.Utilities
 
         /// <summary>Deserialise from the specified XmlNode.</summary>
         /// <param name="Node">The node.</param>
+        /// <param name="assembly">The assembly to search for types</param>
         /// <returns>Returns the newly created object or null if not found.</returns>
         public static object Deserialise(XmlNode Node, Assembly assembly)
         {
@@ -850,6 +852,7 @@ namespace APSIM.Shared.Utilities
 
         /// <summary>Deserialise from the specified XmlNode.</summary>
         /// <param name="Node">The node.</param>
+        /// <param name="t">The type to deserialise</param>
         /// <returns>Returns the newly created object or null if not found.</returns>
         public static object Deserialise(XmlNode Node, Type t)
         {
@@ -860,6 +863,7 @@ namespace APSIM.Shared.Utilities
 
         /// <summary>Deserialise from the specified XmlReader.</summary>
         /// <param name="Reader">The reader.</param>
+        /// <param name="assembly">The assembly to search for types</param>
         /// <returns>Returns the newly created object or null if not found.</returns>
         /// <exception cref="System.Exception">
         /// Cannot deserialise because type:  + TypeName +  does not exist
