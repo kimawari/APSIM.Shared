@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.ComponentModel;
-using System.Xml.Serialization;
-using System.Runtime.Serialization;
-using System.Diagnostics;
-
-namespace Utility
+﻿// -----------------------------------------------------------------------
+// <copyright file="JobManager.cs" company="APSIM Initiative">
+//     Copyright (c) APSIM Initiative
+// </copyright>
+//-----------------------------------------------------------------------
+namespace APSIM.Shared.Utilities
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Diagnostics;
+    using System.Threading;
+
     /// <summary>A class for managing asynchronous running of jobs.</summary>
     [Serializable]
     public class JobManager

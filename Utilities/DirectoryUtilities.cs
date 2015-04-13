@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-
-namespace Utility
+﻿// -----------------------------------------------------------------------
+// <copyright file="DataTableUtilties.cs" company="APSIM Initiative">
+//     Copyright (c) APSIM Initiative
+// </copyright>
+//-----------------------------------------------------------------------
+namespace APSIM.Shared.Utilities
 {
-    class Directory
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+
+    class DirectoryUtilities
     {
         /// <summary>
         /// Ensure the specified filename is unique (by appending a number). 

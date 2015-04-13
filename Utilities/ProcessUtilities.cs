@@ -1,9 +1,9 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Process.cs" company="APSIM Initiative">
+// <copyright file="ProcessUtilities.cs" company="APSIM Initiative">
 //     Copyright (c) APSIM Initiative
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     using System;
     using System.IO;
@@ -11,7 +11,7 @@ namespace Utility
     /// <summary>
     /// A collection of utilities for dealing with processes (threads)
     /// </summary>
-    public class Process
+    public class ProcessUtilities
     {
         /// <summary>
         /// Enumeration for holding compilation modes

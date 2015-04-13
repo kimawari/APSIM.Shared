@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Utility
+﻿// -----------------------------------------------------------------------
+// <copyright file="MetUtilities.cs" company="APSIM Initiative">
+//     Copyright (c) APSIM Initiative
+// </copyright>
+//-----------------------------------------------------------------------
+namespace APSIM.Shared.Utilities
 {
+    using System;
+
     /// <summary>
     /// A collection of weather utility functions
     /// </summary>
-    public class Met
+    public class MetUtilities
     {
         //atmospheric pressure (Pa)
         /// <summary>The p</summary>
@@ -137,14 +139,14 @@ namespace Utility
                 slsd = System.Math.Sin(LATr) * System.Math.Sin(DECr);
                 clcd = System.Math.Cos(LATr) * System.Math.Cos(DECr);
 
-                altmn = System.Math.Asin(Utility.Math.Bound(slsd - clcd, -1.0, 1.0));
-                altmx = System.Math.Asin(Utility.Math.Bound(slsd + clcd, -1.0, 1.0));
-                alt = Utility.Math.Bound(sun_alt, altmn, altmx);
+                altmn = System.Math.Asin(MathUtilities.Bound(slsd - clcd, -1.0, 1.0));
+                altmx = System.Math.Asin(MathUtilities.Bound(slsd + clcd, -1.0, 1.0));
+                alt = MathUtilities.Bound(sun_alt, altmn, altmx);
 
                 // get cos of the hour angle
 
                 coshra = (System.Math.Sin(alt) - slsd) / clcd;
-                coshra = Utility.Math.Bound(coshra, -1.0, 1.0);
+                coshra = MathUtilities.Bound(coshra, -1.0, 1.0);
             }
 
             HS = System.Math.Acos(coshra);

@@ -1,18 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
-using System.IO;
-using System.Collections;
-using System.Xml.Serialization;
-using System.Reflection;
-
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Reflection;
+    using System.Text;
+    using System.Xml;
+    using System.Xml.Serialization;
+
     /// <summary>
     /// XML utility routines
     /// </summary>
-    public class Xml
+    public class XmlUtilities
     {
         /// <summary>The delimiter</summary>
         public const char Delimiter = '/';
@@ -40,7 +40,7 @@ namespace Utility
         /// <returns>The value from the child called "Name"</returns>
         public static string NameElement(XmlNode aNode)
         {
-            XmlNode nameNode = Utility.Xml.Find(aNode, "Name");
+            XmlNode nameNode = Find(aNode, "Name");
             if ( (nameNode != null) && (nameNode.InnerText.Length > 0) )
                 return nameNode.InnerText;
             else
@@ -68,7 +68,7 @@ namespace Utility
         /// <param name="Name">The name.</param>
         public static void SetNameAttr(XmlNode Node, string Name)
         {
-            if (Name != Utility.Xml.NameAttr(Node))
+            if (Name != NameAttr(Node))
                 SetAttribute(Node, "name", Name);
         }
         /// <summary>Types the specified node.</summary>
@@ -301,7 +301,7 @@ namespace Utility
         /// <returns></returns>
         public static XmlNode FindRecursively(XmlNode Node, string Name)
         {
-            if (Utility.Xml.NameAttr(Node).ToLower() == Name.ToLower())
+            if (NameAttr(Node).ToLower() == Name.ToLower())
                 return Node;
             foreach (XmlNode Child in Node.ChildNodes)
             {
@@ -317,7 +317,7 @@ namespace Utility
         /// <param name="Nodes">The nodes.</param>
         public static void FindAllRecursively(XmlNode Node, string Name, ref List<XmlNode> Nodes)
         {
-            if (Utility.Xml.NameAttr(Node).ToLower() == Name.ToLower())
+            if (NameAttr(Node).ToLower() == Name.ToLower())
                 Nodes.Add(Node);
             foreach (XmlNode Child in Node.ChildNodes)
                 FindAllRecursively(Child, Name, ref Nodes);
@@ -328,7 +328,7 @@ namespace Utility
         /// <param name="Nodes">The nodes.</param>
         public static void FindAllRecursivelyByType(XmlNode Node, string TypeName, ref List<XmlNode> Nodes)
         {
-            if (Utility.Xml.Type(Node).ToLower() == TypeName.ToLower())
+            if (Type(Node).ToLower() == TypeName.ToLower())
                 Nodes.Add(Node);
             foreach (XmlNode Child in Node.ChildNodes)
                 FindAllRecursivelyByType(Child, TypeName, ref Nodes);
@@ -716,7 +716,7 @@ namespace Utility
             if (NodePath.Length == 0)
                 return Node;
 
-            int PosDelimiter = NodePath.IndexOf(Utility.Xml.Delimiter);
+            int PosDelimiter = NodePath.IndexOf(Delimiter);
             string ChildNameToMatch = NodePath;
             if (PosDelimiter != -1)
                 ChildNameToMatch = NodePath.Substring(0, PosDelimiter);
@@ -749,20 +749,20 @@ namespace Utility
             // Go through each attribute and each child node and make sure everything is the same.
             // By doing this, attributes and child nodes can be in different orders but this method
             // will still return true.
-            if (Utility.Xml.ChildNodes(Node1, "").Count > 0)
+            if (ChildNodes(Node1, "").Count > 0)
             {
                 if (Node1.Attributes.Count != Node2.Attributes.Count)
                     return false;
                 foreach (XmlAttribute Attribute1 in Node1.Attributes)
                 {
-                    string Attribute2Value = Utility.Xml.Attribute(Node2, Attribute1.Name);
+                    string Attribute2Value = Attribute(Node2, Attribute1.Name);
                     if (Attribute1.InnerText != Attribute2Value)
                         return false;
                 }
 
                 // Check child nodes.
-                List<XmlNode> Node1Children = Utility.Xml.ChildNodes(Node1, "");
-                if (Node1Children.Count != Utility.Xml.ChildNodes(Node2, "").Count)
+                List<XmlNode> Node1Children = ChildNodes(Node1, "");
+                if (Node1Children.Count != ChildNodes(Node2, "").Count)
                     return false;
 
                 // Some child nodes need to be checked sequentially because they don't have
@@ -770,14 +770,14 @@ namespace Utility
                 string[] SequentialNodeTypes = new string[] { "Layer", "script", "operation" };
 
                 // Perform lookup comparison for all non sequential nodes.
-                foreach (XmlNode Child1 in Utility.Xml.ChildNodes(Node1, ""))
+                foreach (XmlNode Child1 in ChildNodes(Node1, ""))
                 {
                     if (Array.IndexOf(SequentialNodeTypes, Child1.Name) == -1)
                     {
-                        XmlNode Child2 = Utility.Xml.ChildByNameAndType(Node2, Utility.Xml.NameAttr(Child1), Child1.Name);
+                        XmlNode Child2 = ChildByNameAndType(Node2, NameAttr(Child1), Child1.Name);
                         if (Child2 == null)
                             return false;
-                        if (!Utility.Xml.IsEqual(Child1, Child2))
+                        if (!IsEqual(Child1, Child2))
                             return false;
                     }
                 }
@@ -785,7 +785,7 @@ namespace Utility
                 // Now go and compare all sequential node types.
                 foreach (string SequentialType in SequentialNodeTypes)
                 {
-                    if (!Utility.Xml.IsEqualSequentially(Node1, Node2, SequentialType))
+                    if (!IsEqualSequentially(Node1, Node2, SequentialType))
                         return false;
                 }
 
@@ -796,7 +796,7 @@ namespace Utility
                 double Value1, Value2;
                 if (double.TryParse(Node1.InnerText, out Value1) &&
                     double.TryParse(Node2.InnerText, out Value2))
-                    return Math.FloatsAreEqual(Value1, Value2);
+                    return MathUtilities.FloatsAreEqual(Value1, Value2);
                 else
                     return Node1.InnerText == Node2.InnerText;
             }
@@ -811,13 +811,13 @@ namespace Utility
         /// <returns></returns>
         private static bool IsEqualSequentially(XmlNode Node1, XmlNode Node2, string ChildType)
         {
-            List<XmlNode> Children1 = Utility.Xml.ChildNodes(Node1, ChildType);
-            List<XmlNode> Children2 = Utility.Xml.ChildNodes(Node2, ChildType);
+            List<XmlNode> Children1 = ChildNodes(Node1, ChildType);
+            List<XmlNode> Children2 = ChildNodes(Node2, ChildType);
             if (Children1.Count != Children2.Count)
                 return false;
             for (int i = 0; i < Children1.Count; i++)
             {
-                if (!Utility.Xml.IsEqual(Children1[i], Children2[i]))
+                if (!IsEqual(Children1[i], Children2[i]))
                     return false;
             }
             return true;
@@ -827,7 +827,7 @@ namespace Utility
         /// <param name="FileName">Name of the file.</param>
         /// <returns>Returns the newly created object or null if not found.</returns>
         /// <exception cref="System.Exception">Cannot deserialise from file:  + FileName + . File does not exist.</exception>
-        public static object Deserialise(string FileName)
+        public static object Deserialise(string FileName, Assembly assembly)
         {
             if (!File.Exists(FileName))
                 throw new Exception("Cannot deserialise from file: " + FileName + ". File does not exist.");
@@ -835,17 +835,27 @@ namespace Utility
             XmlDocument Doc = new XmlDocument();
             Doc.Load(FileName);
 
-            return Deserialise(Doc.DocumentElement);
+            return Deserialise(Doc.DocumentElement, assembly);
         }
 
         /// <summary>Deserialise from the specified XmlNode.</summary>
         /// <param name="Node">The node.</param>
         /// <returns>Returns the newly created object or null if not found.</returns>
-        public static object Deserialise(XmlNode Node)
+        public static object Deserialise(XmlNode Node, Assembly assembly)
         {
             XmlReader Reader = new XmlNodeReader(Node);
             Reader.Read();
-            return Deserialise(Reader);
+            return Deserialise(Reader, assembly);
+        }
+
+        /// <summary>Deserialise from the specified XmlNode.</summary>
+        /// <param name="Node">The node.</param>
+        /// <returns>Returns the newly created object or null if not found.</returns>
+        public static object Deserialise(XmlNode Node, Type t)
+        {
+            XmlReader Reader = new XmlNodeReader(Node);
+            XmlSerializer serial = new XmlSerializer(t);
+            return serial.Deserialize(Reader);
         }
 
         /// <summary>Deserialise from the specified XmlReader.</summary>
@@ -856,7 +866,7 @@ namespace Utility
         /// or
         /// Cannot deserialise because found two classes with class name:  + TypeName
         /// </exception>
-        public static object Deserialise(XmlReader Reader)
+        public static object Deserialise(XmlReader Reader, Assembly assembly)
         {
             try
             {
@@ -898,7 +908,7 @@ namespace Utility
                 // if no pre built assembly found then deserialise manually.
                 if (ReturnObj == null)
                 {
-                    Type[] type = Utility.Reflection.GetTypeWithoutNameSpace(TypeName);
+                    Type[] type = ReflectionUtilities.GetTypeWithoutNameSpace(TypeName, assembly);
                     if (type.Length == 0)
                         throw new Exception("Cannot deserialise because type: " + TypeName + " does not exist");
                     if (type.Length > 1)
@@ -917,15 +927,6 @@ namespace Utility
             }
         }
 
-        /// <summary>Deserialise from the specified XmlNode.</summary>
-        /// <param name="Node">The node.</param>
-        /// <returns>Returns the newly created object or null if not found.</returns>
-        public static object Deserialise(XmlNode Node, Type t)
-        {
-            XmlReader Reader = new XmlNodeReader(Node);
-            XmlSerializer serial = new XmlSerializer(t);
-            return serial.Deserialize(Reader);
-        }
 
         /// <summary>
         /// Add a child model as specified by the ModelXml. Will call ModelAdded event if successful.

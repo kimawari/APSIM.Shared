@@ -2,7 +2,7 @@ using System.IO;
 using System.Text;
 using System;
 
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     [Serializable]
     class StreamReaderRandomAccess

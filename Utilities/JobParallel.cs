@@ -1,9 +1,9 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="JobSequenceParallel.cs" company="APSIM Initiative">
+// <copyright file="JobParallel.cs" company="APSIM Initiative">
 //     Copyright (c) APSIM Initiative
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     using System;
     using System.Collections.Generic;
@@ -15,13 +15,13 @@ namespace Utility
     /// A composite class for a sequence of jobs that will be run asynchronously.
     /// If an error occurs in any job, then this job will also produce an error.
     /// </summary>
-    public class JobParallel : Utility.JobManager.IRunnable
+    public class JobParallel : JobManager.IRunnable
     {
         /// <summary>Gets a value indicating whether this instance is computationally time consuming.</summary>
         public bool IsComputationallyTimeConsuming { get { return false; } }
 
         /// <summary>A list of jobs that will be run in sequence.
-        public List<Utility.JobManager.IRunnable> Jobs { get; set; }
+        public List<JobManager.IRunnable> Jobs { get; set; }
         
         /// <summary>Gets a value indicating whether this job is completed. Set by JobManager.</summary>
         public bool IsCompleted { get; set; }
@@ -35,10 +35,10 @@ namespace Utility
         public void Run(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             // Get a reference to the JobManager so that we can add jobs to it.
-            Utility.JobManager jobManager = e.Argument as Utility.JobManager;
+            JobManager jobManager = e.Argument as JobManager;
 
             // Add all jobs to the queue
-            foreach (Utility.JobManager.IRunnable job in Jobs)
+            foreach (JobManager.IRunnable job in Jobs)
                 jobManager.AddJob(job);
 
             // Wait for it to be completed.
@@ -47,7 +47,7 @@ namespace Utility
 
             // Get a possible error message. Null if no error.
             string ErrorMessage = string.Empty;
-            foreach (Utility.JobManager.IRunnable job in Jobs)
+            foreach (JobManager.IRunnable job in Jobs)
                 ErrorMessage += job.ErrorMessage;
             if (ErrorMessage != string.Empty)
                 throw new Exception(ErrorMessage);
@@ -61,7 +61,7 @@ namespace Utility
         {
             get
             {
-                foreach (Utility.JobManager.IRunnable job in Jobs)
+                foreach (JobManager.IRunnable job in Jobs)
                     if (!job.IsCompleted)
                         return false;
 

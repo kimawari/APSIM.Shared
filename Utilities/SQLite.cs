@@ -3,7 +3,7 @@
 //     Copyright (c) APSIM Initiative
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     using System;
     using System.Collections.Generic;
@@ -261,7 +261,7 @@ namespace Utility
         /// <summary>Opens or creates SQLite database with the specified path</summary>
         /// <param name="path">Path to SQLite database</param>
         /// <param name="readOnly">if set to <c>true</c> [read only].</param>
-        /// <exception cref="Utility.SQLiteException"></exception>
+        /// <exception cref="SQLiteException"></exception>
         public void OpenDatabase(string path, bool readOnly)
         {
             int id;

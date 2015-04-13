@@ -3,7 +3,7 @@
 //     Copyright (c) APSIM Initiative
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     using System;
     using System.Collections.Generic;
@@ -15,13 +15,13 @@ namespace Utility
     /// A composite class for a sequence of jobs that will be run sequentially.
     /// If an error occurs in any job, then subsequent jobs won't be run.
     /// </summary>
-    public class JobSequence : Utility.JobManager.IRunnable
+    public class JobSequence : JobManager.IRunnable
     {
         /// <summary>Gets a value indicating whether this instance is computationally time consuming.</summary>
         public bool IsComputationallyTimeConsuming { get { return false; } }
 
         /// <summary>A list of jobs that will be run in sequence.
-        public List<Utility.JobManager.IRunnable> Jobs { get; set; }
+        public List<JobManager.IRunnable> Jobs { get; set; }
         
         /// <summary>Gets a value indicating whether this job is completed. Set by JobManager.</summary>
         public bool IsCompleted { get; set; }
@@ -35,7 +35,7 @@ namespace Utility
         public void Run(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             // Get a reference to the JobManager so that we can add jobs to it.
-            Utility.JobManager jobManager = e.Argument as Utility.JobManager;
+            JobManager jobManager = e.Argument as JobManager;
 
             for (int j = 0; j < Jobs.Count; j++)
             {
@@ -59,7 +59,7 @@ namespace Utility
         {
             get
             {
-                foreach (Utility.JobManager.IRunnable job in Jobs)
+                foreach (JobManager.IRunnable job in Jobs)
                     if (!job.IsCompleted)
                         return false;
 

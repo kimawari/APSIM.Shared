@@ -1,9 +1,9 @@
 // -----------------------------------------------------------------------
-// <copyright file="DataTables.cs" company="APSIM Initiative">
+// <copyright file="DataTableUtilties.cs" company="APSIM Initiative">
 //     Copyright (c) APSIM Initiative
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     using System;
     using System.Collections;
@@ -14,7 +14,7 @@ namespace Utility
     /// <summary>
     /// Some utilities for manipulating a data table.
     /// </summary>
-    public class DataTable
+    public class DataTableUtilities
     {
         /// <summary>
         /// Add a value to the specified data table
@@ -35,7 +35,7 @@ namespace Utility
             string[] Values = new string[Count];
             for (int i = 0; i != Count; i++)
             {
-                if (Value == Math.MissingValue)
+                if (Value == MathUtilities.MissingValue)
                     Values[i] = "";
                 else
                     Values[i] = Value.ToString();
@@ -62,7 +62,7 @@ namespace Utility
             int Row = StartRow;
             for (int Index = 0; Index != Values.Length; Index++)
             {
-                if (Values[Index] != Math.MissingValue)
+                if (Values[Index] != MathUtilities.MissingValue)
                     Table.Rows[Row][ColumnName] = Values[Index];
                 else
                     Table.Rows[Row][ColumnName] = DBNull.Value;
@@ -145,7 +145,7 @@ namespace Utility
                     // If the value is a double.NaN then don't put into table.
                     // All other values do get inserted.
                     bool insertValue = true;
-                    if (value is double && (double.IsNaN((double) value) || (double) value == Math.MissingValue))
+                    if (value is double && (double.IsNaN((double) value) || (double) value == MathUtilities.MissingValue))
                     {
                         insertValue = false;
                     }
@@ -224,7 +224,7 @@ namespace Utility
             for (int Row = StartRow; Row != Table.Rows.Count && Index != NumValues; Row++)
             {
                 if (Table.Rows[Row][ColumnName].ToString() == "")
-                    Values[Index] = Math.MissingValue;
+                    Values[Index] = MathUtilities.MissingValue;
                 else
                 {
                     try
@@ -453,7 +453,7 @@ namespace Utility
             DataRow MonthRow = null;
             for (int Row = 0; Row != View.Count; Row++)
             {
-                DateTime RowDate = Utility.DataTable.GetDateFromRow(View[Row].Row);
+                DateTime RowDate = DataTableUtilities.GetDateFromRow(View[Row].Row);
                 if (PreviousMonth != RowDate.Month)
                 {
                     MonthRow = MonthlyData.NewRow();

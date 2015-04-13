@@ -12,6 +12,7 @@ namespace APSIM.Shared.Soils
     using System.Text;
     using System.Xml.Serialization;
     using System.IO;
+    using APSIM.Shared.Utilities;
 
     /// <summary>
     /// Various soil utilities.
@@ -138,23 +139,23 @@ namespace APSIM.Shared.Soils
                 if (sample.SWUnits == Sample.SWUnitsEnum.Volumetric)
                 {
                     if (toUnits == Sample.SWUnitsEnum.Gravimetric)
-                        return Utility.Math.Divide(sample.SW, BDMapped(soil, sample.Thickness));
+                        return MathUtilities.Divide(sample.SW, BDMapped(soil, sample.Thickness));
                     else if (toUnits == Sample.SWUnitsEnum.mm)
-                        return Utility.Math.Multiply(sample.SW, sample.Thickness);
+                        return MathUtilities.Multiply(sample.SW, sample.Thickness);
                 }
                 else if (sample.SWUnits == Sample.SWUnitsEnum.Gravimetric)
                 {
                     if (toUnits == Sample.SWUnitsEnum.Volumetric)
-                        return Utility.Math.Multiply(sample.SW, BDMapped(soil, sample.Thickness));
+                        return MathUtilities.Multiply(sample.SW, BDMapped(soil, sample.Thickness));
                     else if (toUnits == Sample.SWUnitsEnum.mm)
-                        return Utility.Math.Multiply(Utility.Math.Multiply(sample.SW, BDMapped(soil, sample.Thickness)), sample.Thickness);
+                        return MathUtilities.Multiply(MathUtilities.Multiply(sample.SW, BDMapped(soil, sample.Thickness)), sample.Thickness);
                 }
                 else
                 {
                     if (toUnits == Sample.SWUnitsEnum.Volumetric)
-                        return Utility.Math.Divide(sample.SW, sample.Thickness);
+                        return MathUtilities.Divide(sample.SW, sample.Thickness);
                     else if (toUnits == Sample.SWUnitsEnum.Gravimetric)
-                        return Utility.Math.Divide(Utility.Math.Divide(sample.SW, sample.Thickness), BDMapped(soil, sample.Thickness));
+                        return MathUtilities.Divide(MathUtilities.Divide(sample.SW, sample.Thickness), BDMapped(soil, sample.Thickness));
                 }
             }
 
@@ -313,7 +314,7 @@ namespace APSIM.Shared.Soils
             LL = Map(LL, PredictedThickness, soil.Water.Thickness, MapType.Concentration, soil, LL.Last());
             KL = Map(KL, PredictedThickness, soil.Water.Thickness, MapType.Concentration, soil, KL.Last());
             double[] XF = Map(PredictedXF, PredictedThickness, soil.Water.Thickness, MapType.Concentration, soil, PredictedXF.Last());
-            string[] Metadata = Utility.String.CreateStringArray("Estimated", soil.Water.Thickness.Length);
+            string[] Metadata = StringUtilities.CreateStringArray("Estimated", soil.Water.Thickness.Length);
 
             return new SoilCrop()
             {
@@ -373,7 +374,7 @@ namespace APSIM.Shared.Soils
             if (FValues == null || FThickness == null)
                 return null;
 
-            double[] FromThickness = Utility.Math.RemoveMissingValuesFromBottom((double[])FThickness.Clone());
+            double[] FromThickness = MathUtilities.RemoveMissingValuesFromBottom((double[])FThickness.Clone());
             double[] FromValues = (double[])FValues.Clone();
 
             if (FromValues == null)
@@ -390,10 +391,10 @@ namespace APSIM.Shared.Soils
                     FromThickness[i] = double.NaN;
                 }
             }
-            FromValues = Utility.Math.RemoveMissingValuesFromBottom(FromValues);
-            FromThickness = Utility.Math.RemoveMissingValuesFromBottom(FromThickness);
+            FromValues = MathUtilities.RemoveMissingValuesFromBottom(FromValues);
+            FromThickness = MathUtilities.RemoveMissingValuesFromBottom(FromThickness);
 
-            if (Utility.Math.AreEqual(FromThickness, ToThickness))
+            if (MathUtilities.AreEqual(FromThickness, ToThickness))
                 return FromValues;
 
             if (FromValues.Length != FromThickness.Length)
@@ -410,7 +411,7 @@ namespace APSIM.Shared.Soils
 
             // If necessary convert FromValues to a mass.
             if (MapType == MapType.Concentration)
-                FromValues = Utility.Math.Multiply(FromValues, FromThickness);
+                FromValues = MathUtilities.Multiply(FromValues, FromThickness);
             else if (MapType == MapType.UseBD)
             {
                 double[] BD = soil.Water.BD;
@@ -438,19 +439,19 @@ namespace APSIM.Shared.Soils
             double[] ToMass = new double[ToThickness.Length];
             for (int Layer = 1; Layer <= ToThickness.Length; Layer++)
             {
-                double LayerBottom = Utility.Math.Sum(ToThickness, 0, Layer, 0.0);
+                double LayerBottom = MathUtilities.Sum(ToThickness, 0, Layer, 0.0);
                 double LayerTop = LayerBottom - ToThickness[Layer - 1];
                 bool DidInterpolate;
-                double CumMassTop = Utility.Math.LinearInterpReal(LayerTop, CumDepth,
+                double CumMassTop = MathUtilities.LinearInterpReal(LayerTop, CumDepth,
                     CumMass, out DidInterpolate);
-                double CumMassBottom = Utility.Math.LinearInterpReal(LayerBottom, CumDepth,
+                double CumMassBottom = MathUtilities.LinearInterpReal(LayerBottom, CumDepth,
                     CumMass, out DidInterpolate);
                 ToMass[Layer - 1] = CumMassBottom - CumMassTop;
             }
 
             // If necessary convert FromValues back into their former units.
             if (MapType == MapType.Concentration)
-                ToMass = Utility.Math.Divide(ToMass, ToThickness);
+                ToMass = MathUtilities.Divide(ToMass, ToThickness);
             else if (MapType == MapType.UseBD)
             {
                 double[] BD = BDMapped(soil, ToThickness);

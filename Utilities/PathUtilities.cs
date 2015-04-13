@@ -1,9 +1,9 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Path.cs" company="APSIM Initiative">
+// <copyright file="PathUtilities.cs" company="APSIM Initiative">
 //     Copyright (c) APSIM Initiative
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     using System;
     using System.IO;
@@ -12,7 +12,7 @@ namespace Utility
     /// <summary>
     /// A collection of path utilities.
     /// </summary>
-    public class PathUtils
+    public class PathUtilities
     {
         /// <summary>
         /// Convert the specified URL to a path.

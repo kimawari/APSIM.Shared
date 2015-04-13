@@ -1,9 +1,9 @@
 // -----------------------------------------------------------------------
-// <copyright file="String.cs" company="APSIM Initiative">
+// <copyright file="StringUtilities.cs" company="APSIM Initiative">
 //     Copyright (c) APSIM Initiative
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     using System;
     using System.Collections;
@@ -13,7 +13,7 @@ namespace Utility
     /// <summary>
     /// Static functions for string manipulation
     /// </summary>
-    public class String
+    public class StringUtilities
     {
         /// <summary>
         /// This function converts a C string to a vb string by returning everything 
@@ -355,14 +355,14 @@ namespace Utility
             if (Value == "?")
                 ColumnType = Type.GetType("System.String");
 
-            else if (Math.IsNumericalenUS(Value))
+            else if (MathUtilities.IsNumericalenUS(Value))
                 ColumnType = Type.GetType("System.Single");
 
-            else if (Units == "" && Utility.String.IsDateTime(Value))
+            else if (Units == "" && StringUtilities.IsDateTime(Value))
                 ColumnType = Type.GetType("System.DateTime");
 
             else if ((Units.Contains("d") && Units.Contains("/") && Units.Contains("y"))
-                      || Utility.String.IsDateTime(Value))
+                      || StringUtilities.IsDateTime(Value))
                 ColumnType = Type.GetType("System.DateTime");
 
             else
@@ -596,7 +596,7 @@ namespace Utility
             Dictionary<string, string> Options = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
             for (int i = 0; i < args.Length; i++)
             {
-                StringCollection MacroBits = Utility.String.SplitStringHonouringQuotes(args[i], "=");
+                StringCollection MacroBits = SplitStringHonouringQuotes(args[i], "=");
                 if (MacroBits.Count == 2)
                     Options.Add(MacroBits[0].Replace("\"", ""), MacroBits[1].Replace("\"", ""));
             }

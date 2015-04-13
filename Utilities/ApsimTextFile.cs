@@ -1,22 +1,25 @@
-using System;
-using System.Data;
-using System.IO;
-using System.Collections;
-using System.Collections.Specialized;
-using System.ComponentModel;
-
-using Utility;
-using System.Globalization;
-using System.Collections.Generic;
-
+// -----------------------------------------------------------------------
+// <copyright file="ApsimTextFile.cs" company="APSIM Initiative">
+//     Copyright (c) APSIM Initiative
+// </copyright>
+//-----------------------------------------------------------------------
 
 // An APSIMInputFile is either a ".met" file or a ".out" file.
 // They are both text files that share the same format. 
 // These classes are used to read/write these files and create an object instance of them.
 
 
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
+    using System;
+    using System.Data;
+    using System.IO;
+    using System.Collections;
+    using System.Collections.Specialized;
+    using System.ComponentModel;
+    using System.Globalization;
+    using System.Collections.Generic;
+
     // ---------------------------------------------
     // A simple type for encapsulating a constant
     // ---------------------------------------------
@@ -61,7 +64,7 @@ namespace Utility
         /// <returns>The data table.</returns>
         public static System.Data.DataTable ToTable(string fileName)
         {
-            Utility.ApsimTextFile file = new Utility.ApsimTextFile();
+            ApsimTextFile file = new ApsimTextFile();
             file.Open(fileName);
             System.Data.DataTable data = file.ToTable();
             data.TableName = Path.GetFileNameWithoutExtension(fileName);
@@ -163,7 +166,7 @@ namespace Utility
 
             foreach (ApsimConstant c in _Constants)
             {
-                if (Utility.String.StringsAreEqual(c.Name, ConstantName))
+                if (StringUtilities.StringsAreEqual(c.Name, ConstantName))
                 {
                     return c;
                 }
@@ -186,7 +189,7 @@ namespace Utility
 
             foreach (ApsimConstant c in _Constants)
             {
-                if (Utility.String.StringsAreEqual(c.Name, ConstantName))
+                if (StringUtilities.StringsAreEqual(c.Name, ConstantName))
                     c.Value = ConstantValue;
             }
         }
@@ -247,7 +250,7 @@ namespace Utility
                 else
                 {
                     char[] whitespace = { ' ', '\t' };
-                    int PosFirstNonBlankChar = Utility.String.IndexNotOfAny(Line, whitespace);
+                    int PosFirstNonBlankChar = StringUtilities.IndexNotOfAny(Line, whitespace);
                     if (PosFirstNonBlankChar != -1 && Line[PosFirstNonBlankChar] == '(')
                     {
                         HeadingLines.Add(PreviousLine);
@@ -270,7 +273,7 @@ namespace Utility
             {
                 if (Table.Columns.IndexOf(Constant.Name) == -1)
                 {
-                    Type ColumnType = Utility.String.DetermineType(Constant.Value, "");
+                    Type ColumnType = StringUtilities.DetermineType(Constant.Value, "");
                     Table.Columns.Add(new DataColumn(Constant.Name, ColumnType));
                 }
                 for (int Row = 0; Row < Table.Rows.Count; Row++)
@@ -297,7 +300,7 @@ namespace Utility
             foreach (string ConstantLine in ConstantLines)
             {
                 string Line = ConstantLine;
-                string Comment = Utility.String.SplitOffAfterDelimiter(ref Line, "!");
+                string Comment = StringUtilities.SplitOffAfterDelimiter(ref Line, "!");
                 Comment.Trim();
                 int PosEquals = Line.IndexOf('=');
                 if (PosEquals != -1)
@@ -309,7 +312,7 @@ namespace Utility
                         Name = "Title";
                     }
                     string Value = Line.Substring(PosEquals + 1).Trim();
-                    string Unit = Utility.String.SplitOffBracketedValue(ref Value, '(', ')');
+                    string Unit = StringUtilities.SplitOffBracketedValue(ref Value, '(', ')');
                     _Constants.Add(new ApsimConstant(Name, Value, Unit, Comment));
                 }
             }
@@ -330,10 +333,10 @@ namespace Utility
                 }
                 else
                 {
-                    Headings = Utility.String.SplitStringHonouringQuotes(HeadingLines[0], " \t");
-                    Units = Utility.String.SplitStringHonouringQuotes(HeadingLines[1], " \t");
+                    Headings = StringUtilities.SplitStringHonouringQuotes(HeadingLines[0], " \t");
+                    Units = StringUtilities.SplitStringHonouringQuotes(HeadingLines[1], " \t");
                 }
-                TitleFound = TitleFound || Utility.String.IndexOfCaseInsensitive(Headings, "title") != -1;
+                TitleFound = TitleFound || StringUtilities.IndexOfCaseInsensitive(Headings, "title") != -1;
                 if (Headings.Count != Units.Count)
                     throw new Exception("The number of headings and units doesn't match in file: " + _FileName);
             }
@@ -350,9 +353,9 @@ namespace Utility
             for (int w = 0; w != Words.Count; w++)
             {
                 if (Words[w] == "?" || Words[w] == "*" || Words[w] == "")
-                    Types[w] = Utility.String.DetermineType(LookAheadForNonMissingValue(In, w), Units[w]);
+                    Types[w] = StringUtilities.DetermineType(LookAheadForNonMissingValue(In, w), Units[w]);
                 else
-                    Types[w] = Utility.String.DetermineType(Words[w], Units[w]);
+                    Types[w] = StringUtilities.DetermineType(Words[w], Units[w]);
             }
             return Types;
         }
@@ -375,7 +378,7 @@ namespace Utility
                     {
                         // Need to get a sanitised date e.g. d/M/yyyy 
                         string DateFormat = Units[w].ToLower();
-                        DateFormat = Utility.String.SplitOffBracketedValue(ref DateFormat, '(', ')');
+                        DateFormat = StringUtilities.SplitOffBracketedValue(ref DateFormat, '(', ')');
                         DateFormat = DateFormat.Replace("mmm", "MMM");
                         DateFormat = DateFormat.Replace("mm", "m");
                         DateFormat = DateFormat.Replace("dd", "d");
@@ -427,7 +430,7 @@ namespace Utility
                 Words.AddRange(Line.Split(",".ToCharArray()));
             }
             else
-                Words = Utility.String.SplitStringHonouringQuotes(Line, " \t");
+                Words = StringUtilities.SplitStringHonouringQuotes(Line, " \t");
             if (Words.Count != Headings.Count)
                 throw new Exception("Invalid number of values on line: " + Line + "\r\nin file: " + _FileName);
 

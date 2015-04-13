@@ -4,9 +4,9 @@ using System.Text;
 using System.IO;
 using ICSharpCode.SharpZipLib.Zip;
 
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
-    public class Zip
+    public class ZipUtilities
     {
         /// <summary>
         /// Zip all the specified files into the specified ZipFileName.

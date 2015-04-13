@@ -1,9 +1,9 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Web.cs" company="APSIM Initiative">
+// <copyright file="WebUtilities.cs" company="APSIM Initiative">
 //     Copyright (c) APSIM Initiative
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     using System;
     using System.IO;
@@ -15,7 +15,7 @@ namespace Utility
     /// <summary>
     /// A class containing some web utilities
     /// </summary>
-    class Web
+    public class WebUtilities
     {
         /// <summary>
         ///  Upload a file via ftp

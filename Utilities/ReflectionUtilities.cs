@@ -1,23 +1,23 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Reflection.cs" company="APSIM Initiative">
+// <copyright file="ReflectionUtilities.cs" company="APSIM Initiative">
 //     Copyright (c) APSIM Initiative
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     using System;
     using System.CodeDom.Compiler;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Reflection;
     using System.Runtime.Serialization;
     using System.Runtime.Serialization.Formatters.Binary;
-    using System.Globalization;
 
     /// <summary>
     /// Utility class with reflection functions
     /// </summary>
-    public class Reflection
+    public class ReflectionUtilities
     {
         /// <summary>
         /// Returns true if the specified type T is of type TypeName
@@ -155,11 +155,11 @@ namespace Utility
         /// Gets all Type instances matching the specified class name with no namespace qualified class name.
         /// Will not throw. May return empty array.
         /// </summary>
-        public static Type[] GetTypeWithoutNameSpace(string className)
+        public static Type[] GetTypeWithoutNameSpace(string className, Assembly assembly)
         {
             List<Type> returnVal = new List<Type>();
 
-            Type[] assemblyTypes = Assembly.GetExecutingAssembly().GetTypes();
+            Type[] assemblyTypes = assembly.GetTypes();
             for (int j = 0; j < assemblyTypes.Length; j++)
             {
                 if (assemblyTypes[j].Name == className)
@@ -329,7 +329,9 @@ namespace Utility
                         Params.ReferencedAssemblies.Add("System.dll");
                         Params.ReferencedAssemblies.Add("System.Xml.dll");
                         Params.ReferencedAssemblies.Add("System.Windows.Forms.dll");
+                        //Params.ReferencedAssemblies.Add("APSIM.Shared.dll");
                         Params.ReferencedAssemblies.Add(System.IO.Path.Combine(Assembly.GetExecutingAssembly().Location));
+
                         if (Assembly.GetCallingAssembly() != Assembly.GetExecutingAssembly())
                             Params.ReferencedAssemblies.Add(System.IO.Path.Combine(Assembly.GetCallingAssembly().Location));
                         Params.TempFiles = new TempFileCollection(Path.GetTempPath());  // ensure that any temp files are in a writeable area
@@ -395,9 +397,9 @@ namespace Utility
             {
                 string[] stringValues = stringValue.ToString().Split(",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                 if (type == typeof(double[]))
-                    return Utility.Math.StringsToDoubles(stringValues);
+                    return MathUtilities.StringsToDoubles(stringValues);
                 else if (type == typeof(int[]))
-                    return Utility.Math.StringsToDoubles(stringValues);
+                    return MathUtilities.StringsToDoubles(stringValues);
                 else if (type == typeof(string[]))
                     return stringValues;
                 else

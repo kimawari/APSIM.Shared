@@ -1,9 +1,9 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Date.cs" company="APSIM Initiative">
+// <copyright file="DateUtilities.cs" company="APSIM Initiative">
 //     Copyright (c) APSIM Initiative
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     using System;
     using System.Collections.Generic;
@@ -12,7 +12,7 @@ namespace Utility
     /// <summary>
     /// Some date manipulation routines, transcribed from their Fortran counterparts
     /// </summary>
-    public class Date
+    public class DateUtilities
     {
         /// <summary>
         /// a list of month names in lower case.
@@ -103,7 +103,7 @@ namespace Utility
                 if (posDelimiter == -1)
                     throw new ArgumentException();
 
-                int month = Utility.String.IndexOfCaseInsensitive(LowerCaseMonths, ddMMM.Substring(posDelimiter + 1)) + 1;
+                int month = StringUtilities.IndexOfCaseInsensitive(LowerCaseMonths, ddMMM.Substring(posDelimiter + 1)) + 1;
                 int day = Convert.ToInt32(ddMMM.Substring(0, posDelimiter));
                 return new DateTime(year, month, day);
 

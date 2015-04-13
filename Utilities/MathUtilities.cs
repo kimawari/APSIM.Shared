@@ -1,21 +1,21 @@
 // -----------------------------------------------------------------------
-// <copyright file="Date.cs" company="APSIM Initiative">
+// <copyright file="MathUtilities.cs" company="APSIM Initiative">
 //     Copyright (c) APSIM Initiative
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.Data;
+    using System.Globalization;
     using System.Linq;
 
     /// <summary>
     /// Various math utilities.
     /// </summary>
-    public class Math
+    public class MathUtilities
     {
         /// <summary>
         /// A constant tolerance used by many utilities.
@@ -287,7 +287,7 @@ namespace Utility
         {
             double result = dInitialValue;
             if (iStartIndex < 0)
-                throw new Exception("Utility.Math.Sum: End index or start index is out of range");
+                throw new Exception("MathUtilities.Sum: End index or start index is out of range");
             int iIndex = 0;
             foreach (double Value in Values)
             {
@@ -314,7 +314,7 @@ namespace Utility
 
             // find where x lies in the x coordinate
             if (dXCoordinate.Length == 0 || dYCoordinate.Length == 0 || dXCoordinate.Length != dYCoordinate.Length)
-                throw new Exception("Utility.Math.LinearInterpReal: Lengths of passed in arrays are incorrect");
+                throw new Exception("MathUtilities.LinearInterpReal: Lengths of passed in arrays are incorrect");
 
             int pos = Array.BinarySearch(dXCoordinate, dX);
             if (pos == -1)
@@ -524,7 +524,7 @@ namespace Utility
             {
                 foreach (double Value in Values)
                 {
-                    if (Value != Math.MissingValue && !double.IsNaN(Value))
+                    if (Value != MissingValue && !double.IsNaN(Value))
                         return true;
                 }
             }
@@ -559,7 +559,7 @@ namespace Utility
             for (int Index = 0; Index != Values.Count; Index++)
             {
                 if (Values[Index].ToString() == "" || Values[Index].ToString() == "NaN")
-                    ReturnValues[Index] = Math.MissingValue;
+                    ReturnValues[Index] = MissingValue;
                 else
                     ReturnValues[Index] = Convert.ToDouble(Values[Index]);
             }
@@ -798,7 +798,7 @@ namespace Utility
             stats.NSE = 1 - SumOfSquaredResiduals / SumOfSquaredSD;                    // Nash-Sutcliff efficiency
             stats.ME = 1 / (double)stats.n * SumOfResiduals;                         // Mean error
             stats.MAE = 1 / (double)stats.n * SumOfAbsResiduals;                     // Mean Absolute Error
-            stats.RSR = Math.Sqr(SumOfSquaredOPResiduals) / Math.Sqr(SumOfSquaredSD);  // Root mean square error to Standard deviation Ratio
+            stats.RSR = Sqr(SumOfSquaredOPResiduals) / Sqr(SumOfSquaredSD);  // Root mean square error to Standard deviation Ratio
             
             return stats;
         }
@@ -876,7 +876,7 @@ namespace Utility
             // get the max and min altitude of sun for today and limit
             // the twilight altitude between these.
 
-            if (Math.FloatsAreEqual(System.Math.Abs(Latitude), 90.0))
+            if (FloatsAreEqual(System.Math.Abs(Latitude), 90.0))
             {
                 coshra = Sign(1.0, -dec) * Sign(1.0, Latitude);
             }
@@ -1236,7 +1236,7 @@ namespace Utility
                 if (double.IsNaN(L1[i]) && double.IsNaN(L2[i]))
                 {
                 }
-                else if (!Math.FloatsAreEqual(L1[i], L2[i]))
+                else if (!FloatsAreEqual(L1[i], L2[i]))
                 {
                     return false;
                 }
@@ -1385,7 +1385,7 @@ namespace Utility
         /// <remarks>
         /// 
         /// Assumes a a date can be derived from the data table using the 
-        /// Utility.DataTable.GetDateFromRow function.
+        /// DataTable.GetDateFromRow function.
         /// </remarks>
         /// <param name="table">The data table containing the data</param>
         /// <param name="fieldName">The field name to look at</param>
@@ -1398,12 +1398,12 @@ namespace Utility
             {
                 // This first query gives monthly totals for each year.
                 var result = from row in table.AsEnumerable()
-                             where (Utility.DataTable.GetDateFromRow(row) >= firstDate &&
-                                    Utility.DataTable.GetDateFromRow(row) <= lastDate)
+                             where (DataTableUtilities.GetDateFromRow(row) >= firstDate &&
+                                    DataTableUtilities.GetDateFromRow(row) <= lastDate)
                              group row by new
                              {
-                                 Year = Utility.DataTable.GetDateFromRow(row).Year,
-                                 Month = Utility.DataTable.GetDateFromRow(row).Month,
+                                 Year = DataTableUtilities.GetDateFromRow(row).Year,
+                                 Month = DataTableUtilities.GetDateFromRow(row).Month,
                              } into grp
                              select new
                              {
@@ -1445,7 +1445,7 @@ namespace Utility
         /// </summary>
         /// <remarks>
         /// Assumes a a date can be derived from the data table using the 
-        /// Utility.DataTable.GetDateFromRow function.
+        /// DataTable.GetDateFromRow function.
         /// </remarks>
         /// <param name="table">The data table containing the data</param>
         /// <param name="fieldName">The field name to look at</param>
@@ -1457,11 +1457,11 @@ namespace Utility
             if (table.Rows.Count > 0)
             {
                 var result = from row in table.AsEnumerable()
-                             where (Utility.DataTable.GetDateFromRow(row) >= firstDate &&
-                                    Utility.DataTable.GetDateFromRow(row) <= lastDate)
+                             where (DataTableUtilities.GetDateFromRow(row) >= firstDate &&
+                                    DataTableUtilities.GetDateFromRow(row) <= lastDate)
                              group row by new
                              {
-                                 Year = Utility.DataTable.GetDateFromRow(row).Year,
+                                 Year = DataTableUtilities.GetDateFromRow(row).Year,
                              } into grp
                              select new
                              {
@@ -1484,7 +1484,7 @@ namespace Utility
         /// </summary>
         /// <remarks>
         /// Assumes a a date can be derived from the data table using the 
-        /// Utility.DataTable.GetDateFromRow function.
+        /// DataTable.GetDateFromRow function.
         /// </remarks>
         /// <param name="table">The data table containing the data</param>
         /// <param name="fieldName">The field name to look at</param>
@@ -1496,12 +1496,12 @@ namespace Utility
             if (table.Rows.Count > 0)
             {
                 var result = from row in table.AsEnumerable()
-                             where (Utility.DataTable.GetDateFromRow(row) >= firstDate &&
-                                    Utility.DataTable.GetDateFromRow(row) <= lastDate)
+                             where (DataTableUtilities.GetDateFromRow(row) >= firstDate &&
+                                    DataTableUtilities.GetDateFromRow(row) <= lastDate)
                              group row by new
                              {
-                                 Month = Utility.DataTable.GetDateFromRow(row).Month,
-                                 Year = Utility.DataTable.GetDateFromRow(row).Year,
+                                 Month = DataTableUtilities.GetDateFromRow(row).Month,
+                                 Year = DataTableUtilities.GetDateFromRow(row).Year,
                              } into grp
                              select new
                              {

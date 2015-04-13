@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Utility
+namespace APSIM.Shared.Utilities
 {
     /// <summary>
     /// 
@@ -513,7 +513,7 @@ namespace Utility
                 case "/":
                     {
                         if (sym1.m_values != null && sym2.m_values != null)
-                            result.m_values = Utility.Math.Divide(sym1.m_values, sym2.m_values);
+                            result.m_values = MathUtilities.Divide(sym1.m_values, sym2.m_values);
                         else
                         {
                             if (sym2.m_value > 0)
@@ -528,7 +528,7 @@ namespace Utility
                     }
                 case "*":
                     if (sym1.m_values != null && sym2.m_values != null)
-                        result.m_values = Utility.Math.Multiply(sym1.m_values, sym2.m_values);
+                        result.m_values = MathUtilities.Multiply(sym1.m_values, sym2.m_values);
                     else
                         result.m_value = sym1.m_value * sym2.m_value;
                     break;
@@ -537,13 +537,13 @@ namespace Utility
                     break;
                 case "+":
                     if (sym1.m_values != null && sym2.m_values != null)
-                        result.m_values = Utility.Math.Add(sym1.m_values, sym2.m_values);
+                        result.m_values = MathUtilities.Add(sym1.m_values, sym2.m_values);
                     else
                         result.m_value = sym1.m_value + sym2.m_value;
                     break;
                 case "-":
                     if (sym1.m_values != null && sym2.m_values != null)
-                        result.m_values = Utility.Math.Subtract(sym1.m_values, sym2.m_values);
+                        result.m_values = MathUtilities.Subtract(sym1.m_values, sym2.m_values);
                     else
                         result.m_value = sym1.m_value - sym2.m_value;
                     break;
@@ -573,7 +573,7 @@ namespace Utility
                     {
                         result.m_value = ((Symbol)args[0]).m_value;
                         double[] Values = ((Symbol)args[0]).m_values;
-                        result.m_value = Utility.Math.Sum(Values);
+                        result.m_value = MathUtilities.Sum(Values);
                         result.m_name = name;
                         result.m_values = null;
                     }
@@ -768,7 +768,7 @@ namespace Utility
                     {
                         result.m_value = ((Symbol)args[0]).m_value;
                         double[] Values = ((Symbol)args[0]).m_values;
-                        result.m_value = Utility.Math.Sum(Values);
+                        result.m_value = MathUtilities.Sum(Values);
                         result.m_name = name;
                         result.m_values = null;
                     }
@@ -846,7 +846,7 @@ namespace Utility
                     {
                         result.m_value = ((Symbol)args[0]).m_value;
                         double[] Values = ((Symbol)args[0]).m_values;
-                        result.m_value = Utility.Math.Min(Values);
+                        result.m_value = MathUtilities.Min(Values);
                         result.m_name = name;
                         result.m_values = null;
                     }
@@ -861,7 +861,7 @@ namespace Utility
                     {
                         result.m_value = ((Symbol)args[0]).m_value;
                         double[] Values = ((Symbol)args[0]).m_values;
-                        result.m_value = Utility.Math.Max(Values);
+                        result.m_value = MathUtilities.Max(Values);
                         result.m_name = name;
                         result.m_values = null;
                     }
