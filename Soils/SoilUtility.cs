@@ -99,6 +99,81 @@ namespace APSIM.Shared.Soils
             return CumThickness;
         }
 
+        #region PAWC
+
+        /// <summary>Return the plant available water CAPACITY at standard thickness. Units: mm/mm</summary>
+        /// <param name="soil">The soil to calculate PAWC for.</param>
+        public static double[] PAWC(Soil soil)
+        {
+            return PAWC(soil.Water.Thickness, soil.Water.LL15, soil.Water.DUL, null);
+        }
+
+        /// <summary>Return the plant available water CAPACITY for the specified crop at standard thickness. Units: mm/mm</summary>
+        /// <param name="soil">The soil to calculate PAWC for.</param>
+        /// <param name="crop">The crop.</param>
+        /// <returns></returns>
+        public static double[] PAWCCrop(Soil soil, SoilCrop crop)
+        {
+            SoilCrop cropAtStandardThickness = CropAtStandardThicknesses(soil, crop);
+            return PAWC(soil.Water.Thickness,
+                        cropAtStandardThickness.LL,
+                        soil.Water.DUL,
+                        cropAtStandardThickness.XF);
+        }
+
+        /// <summary>Return the plant available water CAPACITY at standard thickness. Units: mm</summary>
+        /// <param name="soil">The soil to calculate PAWC for.</param>
+        public static double[] PAWCmm(Soil soil)
+        {
+            double[] pawc = PAWC(soil);
+            return MathUtilities.Multiply(pawc, soil.Water.Thickness);
+        }
+        
+        /// <summary>Return the plant available water CAPACITY for the specified crop at standard thickness. Units: mm</summary>
+        /// <param name="soil">The soil to calculate PAWC for.</param>
+        /// <param name="crop">The crop.</param>
+        /// <returns></returns>
+        public static double[] PAWCCropmm(Soil soil, SoilCrop crop)
+        {
+            double[] pawc = PAWCCrop(soil, crop);
+            return MathUtilities.Multiply(pawc, soil.Water.Thickness);
+        }
+
+        /// <summary>
+        /// Calculate plant available water CAPACITY. Units: mm/mm
+        /// </summary>
+        /// <param name="Thickness">The thickness.</param>
+        /// <param name="LL">The ll.</param>
+        /// <param name="DUL">The dul.</param>
+        /// <param name="XF">The xf.</param>
+        /// <returns></returns>
+        public static double[] PAWC(double[] Thickness, double[] LL, double[] DUL, double[] XF)
+        {
+            double[] PAWC = new double[Thickness.Length];
+            if (LL == null)
+                return PAWC;
+            if (Thickness.Length != DUL.Length || Thickness.Length != LL.Length)
+                throw new Exception("Number of soil layers in SoilWater is different to number of layers in SoilWater.Crop");
+
+            for (int layer = 0; layer != Thickness.Length; layer++)
+                if (DUL[layer] == MathUtilities.MissingValue ||
+                    LL[layer] == MathUtilities.MissingValue)
+                    PAWC[layer] = 0;
+                else
+                    PAWC[layer] = Math.Max(DUL[layer] - LL[layer], 0.0);
+
+            bool ZeroXFFound = false;
+            for (int layer = 0; layer != Thickness.Length; layer++)
+                if (ZeroXFFound || XF != null && XF[layer] == 0)
+                {
+                    ZeroXFFound = true;
+                    PAWC[layer] = 0;
+                }
+            return PAWC;
+        }
+
+        #endregion
+
         #region Crop
 
         /// <summary>
@@ -145,7 +220,7 @@ namespace APSIM.Shared.Soils
         #region Sample
 
         /// <summary>
-        /// Sws the specified soil.
+        /// Calculates the specified soil water (mm/mm)
         /// </summary>
         /// <param name="soil">The soil.</param>
         /// <param name="sample">The sample.</param>
@@ -669,6 +744,40 @@ namespace APSIM.Shared.Soils
             return Map(soil.Water.DUL, soil.Water.Thickness, ToThickness, MapType.Concentration, soil, soil.Water.DUL.Last());
         }
 
+        /// <summary>Convert the crop to standard thicknesses.</summary>
+        /// <param name="soil">The soil the crop belongs to.</param>
+        /// <param name="crop">The crop to convert</param>
+        /// <returns>The new soil crop at standard thicknesses.</returns>
+        public static SoilCrop CropAtStandardThicknesses(Soil soil, SoilCrop crop)
+        {
+            if (MathUtilities.AreEqual(soil.Water.Thickness, crop.Thickness))
+                return crop;
+
+            SoilCrop newcrop = new SoilCrop();
+            newcrop.Thickness = soil.Water.Thickness;
+            newcrop.LL = Map(crop.LL, crop.Thickness, soil.Water.Thickness, MapType.Concentration, soil, LastValue(crop.LL));
+            newcrop.KL = Map(crop.KL, crop.Thickness, soil.Water.Thickness, MapType.Concentration, soil, LastValue(crop.KL));
+            newcrop.XF = Map(crop.XF, crop.Thickness, soil.Water.Thickness, MapType.Concentration, soil, LastValue(crop.XF));
+
+            for (int i = 0; i < newcrop.LL.Length; i++)
+            {
+                newcrop.LL[i] = Math.Max(newcrop.LL[i], soil.Water.AirDry[i]);
+                newcrop.LL[i] = Math.Min(newcrop.LL[i], soil.Water.DUL[i]);
+            }
+            return newcrop;
+        }
+
+        /// <summary>Return the last value that isn't a missing value.</summary>
+        /// <param name="Values">The values.</param>
+        /// <returns></returns>
+        private static double LastValue(double[] Values)
+        {
+            if (Values == null) return double.NaN;
+            for (int i = Values.Length - 1; i >= 0; i--)
+                if (!double.IsNaN(Values[i]))
+                    return Values[i];
+            return double.NaN;
+        }
         #endregion
     }
 }
