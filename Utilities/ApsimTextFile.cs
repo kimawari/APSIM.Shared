@@ -312,6 +312,8 @@ namespace APSIM.Shared.Utilities
             System.Data.DataTable Data = new System.Data.DataTable();
             Data.TableName = "Data";
 
+            ArrayList addedConstants = new ArrayList();
+
             StringCollection Words = new StringCollection();
             bool CheckHeadingsExist = true;
             while (GetNextLine(In, ref Words))
@@ -320,6 +322,15 @@ namespace APSIM.Shared.Utilities
                 {
                     for (int w = 0; w != ColumnTypes.Length; w++)
                         Data.Columns.Add(new DataColumn(Headings[w], ColumnTypes[w]));
+                    foreach (ApsimConstant Constant in Constants)
+                    {
+                        if (Data.Columns.IndexOf(Constant.Name) == -1)
+                        {
+                            Type ColumnType = StringUtilities.DetermineType(Constant.Value, "");
+                            Data.Columns.Add(new DataColumn(Constant.Name, ColumnType));
+                            addedConstants.Add(new ApsimConstant(Constant.Name, Constant.Value, Constant.Units, ColumnType.ToString()));
+                        }
+                    }
                 }
                 DataRow NewMetRow = Data.NewRow();
                 object[] Values = ConvertWordsToObjects(Words, ColumnTypes);
@@ -329,6 +340,14 @@ namespace APSIM.Shared.Utilities
                     int TableColumnNumber = NewMetRow.Table.Columns.IndexOf(Headings[w]);
                     if (!Convert.IsDBNull(Values[TableColumnNumber]))
                         NewMetRow[TableColumnNumber] = Values[TableColumnNumber];
+                }
+
+                foreach (ApsimConstant Constant in addedConstants)
+                {
+                    if (Constant.Comment == typeof(Single).ToString() || Constant.Comment == typeof(Double).ToString())
+                        NewMetRow[Constant.Name] = Double.Parse(Constant.Value);
+                    else
+                        NewMetRow[Constant.Name] = Constant.Value;
                 }
                 Data.Rows.Add(NewMetRow);
                 CheckHeadingsExist = false;
