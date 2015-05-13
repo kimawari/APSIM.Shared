@@ -19,6 +19,7 @@ namespace APSIM.Shared.Utilities
     using System.ComponentModel;
     using System.Globalization;
     using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// A simple type for encapsulating a constant
@@ -307,7 +308,7 @@ namespace APSIM.Shared.Utilities
         /// Convert this file to a DataTable.
         /// </summary>
         /// <returns></returns>
-        public System.Data.DataTable ToTable()
+        public System.Data.DataTable ToTable(List<string>addConsts = null)
         {
             System.Data.DataTable Data = new System.Data.DataTable();
             Data.TableName = "Data";
@@ -322,13 +323,17 @@ namespace APSIM.Shared.Utilities
                 {
                     for (int w = 0; w != ColumnTypes.Length; w++)
                         Data.Columns.Add(new DataColumn(Headings[w], ColumnTypes[w]));
-                    foreach (ApsimConstant Constant in Constants)
+
+                    if (addConsts != null)
                     {
-                        if (Data.Columns.IndexOf(Constant.Name) == -1)
+                        foreach (ApsimConstant Constant in Constants)
                         {
-                            Type ColumnType = StringUtilities.DetermineType(Constant.Value, "");
-                            Data.Columns.Add(new DataColumn(Constant.Name, ColumnType));
-                            addedConstants.Add(new ApsimConstant(Constant.Name, Constant.Value, Constant.Units, ColumnType.ToString()));
+                            if (addConsts.Contains(Constant.Name, StringComparer.OrdinalIgnoreCase) && Data.Columns.IndexOf(Constant.Name) == -1)
+                            {
+                                Type ColumnType = StringUtilities.DetermineType(Constant.Value, "");
+                                Data.Columns.Add(new DataColumn(Constant.Name, ColumnType));
+                                addedConstants.Add(new ApsimConstant(Constant.Name, Constant.Value, Constant.Units, ColumnType.ToString()));
+                            }
                         }
                     }
                 }
