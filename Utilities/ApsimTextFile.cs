@@ -19,6 +19,7 @@ namespace APSIM.Shared.Utilities
     using System.ComponentModel;
     using System.Globalization;
     using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// A simple type for encapsulating a constant
@@ -307,10 +308,12 @@ namespace APSIM.Shared.Utilities
         /// Convert this file to a DataTable.
         /// </summary>
         /// <returns></returns>
-        public System.Data.DataTable ToTable()
+        public System.Data.DataTable ToTable(List<string>addConsts = null)
         {
             System.Data.DataTable Data = new System.Data.DataTable();
             Data.TableName = "Data";
+
+            ArrayList addedConstants = new ArrayList();
 
             StringCollection Words = new StringCollection();
             bool CheckHeadingsExist = true;
@@ -320,6 +323,19 @@ namespace APSIM.Shared.Utilities
                 {
                     for (int w = 0; w != ColumnTypes.Length; w++)
                         Data.Columns.Add(new DataColumn(Headings[w], ColumnTypes[w]));
+
+                    if (addConsts != null)
+                    {
+                        foreach (ApsimConstant Constant in Constants)
+                        {
+                            if (addConsts.Contains(Constant.Name, StringComparer.OrdinalIgnoreCase) && Data.Columns.IndexOf(Constant.Name) == -1)
+                            {
+                                Type ColumnType = StringUtilities.DetermineType(Constant.Value, "");
+                                Data.Columns.Add(new DataColumn(Constant.Name, ColumnType));
+                                addedConstants.Add(new ApsimConstant(Constant.Name, Constant.Value, Constant.Units, ColumnType.ToString()));
+                            }
+                        }
+                    }
                 }
                 DataRow NewMetRow = Data.NewRow();
                 object[] Values = ConvertWordsToObjects(Words, ColumnTypes);
@@ -329,6 +345,14 @@ namespace APSIM.Shared.Utilities
                     int TableColumnNumber = NewMetRow.Table.Columns.IndexOf(Headings[w]);
                     if (!Convert.IsDBNull(Values[TableColumnNumber]))
                         NewMetRow[TableColumnNumber] = Values[TableColumnNumber];
+                }
+
+                foreach (ApsimConstant Constant in addedConstants)
+                {
+                    if (Constant.Comment == typeof(Single).ToString() || Constant.Comment == typeof(Double).ToString())
+                        NewMetRow[Constant.Name] = Double.Parse(Constant.Value);
+                    else
+                        NewMetRow[Constant.Name] = Constant.Value;
                 }
                 Data.Rows.Add(NewMetRow);
                 CheckHeadingsExist = false;
