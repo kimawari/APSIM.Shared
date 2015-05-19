@@ -122,11 +122,17 @@ namespace APSIM.Shared.Utilities
         public static System.Data.DataTable ToTable(string fileName)
         {
             ApsimTextFile file = new ApsimTextFile();
-            file.Open(fileName);
-            System.Data.DataTable data = file.ToTable();
-            data.TableName = Path.GetFileNameWithoutExtension(fileName);
-            file.Close();
-            return data;
+            try
+            {
+                file.Open(fileName);
+                System.Data.DataTable data = file.ToTable();
+                data.TableName = Path.GetFileNameWithoutExtension(fileName);
+                return data;
+            }
+            finally
+            {
+                file.Close();
+            }
         }
 
         /// <summary>

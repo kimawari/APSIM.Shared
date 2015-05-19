@@ -24,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <DocumentationFile>bin\Debug\APSIM.Shared.XML</DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -53,7 +54,7 @@
     <Compile Include="Soils\Soil.cs" />
     <Compile Include="Soils\SoilCrop.cs" />
     <Compile Include="Soils\SoilOrganicMatter.cs" />
-    <Compile Include="Soils\SoilUtility.cs" />
+    <Compile Include="Soils\SoilUtilities.cs" />
     <Compile Include="Soils\SoilWater.cs" />
     <Compile Include="Soils\Water.cs" />
     <Compile Include="Utilities\ApsimTextFile.cs" />

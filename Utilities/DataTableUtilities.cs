@@ -513,7 +513,8 @@ namespace APSIM.Shared.Utilities
             {
                 for (int i = startColumnIndex; i < data.Columns.Count; i++)
                 {
-                    if (i > startColumnIndex) st.Append(delimiter);
+                    if (i > startColumnIndex) 
+                        st.Append(delimiter);
                     WriteObject(Row[i], st, columnWidths[i]);
                 }
                 st.Append(Environment.NewLine);
@@ -535,10 +536,15 @@ namespace APSIM.Shared.Utilities
                 return;
             }
             else if (obj is float || obj is double)
-                value = string.Format("{0:F3}", obj);
-            else 
-                value = obj.ToString();
-
+            {
+                string format = "{0," + width.ToString() + ":F3}";
+                value = string.Format(format, obj);
+            }
+            else
+            {
+                string format = "{0," + width.ToString() + "}";
+                value = string.Format(format, obj);
+            }
             //if (value.Length < width)
             //    st.Append(new string(' ', width - value.Length));
             st.Append(value);
