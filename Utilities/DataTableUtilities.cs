@@ -482,17 +482,26 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         static public string DataTableToText(System.Data.DataTable data, int startColumnIndex, string delimiter, bool showHeadings)
         {
+            // Convert the data table to a table of strings. This will make it easier for
+            // calculating widths.
+            DataTable stringTable = new DataTable();
+            foreach (DataColumn col in data.Columns)
+                stringTable.Columns.Add(col.ColumnName, typeof(string));
+            foreach (DataRow row in data.Rows)
+            {
+                DataRow newRow = stringTable.NewRow();
+                foreach (DataColumn column in data.Columns)
+                    newRow[column.Ordinal] = ConvertObjectToString(row[column]);
+                stringTable.Rows.Add(newRow);
+            }
+
             // Need to work out column widths
             List<int> columnWidths = new List<int>();
-            foreach (DataColumn column in data.Columns)
+            foreach (DataColumn column in stringTable.Columns)
             {
                 int width = column.ColumnName.Length;
-                foreach (DataRow row in data.Rows)
+                foreach (DataRow row in stringTable.Rows)
                     width = System.Math.Max(width, row[column].ToString().Length);
-
-                // If the last column width > 50 then make it an auto sizing column
-                if (column == data.Columns[data.Columns.Count - 1] && width > 50)
-                    width = 30;
                 columnWidths.Add(width);
             }
 
@@ -500,22 +509,23 @@ namespace APSIM.Shared.Utilities
             StringBuilder st = new StringBuilder(100000);
             if (showHeadings)
             {
-                for (int i = startColumnIndex; i < data.Columns.Count; i++)
+                for (int i = startColumnIndex; i < stringTable.Columns.Count; i++)
                 {
-                    if (i > startColumnIndex) st.Append(delimiter);
-                    WriteObject(data.Columns[i].ColumnName, st, columnWidths[i]);
+                    if (i > startColumnIndex) 
+                        st.Append(delimiter);
+                    st.AppendFormat("{0," + columnWidths[i] + "}", stringTable.Columns[i].ColumnName);
                 }
                 st.Append(Environment.NewLine);
             }
 
             // Write out each row.
-            foreach (DataRow Row in data.Rows)
+            foreach (DataRow row in stringTable.Rows)
             {
-                for (int i = startColumnIndex; i < data.Columns.Count; i++)
+                for (int i = startColumnIndex; i < stringTable.Columns.Count; i++)
                 {
                     if (i > startColumnIndex) 
                         st.Append(delimiter);
-                    WriteObject(Row[i], st, columnWidths[i]);
+                    st.AppendFormat("{0," + columnWidths[i] + "}", row[i]);
                 }
                 st.Append(Environment.NewLine);
             }
@@ -523,31 +533,19 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
-        /// Write the specified object to the specified StringBuilder using the field width.
+        /// Convert the specified object to a string.
         /// </summary>
-        private static void WriteObject(object obj, StringBuilder st, int width)
+        private static string ConvertObjectToString(object obj)
         {
-            string value = "";
             if (obj is DateTime)
             {
                 DateTime D = Convert.ToDateTime(obj);
-                value = (D.ToShortDateString());
-                st.Append(value);
-                return;
+                return D.ToString("yyyy-MM-dd");
             }
             else if (obj is float || obj is double)
-            {
-                string format = "{0," + width.ToString() + ":F3}";
-                value = string.Format(format, obj);
-            }
+                return string.Format("{0:F3}", obj);
             else
-            {
-                string format = "{0," + width.ToString() + "}";
-                value = string.Format(format, obj);
-            }
-            //if (value.Length < width)
-            //    st.Append(new string(' ', width - value.Length));
-            st.Append(value);
+                return obj.ToString();
         }
     }
 }

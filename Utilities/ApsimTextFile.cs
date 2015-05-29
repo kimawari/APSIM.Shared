@@ -388,6 +388,12 @@ namespace APSIM.Shared.Utilities
                 }
                 else
                 {
+                    if (CSV)
+                    {
+                        HeadingLines.Add(Line);
+                        break;
+                    }
+
                     char[] whitespace = { ' ', '\t' };
                     int PosFirstNonBlankChar = StringUtilities.IndexNotOfAny(Line, whitespace);
                     if (PosFirstNonBlankChar != -1 && Line[PosFirstNonBlankChar] == '(')
@@ -458,20 +464,19 @@ namespace APSIM.Shared.Utilities
                     _Constants.Add(new ApsimConstant(Name, Value, Unit, Comment));
                 }
             }
-            if (HeadingLines.Count >= 2)
+            if (HeadingLines.Count >= 1)
             {
                 if (CSV)
                 {
                     HeadingLines[0] = HeadingLines[0].TrimEnd(',');
-                    HeadingLines[1] = HeadingLines[1].TrimEnd(',');
                     Headings = new StringCollection();
                     Units = new StringCollection();
                     Headings.AddRange(HeadingLines[0].Split(",".ToCharArray()));
-                    Units.AddRange(HeadingLines[1].Split(",".ToCharArray()));
                     for (int i = 0; i < Headings.Count; i++)
+                    {
                         Headings[i] = Headings[i].Trim();
-                    for (int i = 0; i < Units.Count; i++)
-                        Units[i] = Units[i].Trim();
+                        Units.Add("()");
+                    }
                 }
                 else
                 {
