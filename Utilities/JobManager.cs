@@ -93,7 +93,7 @@ namespace APSIM.Shared.Utilities
 
             if (waitUntilFinished)
             {
-                while (schedulerThread.IsBusy)
+                while (MoreJobsToRun)
                     Thread.Sleep(200);
             }
         }

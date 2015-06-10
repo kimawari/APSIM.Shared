@@ -178,38 +178,39 @@ namespace APSIM.Shared.Utilities
         {
             _Constants.Clear();
             ReadApsimHeader(In);
-            if (Headings == null || Units == null)
-                throw new Exception("Cannot find headings and units line in " + _FileName);
-            FirstLinePosition = In.Position;
-
-            // Read in first line.
-            StringCollection Words = new StringCollection();
-            GetNextLine(In, ref Words);
-            ColumnTypes = DetermineColumnTypes(In, Words);
-
-            // Get first date.
-            object[] Values = ConvertWordsToObjects(Words, ColumnTypes);
-            _FirstDate = GetDateFromValues(Values);
-
-            // Now we need to seek to the end of file and find the last full line in the file.
-            In.Seek(0, SeekOrigin.End);
-            if (In.Position >= 1000 && In.Position - 1000 > FirstLinePosition)
+            if (Headings != null)
             {
-                In.Seek(-1000, SeekOrigin.End);
-                In.ReadLine(); // throw away partial line.
-            }
-            else
+                FirstLinePosition = In.Position;
+
+                // Read in first line.
+                StringCollection Words = new StringCollection();
+                GetNextLine(In, ref Words);
+                ColumnTypes = DetermineColumnTypes(In, Words);
+
+                // Get first date.
+                object[] Values = ConvertWordsToObjects(Words, ColumnTypes);
+                _FirstDate = GetDateFromValues(Values);
+
+                // Now we need to seek to the end of file and find the last full line in the file.
+                In.Seek(0, SeekOrigin.End);
+                if (In.Position >= 1000 && In.Position - 1000 > FirstLinePosition)
+                {
+                    In.Seek(-1000, SeekOrigin.End);
+                    In.ReadLine(); // throw away partial line.
+                }
+                else
+                    In.Seek(FirstLinePosition, SeekOrigin.Begin);
+                while (GetNextLine(In, ref Words))
+                { }
+
+                // Get the date from the last line.
+                if (Words.Count == 0)
+                    throw new Exception("Cannot find last row of file: " + _FileName);
+                Values = ConvertWordsToObjects(Words, ColumnTypes);
+                _LastDate = GetDateFromValues(Values);
+
                 In.Seek(FirstLinePosition, SeekOrigin.Begin);
-            while (GetNextLine(In, ref Words))
-            { }
-
-            // Get the date from the last line.
-            if (Words.Count == 0)
-                throw new Exception("Cannot find last row of file: " + _FileName);
-            Values = ConvertWordsToObjects(Words, ColumnTypes);
-            _LastDate = GetDateFromValues(Values);
-
-            In.Seek(FirstLinePosition, SeekOrigin.Begin);
+            }
         }
 
         /// <summary>
@@ -460,7 +461,9 @@ namespace APSIM.Shared.Utilities
                         Name = "Title";
                     }
                     string Value = Line.Substring(PosEquals + 1).Trim();
-                    string Unit = StringUtilities.SplitOffBracketedValue(ref Value, '(', ')');
+                    string Unit = string.Empty;
+                    if (Name != "Title")
+                        Unit = StringUtilities.SplitOffBracketedValue(ref Value, '(', ')');
                     _Constants.Add(new ApsimConstant(Name, Value, Unit, Comment));
                 }
             }

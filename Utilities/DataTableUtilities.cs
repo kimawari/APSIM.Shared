@@ -547,5 +547,44 @@ namespace APSIM.Shared.Utilities
             else
                 return obj.ToString();
         }
+
+        /// <summary>Merges the columns and rows from one specified table to another.</summary>
+        /// <remarks>The builtin DataTable.merge needs the fields to be the same type.
+        /// This method will instead try and conver the fields.</remarks>
+        /// <param name="from">The from table</param>
+        /// <param name="to">The destination table.</param>
+        public static void CopyRows(DataTable from, DataTable to)
+        {
+            foreach (DataRow row in from.Rows)
+            {
+                DataRow newRow = to.NewRow();
+                foreach (DataColumn column in from.Columns)
+                {
+                    if (!Convert.IsDBNull(row[column]))
+                    {
+                        if (to.Columns.Contains(column.ColumnName))
+                        {
+                            Type toDataType = to.Columns[column.ColumnName].DataType;
+                            bool conversionNeeded = column.DataType != toDataType;
+                            if (conversionNeeded)
+                            {
+                                if (toDataType == typeof(float))
+                                    newRow[column.ColumnName] = Convert.ToSingle(row[column]);
+                                else if (toDataType == typeof(double))
+                                    newRow[column.ColumnName] = Convert.ToDouble(row[column]);
+                                else if (toDataType == typeof(int))
+                                    newRow[column.ColumnName] = Convert.ToInt32(row[column]);
+                                else
+                                    throw new Exception("Cannot convert from type '" + column.DataType.ToString() +
+                                                        "' to type '" + toDataType.ToString() + "'");
+                            }
+                            else
+                                newRow[column.ColumnName] = row[column];
+                        }
+                    }
+                }
+                to.Rows.Add(newRow);
+            }
+        }
     }
 }
