@@ -119,6 +119,18 @@ namespace APSIM.Shared.Utilities
                 return Node.ParentNode;
         }
 
+        /// <summary>Parents the specified node.</summary>
+        /// <param name="node">The node.</param>
+        /// <param name="typeName">Type name to search for.</param>
+        /// <returns>Matching parent or null if none found.</returns>
+        public static XmlNode ParentOfType(XmlNode node, string typeName)
+        {
+            XmlNode parent = Parent(node);
+            while (parent != null && parent.Name != typeName)
+                parent = Parent(parent);
+            return parent;
+        }
+
         /// <summary>
         /// Return the full path of the node using the <code> <Name></Name> </code> element values.
         /// </summary>
@@ -322,6 +334,16 @@ namespace APSIM.Shared.Utilities
             foreach (XmlNode Child in Node.ChildNodes)
                 FindAllRecursively(Child, Name, ref Nodes);
         }
+        /// <summary>Finds all XML nodes of the specified type (recursively).</summary>
+        /// <param name="node">The node. to search</param>
+        /// <param name="typeName">Name of the type.</param>
+        public static List<XmlNode> FindAllRecursivelyByType(XmlNode node, string typeName)
+        {
+            List<XmlNode> matches = new List<XmlNode>();
+            FindAllRecursivelyByType(node, typeName, ref matches);
+            return matches;
+        }
+
         /// <summary>Finds the type of all recursively by.</summary>
         /// <param name="Node">The node.</param>
         /// <param name="TypeName">Name of the type.</param>
