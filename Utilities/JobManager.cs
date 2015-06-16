@@ -61,6 +61,11 @@ namespace APSIM.Shared.Utilities
         /// <summary>Occurs when all jobs completed.</summary>
         public event EventHandler AllJobsCompleted;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether some jobs had errors.
+        /// </summary>
+        public bool SomeHadErrors { get; set; }
+
         /// <summary>Initializes a new instance of the <see cref="JobManager"/> class.</summary>
         public JobManager()
         {
@@ -84,6 +89,7 @@ namespace APSIM.Shared.Utilities
         /// <param name="waitUntilFinished">if set to <c>true</c> [wait until finished].</param>
         public void Start(bool waitUntilFinished)
         {
+            SomeHadErrors = false;
             schedulerThread = new BackgroundWorker();
             schedulerThread.WorkerSupportsCancellation = true;
             schedulerThread.WorkerReportsProgress = true;
@@ -168,7 +174,10 @@ namespace APSIM.Shared.Utilities
                 int i = GetJob(bw);
                 jobs[i].Value.IsCompleted = true;
                 if (e.Error != null)
+                {
+                    SomeHadErrors = false;
                     jobs[i].Value.ErrorMessage = e.Error.Message;
+                }
                 jobs.RemoveAt(i);
             }
         }
