@@ -325,6 +325,7 @@ namespace APSIM.Shared.Utilities
                             Params.OutputAssembly = assemblyFileName;
                         }
                         Params.TreatWarningsAsErrors = false;
+                        Params.IncludeDebugInformation = true;
                         Params.WarningLevel = 2;
                         Params.ReferencedAssemblies.Add("System.dll");
                         Params.ReferencedAssemblies.Add("System.Xml.dll");
