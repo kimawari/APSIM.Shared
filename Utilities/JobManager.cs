@@ -175,7 +175,7 @@ namespace APSIM.Shared.Utilities
                 jobs[i].Value.IsCompleted = true;
                 if (e.Error != null)
                 {
-                    SomeHadErrors = false;
+                    SomeHadErrors = true;
                     jobs[i].Value.ErrorMessage = e.Error.Message;
                 }
                 jobs.RemoveAt(i);
