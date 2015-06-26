@@ -104,12 +104,12 @@ namespace APSIM.Shared.Utilities
             string relativeDirectory = Path.GetDirectoryName(relativePath);
             if (relativeDirectory != null)
             {
+                // Try getting rid of the relative directory.
+                path = path.Replace(relativeDirectory + Path.DirectorySeparatorChar, "");  // the relative path should not have a preceding \
+
                 // Try putting in a %root%.
                 string rootDirectory = System.IO.Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName;
                 path = path.Replace(rootDirectory, "%root%");
-
-                // Try getting rid of the relative directory.
-                path = path.Replace(relativeDirectory + Path.DirectorySeparatorChar, "");  // the relative path should not have a preceding \
             }
 
             // Convert slashes.
