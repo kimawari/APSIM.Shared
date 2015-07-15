@@ -286,6 +286,21 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Get a column as strings
+        /// </summary>
+        /// <param name="view">The data view.</param>
+        /// <param name="ColumnName">The column name.</param>
+        /// <returns></returns>
+        static public string[] GetColumnAsStrings(DataView view, string ColumnName)
+        {
+            string[] Values = new string[view.Count];
+            for (int Row = 0; Row != view.Count; Row++)
+                Values[Row] = view[Row][ColumnName].ToString();
+                
+            return Values;
+        }
+
+        /// <summary>
         /// Get a column as dates.
         /// </summary>
         /// <param name="Table"></param>
@@ -298,6 +313,22 @@ namespace APSIM.Shared.Utilities
                 Values[Row] = Convert.ToDateTime(Table.Rows[Row][ColumnName]);
             return Values;
         }
+
+        /// <summary>
+        /// Get a column as dates
+        /// </summary>
+        /// <param name="view">The data view.</param>
+        /// <param name="ColumnName">The column name.</param>
+        /// <returns></returns>
+        static public DateTime[] GetColumnAsDates(DataView view, string ColumnName)
+        {
+            DateTime[] Values = new DateTime[view.Count];
+            for (int Row = 0; Row != view.Count; Row++)
+                Values[Row] = Convert.ToDateTime(view[Row][ColumnName]);
+
+            return Values;
+        }
+
 
         /// <summary>
         /// Get a list of column names

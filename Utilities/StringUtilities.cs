@@ -619,6 +619,22 @@ namespace APSIM.Shared.Utilities
             return items.ToArray();
         }
 
+        /// <summary>Counts the number of times that stringToFind exists in text.</summary>
+        /// <param name="text">The text.</param>
+        /// <param name="stringToFind">The string to find.</param>
+        /// <returns>The number of times found.</returns>
+        public static int CountSubStrings(string text, string stringToFind)
+        {
+            int count = 0;
+            int pos = 0;
+            while (text.IndexOf(stringToFind, pos) != -1)
+            {
+                count++;
+                pos += stringToFind.Length;
+            }
+
+            return count;
+        }
 
         /// The following set of routines is taken from the old CPI 
         /// StdStrng.pas unit.

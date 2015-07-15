@@ -105,6 +105,17 @@ namespace APSIM.Shared.Utilities
             return null;
         }
 
+        /// <summary>Renames the specified child node.</summary>
+        /// <param name="parentNode">The parent node.</param>
+        /// <param name="childName">Name of the child.</param>
+        /// <param name="newName">The new name.</param>
+        public static void Rename(XmlNode parentNode, string childName, string newName)
+        {
+            XmlNode nodeToRename = Find(parentNode, childName);
+            if (nodeToRename != null)
+                ChangeType(nodeToRename, newName);
+        }
+
         /// <summary>Parents the specified node.</summary>
         /// <param name="Node">The node.</param>
         /// <returns></returns>
@@ -1015,6 +1026,18 @@ namespace APSIM.Shared.Utilities
             doc.LoadXml(xml);
             return Deserialise(doc.DocumentElement, obj.GetType());
 
+        }
+
+        /// <summary>Moves the specified value from parent to a new parent node.</summary>
+        /// <param name="fromParent">From parent.</param>
+        /// <param name="fromPath">From path.</param>
+        /// <param name="toParent">To parent.</param>
+        /// <param name="toPath">To path.</param>
+        public static void Move(XmlNode fromParent, string fromPath, XmlNode toParent, string toPath)
+        {
+            string value = XmlUtilities.Value(fromParent, fromPath);
+            if (value != string.Empty)
+                XmlUtilities.SetValue(toParent, toPath, value);
         }
     }
 }

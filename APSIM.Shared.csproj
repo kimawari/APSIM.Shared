@@ -39,6 +39,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -59,6 +60,7 @@
     <Compile Include="Soils\SoilWater.cs" />
     <Compile Include="Soils\Water.cs" />
     <Compile Include="Utilities\ApsimTextFile.cs" />
+    <Compile Include="Utilities\Colour.cs" />
     <Compile Include="Utilities\DataTableUtilities.cs" />
     <Compile Include="Utilities\DateUtilities.cs" />
     <Compile Include="Utilities\DirectoryUtilities.cs" />
