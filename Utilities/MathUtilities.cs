@@ -48,7 +48,7 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         public static bool IsGreaterThan(double value1, double value2)
         {
-            return value1 - value2 > tolerance;
+            return (value1 - value2) > tolerance;
         }
         
         /// <summary>
@@ -56,7 +56,7 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         public static bool IsLessThan(double value1, double value2)
             {
-            return value2 - value1 > tolerance;
+            return (value2 - value1) > tolerance;
             }
        
         /// <summary>
