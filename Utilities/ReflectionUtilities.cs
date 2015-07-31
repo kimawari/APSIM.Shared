@@ -274,10 +274,13 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         public static Type GetTypeFromUnqualifiedName(string typeName)
         {
-            foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (type.Name == typeName)
-                    return type;
+                foreach (Type type in assembly.GetTypes())
+                {
+                    if (type.Name == typeName)
+                        return type;
+                }
             }
             return null;
         }
