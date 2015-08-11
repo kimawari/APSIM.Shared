@@ -58,6 +58,21 @@ namespace APSIM.Shared.Utilities
             }
         }
 
+        /// <summary>
+        /// Gets the number of jobs still to run.
+        /// </summary>
+        /// <value><c>true</c> if [more jobs to run]; otherwise, <c>false</c>.</value>
+        public int JobCount
+        {
+            get
+            {
+                lock (this)
+                {
+                    return jobs.Count;
+                }
+            }
+        }
+
         /// <summary>Occurs when all jobs completed.</summary>
         public event EventHandler AllJobsCompleted;
 
