@@ -584,6 +584,32 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Calculate the percentile value from the sorted array of values
+        /// </summary>
+        /// <param name="sequence">Array of sorted values</param>
+        /// <param name="pctile">The percentile 0-1</param>
+        /// <returns>The percentile value</returns>
+        public static double Percentile(double[] sequence, double pctile)
+        {
+            int n;
+
+            n = sequence.Length;    //count the number of useful values
+
+            if ((n == 0) || (pctile < 0.0) || (pctile > 1.0))
+                return double.NaN;
+            else if (pctile == 1.0)
+            {
+                return sequence[n - 1];
+            }
+            else
+            {
+                int i = Convert.ToInt32(Math.Truncate(pctile * (n - 1)));       //Otherwise interpolate between the
+                double z = pctile * (n - 1) - i;                                //appropriate array elements
+                return sequence[i] * (1.0 - z) + sequence[i + 1] * z;
+            }
+        }
+
+        /// <summary>
         /// Return an array of numbers of the specified size that represents the
         /// y axis on a probability distribution graph.
         /// </summary>
