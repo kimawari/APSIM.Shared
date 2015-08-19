@@ -66,6 +66,7 @@
     <Compile Include="Utilities\DirectoryUtilities.cs" />
     <Compile Include="Utilities\ExpressionEvaluator.cs" />
     <Compile Include="Utilities\FTPClient.cs" />
+    <Compile Include="Utilities\IntegerToWritten.cs" />
     <Compile Include="Utilities\JobManager.cs" />
     <Compile Include="Utilities\JobParallel.cs" />
     <Compile Include="Utilities\JobSequence.cs" />
