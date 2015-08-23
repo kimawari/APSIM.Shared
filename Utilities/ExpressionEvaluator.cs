@@ -73,6 +73,7 @@ namespace APSIM.Shared.Utilities
     ///and also a user defined function by using delegate, also it support variables in the expression, it will
     ///generate a symbol table that can be updated at run time.
     ///</summary>
+    [Serializable]
     public class ExpressionEvaluator
     {
         /// <summary>Gets the result.</summary>
