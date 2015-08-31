@@ -31,7 +31,7 @@ namespace APSIM.Shared.Utilities
                                         Color.FromArgb(204,235,197),
                                         Color.FromArgb(222,203,228),
                                         Color.FromArgb(254,217,166),
-                                        Color.FromArgb(255,255,204),
+                                        //Color.FromArgb(255,255,204),
                                         Color.FromArgb(229,216,189),
                                         Color.FromArgb(253,218,236),
                                         Color.FromArgb(242,242,242)                                         
