@@ -1,225 +1,160 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+﻿
 namespace APSIM.Shared.Soils
 {
-    /// <summary>
-    /// A soil analysis class.
-    /// </summary>
+    /// <summary>A soil analysis class.</summary>
     public class Analysis
     {
-
-        /// <summary>
-        /// Gets or sets the thickness.
-        /// </summary>
+        /// <summary>Gets or sets the thickness.</summary>
         public double[] Thickness { get; set; }
-        /// <summary>
-        /// Gets or sets the rocks.
-        /// </summary>
+
+        /// <summary>Gets or sets the rocks.</summary>
         [Units("%")]
         public double[] Rocks { get; set; }
-        /// <summary>
-        /// Gets or sets the rocks metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the rocks metadata.</summary>
         public string[] RocksMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the texture.
-        /// </summary>
+
+        /// <summary>Gets or sets the texture.</summary>
         public string[] Texture { get; set; }
-        /// <summary>
-        /// Gets or sets the texture metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the texture metadata.</summary>
         public string[] TextureMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the munsell colour.
-        /// </summary>
+
+        /// <summary>Gets or sets the munsell colour.</summary>
         public string[] MunsellColour { get; set; }
-        /// <summary>
-        /// Gets or sets the munsell metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the munsell metadata.</summary>
         public string[] MunsellMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the ec.
-        /// </summary>
+
+        /// <summary>Gets or sets the ec.</summary>
         [Units("1:5 dS/m")]
         public double[] EC { get; set; }
-        /// <summary>
-        /// Gets or sets the ec metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the ec metadata.</summary>
         public string[] ECMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the ph.
-        /// </summary>
+
+        /// <summary>Gets or sets the ph.</summary>
         public double[] PH { get; set; }
-        /// <summary>
-        /// Gets or sets the ph metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the ph metadata.</summary>
         public string[] PHMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the cl.
-        /// </summary>
+
+        /// <summary>Gets or sets the cl.</summary>
         [Units("mg/kg")]
         public double[] CL { get; set; }
-        /// <summary>
-        /// Gets or sets the cl metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the cl metadata.</summary>
         public string[] CLMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the boron.
-        /// </summary>
+
+        /// <summary>Gets or sets the boron.</summary>
         [Units("Hot water mg/kg")]
         public double[] Boron { get; set; }
-        /// <summary>
-        /// Gets or sets the boron metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the boron metadata.</summary>
         public string[] BoronMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the cec.
-        /// </summary>
+
+        /// <summary>Gets or sets the cec.</summary>
         [Units("cmol+/kg")]
         public double[] CEC { get; set; }
-        /// <summary>
-        /// Gets or sets the cec metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the cec metadata.</summary>
         public string[] CECMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the ca.
-        /// </summary>
+
+        /// <summary>Gets or sets the ca.</summary>
         [Units("cmol+/kg")]
         public double[] Ca { get; set; }
-        /// <summary>
-        /// Gets or sets the ca metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the ca metadata.</summary>
         public string[] CaMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the mg.
-        /// </summary>
+
+        /// <summary>Gets or sets the mg.</summary>
         [Units("cmol+/kg")]
         public double[] Mg { get; set; }
-        /// <summary>
-        /// Gets or sets the mg metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the mg metadata.</summary>
         public string[] MgMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the na.
-        /// </summary>
+
+        /// <summary>Gets or sets the na.</summary>
         [Units("cmol+/kg")]
         public double[] Na { get; set; }
-        /// <summary>
-        /// Gets or sets the na metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the na metadata.</summary>
         public string[] NaMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the k.
-        /// </summary>
+
+        /// <summary>Gets or sets the k.</summary>
         [Units("cmol+/kg")]
         public double[] K { get; set; }
-        /// <summary>
-        /// Gets or sets the k metadata.
-        /// </summary>
-        /// <value>
-        /// The k metadata.
-        /// </value>
+
+        /// <summary>Gets or sets the k metadata.</summary>
         public string[] KMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the esp.
-        /// </summary>
+
+        /// <summary>Gets or sets the esp.</summary>
         [Units("%")]
         public double[] ESP { get; set; }
-        /// <summary>
-        /// Gets or sets the esp metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the esp metadata.</summary>
         public string[] ESPMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the mn.
-        /// </summary>
+
+        /// <summary>Gets or sets the mn.</summary>
         [Units("mg/kg")]
         public double[] Mn { get; set; }
-        /// <summary>
-        /// Gets or sets the mn metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the mn metadata.</summary>
         public string[] MnMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the al.
-        /// </summary>
+
+        /// <summary>Gets or sets the al.</summary>
         [Units("cmol+/kg")]
         public double[] Al { get; set; }
-        /// <summary>
-        /// Gets or sets the al metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the al metadata.</summary>
         public string[] AlMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the particle size sand.
-        /// </summary>
+
+        /// <summary>Gets or sets the particle size sand.</summary>
         [Units("%")]
         public double[] ParticleSizeSand { get; set; }
-        /// <summary>
-        /// Gets or sets the particle size sand metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the particle size sand metadata.</summary>
         public string[] ParticleSizeSandMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the particle size silt.
-        /// </summary>
+
+        /// <summary>Gets or sets the particle size silt.</summary>
         [Units("%")]
         public double[] ParticleSizeSilt { get; set; }
-        /// <summary>
-        /// Gets or sets the particle size silt metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the particle size silt metadata.</summary>
         public string[] ParticleSizeSiltMetadata { get; set; }
-        /// <summary>
-        /// Gets or sets the particle size clay.
-        /// </summary>
+
+        /// <summary>Gets or sets the particle size clay.</summary>
         [Units("%")]
         public double[] ParticleSizeClay { get; set; }
-        /// <summary>
-        /// Gets or sets the particle size clay metadata.
-        /// </summary>
+
+        /// <summary>Gets or sets the particle size clay metadata.</summary>
         public string[] ParticleSizeClayMetadata { get; set; }
 
-        // Support for PH units.
-        /// <summary>
-        /// Units for PH.
-        /// </summary>
+        /// <summary>Units for PH.</summary>
         public enum PHUnitsEnum 
         {
-            /// <summary>
-            /// The water units
-            /// </summary>
+            /// <summary>The water units</summary>
             Water,
 
-            /// <summary>
-            /// The CaCL2
-            /// </summary>
+            /// <summary>The CaCL2</summary>
             CaCl2 
         }
 
-        /// <summary>
-        /// Gets or sets the ph units.
-        /// </summary>
+        /// <summary>Gets or sets the ph units.</summary>
         public PHUnitsEnum PHUnits { get; set; }
               
         // Support for Boron units.
-        /// <summary>
-        /// Valid units for Boron
-        /// </summary>
+        /// <summary>Valid units for Boron</summary>
         public enum BoronUnitsEnum 
         {
-            /// <summary>
-            /// The hot water
-            /// </summary>
+            /// <summary>The hot water</summary>
             HotWater,
 
-            /// <summary>
-            /// The hot ca CL2
-            /// </summary>
+            /// <summary>The hot ca CL2</summary>
             HotCaCl2 
         }
 
-        /// <summary>
-        /// Gets or sets the boron units.
-        /// </summary>
+        /// <summary>Gets or sets the boron units.</summary>
         public BoronUnitsEnum BoronUnits { get; set; }
     }
 }

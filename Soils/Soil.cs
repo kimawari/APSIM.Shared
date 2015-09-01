@@ -8,9 +8,7 @@ namespace APSIM.Shared.Soils
     using System.Collections.Generic;
     using System.Xml.Serialization;
 
-    /// <summary>
-    /// The soil class encapsulates a soil characterisation and 0 or more soil samples.
-    /// </summary>
+    /// <summary>The soil class encapsulates a soil characterisation and 0 or more soil samples.</summary>
     public class Soil
     {
         /// <summary>Gets or sets the name.</summary>
@@ -99,6 +97,9 @@ namespace APSIM.Shared.Soils
         /// <summary>Gets or sets the analysis.</summary>
         public Analysis Analysis { get; set; }
 
+        /// <summary>Gets or sets the Nitrogen</summary>
+        public Nitrogen Nitrogen { get; set; }
+
         /// <summary>Gets or sets the initial water.</summary>
         /// <value>The initial water.</value>
         public InitialWater InitialWater { get; set; }
@@ -106,5 +107,20 @@ namespace APSIM.Shared.Soils
         /// <summary>Gets or sets the samples.</summary>
         [XmlElement("Sample")]
         public List<Sample> Samples { get; set; }
+
+        /// <summary>Gets or sets the layer structure.</summary>
+        public LayerStructure LayerStructure { get; set; }
+
+        /// <summary>Gets or sets the phosphorus.</summary>
+        public Phosphorus Phosphorus { get; set; }
+
+        /// <summary>Gets or sets the swim.</summary>
+        public Swim Swim { get; set; }
+
+        /// <summary>Gets or sets the soil temperature.</summary>
+        public SoilTemperature SoilTemperature { get; set; }
+
+        /// <summary>Gets or sets the soil temperature2.</summary>
+        public SoilTemperature2 SoilTemperature2 { get; set; }
     }
 }

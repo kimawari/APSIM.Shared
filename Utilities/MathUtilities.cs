@@ -1151,6 +1151,39 @@ namespace APSIM.Shared.Utilities
             return NewValues.ToArray();
         }
 
+        /// <summary>Return the last value that isn't a missing value.</summary>
+        /// <param name="Values">The values.</param>
+        /// <returns></returns>
+        public static double LastValue(double[] Values)
+        {
+            if (Values == null) return double.NaN;
+            for (int i = Values.Length - 1; i >= 0; i--)
+                if (!double.IsNaN(Values[i]))
+                    return Values[i];
+            return 0;
+        }
+
+        /// <summary>Return the second last value that isn't a missing value.</summary>
+        /// <param name="Values">The values.</param>
+        /// <returns></returns>
+        public static double SecondLastValue(double[] Values)
+        {
+            bool foundLastValue = false;
+            if (Values == null) return double.NaN;
+            for (int i = Values.Length - 1; i >= 0; i--)
+            {
+                if (!double.IsNaN(Values[i]))
+                {
+                    if (foundLastValue)
+                        return Values[i];
+                    else
+                        foundLastValue = true;
+                }
+            }
+
+            return 0;
+        }
+
         /// <summary>
         /// Convert the list of doubles to strings.
         /// </summary>
