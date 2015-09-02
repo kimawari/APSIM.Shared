@@ -64,6 +64,10 @@ namespace APSIM.Shared.Soils
                     crop.KL = MapConcentration(crop.KL, crop.Thickness, toThickness, MathUtilities.LastValue(crop.KL));
                     crop.XF = MapConcentration(crop.XF, crop.Thickness, toThickness, MathUtilities.LastValue(crop.XF));
                     crop.Thickness = toThickness;
+
+                    // Ensure crop LL are between Airdry and DUL.
+                    for (int i = 0; i < crop.LL.Length; i++)
+                        crop.LL = MathUtilities.Constrain(crop.LL, soil.Water.AirDry, soil.Water.DUL);
                 }
             }
         }
