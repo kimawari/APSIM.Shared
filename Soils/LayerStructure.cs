@@ -54,12 +54,16 @@ namespace APSIM.Shared.Soils
                 water.SAT = MapConcentration(water.SAT, water.Thickness, toThickness, MathUtilities.LastValue(water.SAT));
                 water.KS = MapConcentration(water.KS, water.Thickness, toThickness, MathUtilities.LastValue(water.KS));
                 water.Thickness = toThickness;
+            }
 
-                foreach (SoilCrop crop in water.Crops)
+            foreach (SoilCrop crop in water.Crops)
+            {
+                if (!MathUtilities.AreEqual(toThickness, crop.Thickness))
                 {
                     crop.LL = MapConcentration(crop.LL, crop.Thickness, toThickness, MathUtilities.LastValue(crop.LL));
                     crop.KL = MapConcentration(crop.KL, crop.Thickness, toThickness, MathUtilities.LastValue(crop.KL));
                     crop.XF = MapConcentration(crop.XF, crop.Thickness, toThickness, MathUtilities.LastValue(crop.XF));
+                    crop.Thickness = toThickness;
                 }
             }
         }
@@ -69,7 +73,7 @@ namespace APSIM.Shared.Soils
         /// <param name="thickness">Thickness to change soil water to.</param>
         private static void SetSoilWaterThickness(SoilWater soilWater, double[] thickness)
         {
-            if (soilWater != null && MathUtilities.AreEqual(thickness, soilWater.Thickness))
+            if (soilWater != null && !MathUtilities.AreEqual(thickness, soilWater.Thickness))
             {
                 soilWater.KLAT = MapConcentration(soilWater.KLAT, soilWater.Thickness, thickness, MathUtilities.LastValue(soilWater.KLAT));
                 soilWater.MWCON = MapConcentration(soilWater.MWCON, soilWater.Thickness, thickness, MathUtilities.LastValue(soilWater.MWCON));
@@ -440,7 +444,7 @@ namespace APSIM.Shared.Soils
         /// <param name="soil">The soil.</param>
         /// <param name="ToThickness">To thickness.</param>
         /// <returns></returns>
-        private static double[] BDMapped(Soil soil, double[] ToThickness)
+        public static double[] BDMapped(Soil soil, double[] ToThickness)
         {
             return MapConcentration(soil.Water.BD, soil.Water.Thickness, ToThickness, soil.Water.BD.Last());
         }

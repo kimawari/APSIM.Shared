@@ -25,10 +25,11 @@ namespace APSIM.Shared.Soils
             // Convert nitrogen to ppm.
             if (soil.Nitrogen != null)
             {
-                soil.Nitrogen.NO3 = Nppm(soil.Nitrogen.NO3, soil.Nitrogen.Thickness, soil.Nitrogen.NO3Units, soil.Water.BD);
+                double[] bd = LayerStructure.BDMapped(soil, soil.Nitrogen.Thickness);
+                soil.Nitrogen.NO3 = Nppm(soil.Nitrogen.NO3, soil.Nitrogen.Thickness, soil.Nitrogen.NO3Units, bd);
                 soil.Nitrogen.NO3Units = Nitrogen.NUnitsEnum.ppm;
 
-                soil.Nitrogen.NH4 = Nppm(soil.Nitrogen.NH4, soil.Nitrogen.Thickness, soil.Nitrogen.NH4Units, soil.Water.BD);
+                soil.Nitrogen.NH4 = Nppm(soil.Nitrogen.NH4, soil.Nitrogen.Thickness, soil.Nitrogen.NH4Units, bd);
                 soil.Nitrogen.NH4Units = Nitrogen.NUnitsEnum.ppm;
             }
 
@@ -39,10 +40,6 @@ namespace APSIM.Shared.Soils
             // Convert all samples.
             foreach (Sample sample in soil.Samples)
             {
-                // Make sure the thicknesses are the same.
-                if (!MathUtilities.AreEqual(sample.Thickness, soil.Water.Thickness))
-                    throw new Exception("Cannot fold a sample into the Water component. Thicknesses are different.");
-
                 // Convert sw units to volumetric.
                 if (sample.SW != null)
                     sample.SW = SWVolumetric(sample, soil);
@@ -50,12 +47,18 @@ namespace APSIM.Shared.Soils
 
                 // Convert no3 units to ppm.
                 if (sample.NO3 != null)
-                    sample.NO3 = Nppm(sample.NO3, sample.Thickness, sample.NO3Units, soil.Water.BD);
+                {
+                    double[] bd = LayerStructure.BDMapped(soil, sample.Thickness);
+                    sample.NO3 = Nppm(sample.NO3, sample.Thickness, sample.NO3Units, bd);
+                }
                 sample.NO3Units = Nitrogen.NUnitsEnum.ppm;
 
                 // Convert nh4 units to ppm.
                 if (sample.NH4 != null)
-                    sample.NH4 = Nppm(sample.NH4, sample.Thickness, sample.NH4Units, soil.Water.BD);
+                {
+                    double[] bd = LayerStructure.BDMapped(soil, sample.Thickness);
+                    sample.NH4 = Nppm(sample.NH4, sample.Thickness, sample.NH4Units, bd);
+                }
                 sample.NH4Units = Nitrogen.NUnitsEnum.ppm;
 
                 // Convert OC to total (%)
@@ -84,10 +87,9 @@ namespace APSIM.Shared.Soils
                 // convert the numbers
                 if (sample.SWUnits == Sample.SWUnitsEnum.Gravimetric)
                 {
-                    if (sample.Thickness != soil.Water.Thickness)
-                        throw new Exception("Cannot convert from gravimetric water to volumetric. The sample thickness is not the same as the water thickness.");
+                    double[] bd = LayerStructure.BDMapped(soil, sample.Thickness);
 
-                    return MathUtilities.Multiply(sample.SW, soil.Water.BD);
+                    return MathUtilities.Multiply(sample.SW, bd);
                 }
                 else
                     return MathUtilities.Divide(sample.SW, sample.Thickness); // from mm to mm/mm

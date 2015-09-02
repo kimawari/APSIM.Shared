@@ -19,9 +19,9 @@ namespace APSIM.Shared.Soils
         /// <returns>A newly created soil ready to be run in APSIM.</returns>
         public static Soil Create(Soil soil)
         {
+            Unit.Convert(soil);
             LayerStructure.Standardise(soil);
             Defaults.FillInMissingValues(soil);
-            Unit.Convert(soil);
             RemoveSamples(soil);
             RemoveInitialWater(soil);
 
