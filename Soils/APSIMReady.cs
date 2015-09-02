@@ -60,6 +60,9 @@ namespace APSIM.Shared.Soils
                         soil.Nitrogen.Thickness = sample.Thickness;
                     }
                     soil.Nitrogen.NO3 = sample.NO3;
+                    for (int i = 0; i < soil.Nitrogen.NO3.Length; i++)
+                        if (double.IsNaN(soil.Nitrogen.NO3[i]))
+                            soil.Nitrogen.NO3[i] = 0.01;
                 }
 
                 if (sample.NH4 != null)
@@ -70,6 +73,9 @@ namespace APSIM.Shared.Soils
                         soil.Nitrogen.Thickness = sample.Thickness;
                     }
                     soil.Nitrogen.NH4 = sample.NH4;
+                    for (int i = 0; i < soil.Nitrogen.NH4.Length; i++)
+                        if (double.IsNaN(soil.Nitrogen.NH4[i]))
+                            soil.Nitrogen.NH4[i] = 0.01;
                 }
 
                 if (sample.OC != null)
