@@ -19,8 +19,11 @@ namespace APSIM.Shared.Soils
         public static void Convert(Soil soil)
         {
             // Convert soil organic matter OC to total %
-            soil.SoilOrganicMatter.OC = OCTotalPercent(soil.SoilOrganicMatter.OC, soil.SoilOrganicMatter.OCUnits);
-            soil.SoilOrganicMatter.OCUnits = SoilOrganicMatter.OCUnitsEnum.Total;
+            if (soil.SoilOrganicMatter != null)
+            {
+                soil.SoilOrganicMatter.OC = OCTotalPercent(soil.SoilOrganicMatter.OC, soil.SoilOrganicMatter.OCUnits);
+                soil.SoilOrganicMatter.OCUnits = SoilOrganicMatter.OCUnitsEnum.Total;
+            }
 
             // Convert nitrogen to ppm.
             if (soil.Nitrogen != null)
@@ -34,42 +37,48 @@ namespace APSIM.Shared.Soils
             }
 
             // Convert analysis.
-            soil.Analysis.PH = PHWater(soil.Analysis.PH, soil.Analysis.PHUnits);
-            soil.Analysis.PHUnits = Analysis.PHUnitsEnum.Water;
+            if (soil.Analysis != null)
+            {
+                soil.Analysis.PH = PHWater(soil.Analysis.PH, soil.Analysis.PHUnits);
+                soil.Analysis.PHUnits = Analysis.PHUnitsEnum.Water;
+            }
 
             // Convert all samples.
-            foreach (Sample sample in soil.Samples)
+            if (soil.Samples != null)
             {
-                // Convert sw units to volumetric.
-                if (sample.SW != null)
-                    sample.SW = SWVolumetric(sample, soil);
-                sample.SWUnits = Sample.SWUnitsEnum.Volumetric;
-
-                // Convert no3 units to ppm.
-                if (sample.NO3 != null)
+                foreach (Sample sample in soil.Samples)
                 {
-                    double[] bd = LayerStructure.BDMapped(soil, sample.Thickness);
-                    sample.NO3 = Nppm(sample.NO3, sample.Thickness, sample.NO3Units, bd);
+                    // Convert sw units to volumetric.
+                    if (sample.SW != null)
+                        sample.SW = SWVolumetric(sample, soil);
+                    sample.SWUnits = Sample.SWUnitsEnum.Volumetric;
+
+                    // Convert no3 units to ppm.
+                    if (sample.NO3 != null)
+                    {
+                        double[] bd = LayerStructure.BDMapped(soil, sample.Thickness);
+                        sample.NO3 = Nppm(sample.NO3, sample.Thickness, sample.NO3Units, bd);
+                    }
+                    sample.NO3Units = Nitrogen.NUnitsEnum.ppm;
+
+                    // Convert nh4 units to ppm.
+                    if (sample.NH4 != null)
+                    {
+                        double[] bd = LayerStructure.BDMapped(soil, sample.Thickness);
+                        sample.NH4 = Nppm(sample.NH4, sample.Thickness, sample.NH4Units, bd);
+                    }
+                    sample.NH4Units = Nitrogen.NUnitsEnum.ppm;
+
+                    // Convert OC to total (%)
+                    if (sample.OC != null)
+                        sample.OC = OCTotalPercent(sample.OC, sample.OCUnits);
+                    sample.OCUnits = SoilOrganicMatter.OCUnitsEnum.Total;
+
+                    // Convert PH to water.
+                    if (sample.PH != null)
+                        sample.PH = PHWater(sample.PH, sample.PHUnits);
+                    sample.PHUnits = Analysis.PHUnitsEnum.Water;
                 }
-                sample.NO3Units = Nitrogen.NUnitsEnum.ppm;
-
-                // Convert nh4 units to ppm.
-                if (sample.NH4 != null)
-                {
-                    double[] bd = LayerStructure.BDMapped(soil, sample.Thickness);
-                    sample.NH4 = Nppm(sample.NH4, sample.Thickness, sample.NH4Units, bd);
-                }
-                sample.NH4Units = Nitrogen.NUnitsEnum.ppm;
-
-                // Convert OC to total (%)
-                if (sample.OC != null)
-                    sample.OC = OCTotalPercent(sample.OC, sample.OCUnits);
-                sample.OCUnits = SoilOrganicMatter.OCUnitsEnum.Total;
-
-                // Convert PH to water.
-                if (sample.PH != null)
-                    sample.PH = PHWater(sample.PH, sample.PHUnits);
-                sample.PHUnits = Analysis.PHUnitsEnum.Water;
             }
 
         }

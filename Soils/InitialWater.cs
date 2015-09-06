@@ -3,10 +3,13 @@
 //     Copyright (c) APSIM Initiative
 // </copyright>
 // -----------------------------------------------------------------------
-using APSIM.Shared.Utilities;
-using System;
 namespace APSIM.Shared.Soils
 {
+    using APSIM.Shared.Utilities;
+    using System;
+    using System.Linq;
+    using System.Collections.Generic;
+
     /// <summary>Class for holding information about the initial water state for a soil.</summary>
     public class InitialWater
     {
@@ -38,25 +41,32 @@ namespace APSIM.Shared.Soils
         /// <summary>Calculate a layered soil water. Units: mm/mm</summary>
         public double[] SW(Soil soil)
         {
+            string[] cropNames = soil.Water.Crops.Select(c => c.Name).ToArray();
+
             // Get the correct LL and XF
             int cropIndex = -1;
             if (RelativeTo != null)
-                cropIndex = StringUtilities.IndexOfCaseInsensitive(SoilUtilities.GetCropNames(soil), RelativeTo);
+                cropIndex = StringUtilities.IndexOfCaseInsensitive(cropNames, RelativeTo);
             double[] ll;
             double[] xf = null;
+            double[] PAWCmm;
             if (cropIndex == -1)
+            {
                 ll = soil.Water.LL15;
+                PAWCmm = PAWC.OfSoilmm(soil);
+            }
             else
             {
-                SoilCrop crop = SoilUtilities.Crop(soil, RelativeTo);
+                SoilCrop crop = soil.Water.Crops[cropIndex];
                 ll = crop.LL;
                 xf = crop.XF;
+                PAWCmm = PAWC.OfCropmm(soil, crop);
             }
 
             if (double.IsNaN(DepthWetSoil))
             {
                 if (PercentMethod == InitialWater.PercentMethodEnum.FilledFromTop)
-                    return SWFilledFromTop(soil.Water.Thickness, ll, soil.Water.DUL, xf);
+                    return SWFilledFromTop(PAWCmm, ll, soil.Water.DUL, xf);
                 else
                     return SWEvenlyDistributed(ll, soil.Water.DUL);
             }
@@ -65,13 +75,9 @@ namespace APSIM.Shared.Soils
         }
 
         /// <summary>Calculate a layered soil water using a FractionFull and filled from the top. Units: mm/mm</summary>
-        private double[] SWFilledFromTop(double[] Thickness, double[] LL, double[] DUL, double[] XF)
+        private double[] SWFilledFromTop(double[] PAWCmm, double[] LL, double[] DUL, double[] XF)
         {
-            double[] SW = new double[Thickness.Length];
-            if (Thickness.Length != LL.Length ||
-                Thickness.Length != DUL.Length)
-                return SW;
-            double[] PAWCmm = MathUtilities.Multiply(SoilUtilities.PAWC(Thickness, LL, DUL, XF), Thickness);
+            double[] SW = new double[PAWCmm.Length];
 
             double AmountWater = MathUtilities.Sum(PAWCmm) * FractionFull;
             for (int Layer = 0; Layer < LL.Length; Layer++)

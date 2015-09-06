@@ -56,6 +56,7 @@
     <Compile Include="Soils\Nitrogen.cs" />
     <Compile Include="Soils\Defaults.cs" />
     <Compile Include="Soils\InitialWater.cs" />
+    <Compile Include="Soils\PAWC.cs" />
     <Compile Include="Soils\Phosphorus.cs" />
     <Compile Include="Soils\Sample.cs" />
     <Compile Include="Soils\Soil.cs" />

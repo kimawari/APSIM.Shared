@@ -56,18 +56,21 @@ namespace APSIM.Shared.Soils
                 water.Thickness = toThickness;
             }
 
-            foreach (SoilCrop crop in water.Crops)
+            if (water.Crops != null)
             {
-                if (!MathUtilities.AreEqual(toThickness, crop.Thickness))
+                foreach (SoilCrop crop in water.Crops)
                 {
-                    crop.LL = MapConcentration(crop.LL, crop.Thickness, toThickness, MathUtilities.LastValue(crop.LL));
-                    crop.KL = MapConcentration(crop.KL, crop.Thickness, toThickness, MathUtilities.LastValue(crop.KL));
-                    crop.XF = MapConcentration(crop.XF, crop.Thickness, toThickness, MathUtilities.LastValue(crop.XF));
-                    crop.Thickness = toThickness;
+                    if (!MathUtilities.AreEqual(toThickness, crop.Thickness))
+                    {
+                        crop.LL = MapConcentration(crop.LL, crop.Thickness, toThickness, MathUtilities.LastValue(crop.LL));
+                        crop.KL = MapConcentration(crop.KL, crop.Thickness, toThickness, MathUtilities.LastValue(crop.KL));
+                        crop.XF = MapConcentration(crop.XF, crop.Thickness, toThickness, MathUtilities.LastValue(crop.XF));
+                        crop.Thickness = toThickness;
 
-                    // Ensure crop LL are between Airdry and DUL.
-                    for (int i = 0; i < crop.LL.Length; i++)
-                        crop.LL = MathUtilities.Constrain(crop.LL, soil.Water.AirDry, soil.Water.DUL);
+                        // Ensure crop LL are between Airdry and DUL.
+                        for (int i = 0; i < crop.LL.Length; i++)
+                            crop.LL = MathUtilities.Constrain(crop.LL, soil.Water.AirDry, soil.Water.DUL);
+                    }
                 }
             }
         }
@@ -77,12 +80,18 @@ namespace APSIM.Shared.Soils
         /// <param name="thickness">Thickness to change soil water to.</param>
         private static void SetSoilWaterThickness(SoilWater soilWater, double[] thickness)
         {
-            if (soilWater != null && !MathUtilities.AreEqual(thickness, soilWater.Thickness))
+            if (soilWater != null)
             {
-                soilWater.KLAT = MapConcentration(soilWater.KLAT, soilWater.Thickness, thickness, MathUtilities.LastValue(soilWater.KLAT));
-                soilWater.MWCON = MapConcentration(soilWater.MWCON, soilWater.Thickness, thickness, MathUtilities.LastValue(soilWater.MWCON));
-                soilWater.SWCON = MapConcentration(soilWater.SWCON, soilWater.Thickness, thickness, MathUtilities.LastValue(soilWater.SWCON));
-                soilWater.Thickness = thickness;
+                if (!MathUtilities.AreEqual(thickness, soilWater.Thickness))
+                {
+                    soilWater.KLAT = MapConcentration(soilWater.KLAT, soilWater.Thickness, thickness, MathUtilities.LastValue(soilWater.KLAT));
+                    soilWater.MWCON = MapConcentration(soilWater.MWCON, soilWater.Thickness, thickness, MathUtilities.LastValue(soilWater.MWCON));
+                    soilWater.SWCON = MapConcentration(soilWater.SWCON, soilWater.Thickness, thickness, MathUtilities.LastValue(soilWater.SWCON));
+
+                    soilWater.Thickness = thickness;
+                }
+
+                MathUtilities.ReplaceMissingValues(soilWater.SWCON, 0.0);
             }
         }
 
@@ -91,14 +100,24 @@ namespace APSIM.Shared.Soils
         /// <param name="thickness">Thickness to change soil water to.</param>
         private static void SetSoilOrganicMatterThickness(SoilOrganicMatter soilOrganicMatter, double[] thickness)
         {
-            if (!MathUtilities.AreEqual(thickness, soilOrganicMatter.Thickness))
+            if (soilOrganicMatter != null)
             {
-                soilOrganicMatter.FBiom = MapConcentration(soilOrganicMatter.FBiom, soilOrganicMatter.Thickness, thickness, MathUtilities.LastValue(soilOrganicMatter.FBiom));
-                soilOrganicMatter.FInert = MapConcentration(soilOrganicMatter.FInert, soilOrganicMatter.Thickness, thickness, MathUtilities.LastValue(soilOrganicMatter.FInert));
-                soilOrganicMatter.OC = MapConcentration(soilOrganicMatter.OC, soilOrganicMatter.Thickness, thickness, MathUtilities.LastValue(soilOrganicMatter.OC));
-                soilOrganicMatter.Thickness = thickness;
+                if (!MathUtilities.AreEqual(thickness, soilOrganicMatter.Thickness))
+                {
+                    soilOrganicMatter.FBiom = MapConcentration(soilOrganicMatter.FBiom, soilOrganicMatter.Thickness, thickness, MathUtilities.LastValue(soilOrganicMatter.FBiom));
+                    soilOrganicMatter.FInert = MapConcentration(soilOrganicMatter.FInert, soilOrganicMatter.Thickness, thickness, MathUtilities.LastValue(soilOrganicMatter.FInert));
+                    soilOrganicMatter.OC = MapConcentration(soilOrganicMatter.OC, soilOrganicMatter.Thickness, thickness, MathUtilities.LastValue(soilOrganicMatter.OC));
+                    soilOrganicMatter.Thickness = thickness;
 
-                soilOrganicMatter.OCMetadata = StringUtilities.CreateStringArray("Mapped", thickness.Length); ;
+                    soilOrganicMatter.OCMetadata = StringUtilities.CreateStringArray("Mapped", thickness.Length); ;
+                }
+
+                if (soilOrganicMatter.FBiom != null)
+                    MathUtilities.ReplaceMissingValues(soilOrganicMatter.FBiom, 0.0);
+                if (soilOrganicMatter.FInert != null)
+                    MathUtilities.ReplaceMissingValues(soilOrganicMatter.FInert, 0.0);
+                if (soilOrganicMatter.OC != null)
+                    MathUtilities.ReplaceMissingValues(soilOrganicMatter.OC, 0.0);
             }
         }
 
@@ -107,7 +126,7 @@ namespace APSIM.Shared.Soils
         /// <param name="thickness">The thickness to change the analysis to.</param>
         private static void SetAnalysisThickness(Analysis analysis, double[] thickness)
         {
-            if (!MathUtilities.AreEqual(thickness, analysis.Thickness))
+            if (analysis != null && !MathUtilities.AreEqual(thickness, analysis.Thickness))
             {
 
                 string[] metadata = StringUtilities.CreateStringArray("Mapped", thickness.Length);
@@ -266,10 +285,10 @@ namespace APSIM.Shared.Soils
         /// <param name="defaultValueForBelowProfile">The default value for below profile.</param>
         /// <param name="allowMissingValues">Tolerate missing values (double.NaN)?</param>
         /// <returns></returns>
-        public static double[] MapConcentration(double[] fromValues, double[] fromThickness,
-                                                 double[] toThickness,
-                                                 double defaultValueForBelowProfile,
-                                                 bool allowMissingValues = false)
+        internal static double[] MapConcentration(double[] fromValues, double[] fromThickness,
+                                                  double[] toThickness,
+                                                  double defaultValueForBelowProfile,
+                                                  bool allowMissingValues = false)
         {
             if (fromValues == null || fromThickness == null)
                 return null;
@@ -338,10 +357,9 @@ namespace APSIM.Shared.Soils
         /// <param name="fromValues">The from values.</param>
         /// <param name="fromThickness">The from thickness.</param>
         /// <param name="toThickness">To thickness.</param>
-        /// <param name="soil">The soil</param>
+        /// <param name="soil">The soil.</param>
         /// <returns></returns>
-        private static double[] MapSW(double[] fromValues, double[] fromThickness,
-                                      double[] toThickness, Soil soil)
+        private static double[] MapSW(double[] fromValues, double[] fromThickness, double[] toThickness, Soil soil)
         {
             if (fromValues == null || fromThickness == null)
                 return null;
@@ -360,7 +378,23 @@ namespace APSIM.Shared.Soils
             double[] massValues = MathUtilities.Multiply(values.ToArray(), thickness.ToArray());
 
             // Convert mass back to concentration and return
-            return MathUtilities.Divide(MapMass(massValues, thickness.ToArray(), toThickness), toThickness);
+            double[] newValues = MathUtilities.Divide(MapMass(massValues, thickness.ToArray(), toThickness), toThickness);
+
+            // Get the first crop ll or ll15.
+            double[] LowerBound;
+            if (soil.Water.Crops.Count > 0)
+                LowerBound = LLMapped(soil.Water.Crops[0], toThickness);
+            else
+                LowerBound = LL15Mapped(soil, toThickness);
+            if (LowerBound == null)
+                throw new Exception("Cannot find crop lower limit or LL15 in soil");
+
+            // Make sure all SW values below LastIndex don't go below CLL.
+            int bottomLayer = fromThickness.Length - 1;
+            for (int i = bottomLayer + 1; i < toThickness.Length; i++)
+                newValues[i] = Math.Max(newValues[i], LowerBound[i]);
+
+            return newValues;
         }
 
         /// <summary>Map soil variables from one layer structure to another.</summary>
@@ -444,15 +478,6 @@ namespace APSIM.Shared.Soils
             return ToMass;
         }
 
-        /// <summary>Bulk density - mapped to the specified layer structure. Units: mm/mm</summary>
-        /// <param name="soil">The soil.</param>
-        /// <param name="ToThickness">To thickness.</param>
-        /// <returns></returns>
-        public static double[] BDMapped(Soil soil, double[] ToThickness)
-        {
-            return MapConcentration(soil.Water.BD, soil.Water.Thickness, ToThickness, soil.Water.BD.Last());
-        }
-
         /// <summary>AirDry - mapped to the specified layer structure. Units: mm/mm        /// </summary>
         /// <param name="soil">The soil.</param>
         /// <param name="ToThickness">To thickness.</param>
@@ -462,11 +487,29 @@ namespace APSIM.Shared.Soils
             return MapConcentration(soil.Water.AirDry, soil.Water.Thickness, ToThickness, soil.Water.AirDry.Last());
         }
 
+        /// <summary>Crop lower limit - mapped to the specified layer structure. Units: mm/mm        /// </summary>
+        /// <param name="crop">The crop.</param>
+        /// <param name="ToThickness">To thickness.</param>
+        /// <returns></returns>
+        private static double[] LLMapped(SoilCrop crop, double[] ToThickness)
+        {
+            return MapConcentration(crop.LL, crop.Thickness, ToThickness, MathUtilities.LastValue(crop.LL));
+        }
+
+        /// <summary>Bulk density - mapped to the specified layer structure. Units: mm/mm</summary>
+        /// <param name="soil">The soil.</param>
+        /// <param name="ToThickness">To thickness.</param>
+        /// <returns></returns>
+        internal static double[] BDMapped(Soil soil, double[] ToThickness)
+        {
+            return MapConcentration(soil.Water.BD, soil.Water.Thickness, ToThickness, soil.Water.BD.Last());
+        }
+
         /// <summary>Lower limit 15 bar - mapped to the specified layer structure. Units: mm/mm        /// </summary>
         /// <param name="soil">The soil.</param>
         /// <param name="ToThickness">To thickness.</param>
         /// <returns></returns>
-        public static double[] LL15Mapped(Soil soil, double[] ToThickness)
+        internal static double[] LL15Mapped(Soil soil, double[] ToThickness)
         {
             return MapConcentration(soil.Water.LL15, soil.Water.Thickness, ToThickness, soil.Water.LL15.Last());
         }
@@ -475,7 +518,7 @@ namespace APSIM.Shared.Soils
         /// <param name="soil">The soil.</param>
         /// <param name="ToThickness">To thickness.</param>
         /// <returns></returns>
-        public static double[] DULMapped(Soil soil, double[] ToThickness)
+        internal static double[] DULMapped(Soil soil, double[] ToThickness)
         {
             return MapConcentration(soil.Water.DUL, soil.Water.Thickness, ToThickness, soil.Water.DUL.Last());
         }

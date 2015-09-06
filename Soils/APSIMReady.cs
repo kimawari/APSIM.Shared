@@ -60,9 +60,7 @@ namespace APSIM.Shared.Soils
                         soil.Nitrogen.Thickness = sample.Thickness;
                     }
                     soil.Nitrogen.NO3 = sample.NO3;
-                    for (int i = 0; i < soil.Nitrogen.NO3.Length; i++)
-                        if (double.IsNaN(soil.Nitrogen.NO3[i]))
-                            soil.Nitrogen.NO3[i] = 0.01;
+                    MathUtilities.ReplaceMissingValues(soil.Nitrogen.NO3, 0.01);
                 }
 
                 if (sample.NH4 != null)
@@ -73,9 +71,7 @@ namespace APSIM.Shared.Soils
                         soil.Nitrogen.Thickness = sample.Thickness;
                     }
                     soil.Nitrogen.NH4 = sample.NH4;
-                    for (int i = 0; i < soil.Nitrogen.NH4.Length; i++)
-                        if (double.IsNaN(soil.Nitrogen.NH4[i]))
-                            soil.Nitrogen.NH4[i] = 0.01;
+                    MathUtilities.ReplaceMissingValues(soil.Nitrogen.NH4, 0.01);
                 }
 
                 if (sample.OC != null)
@@ -86,6 +82,7 @@ namespace APSIM.Shared.Soils
                                       MathUtilities.LastValue(sample.OC));
                     soil.SoilOrganicMatter.OC = values;
                     soil.SoilOrganicMatter.Thickness = thickness;
+                    MathUtilities.ReplaceMissingValues(soil.SoilOrganicMatter.OC, 0.01);
                 }
                 if (sample.PH != null)
                 {
@@ -95,6 +92,7 @@ namespace APSIM.Shared.Soils
                                       MathUtilities.LastValue(sample.PH));
                     soil.Analysis.PH = values;
                     soil.Analysis.Thickness = thickness;
+                    MathUtilities.ReplaceMissingValues(soil.Analysis.PH, 7);
                 }
 
                 if (sample.ESP != null)
@@ -105,6 +103,7 @@ namespace APSIM.Shared.Soils
                                       MathUtilities.LastValue(sample.ESP));
                     soil.Analysis.ESP = values;
                     soil.Analysis.Thickness = thickness;
+                    MathUtilities.ReplaceMissingValues(soil.Analysis.ESP, 0);
                 }
 
                 if (sample.EC != null)
@@ -115,6 +114,7 @@ namespace APSIM.Shared.Soils
                                       MathUtilities.LastValue(sample.EC));
                     soil.Analysis.EC = values;
                     soil.Analysis.Thickness = thickness;
+                    MathUtilities.ReplaceMissingValues(soil.Analysis.EC, 0);
                 }
 
                 if (sample.CL != null)
@@ -125,6 +125,7 @@ namespace APSIM.Shared.Soils
                                       0.0);
                     soil.Analysis.CL = values;
                     soil.Analysis.Thickness = thickness;
+                    MathUtilities.ReplaceMissingValues(soil.Analysis.CL, 0);
                 }
             }
 
@@ -159,10 +160,7 @@ namespace APSIM.Shared.Soils
             return false;
         }
 
-
-        /// <summary>
-        /// Takes values from SoilValues and puts them at the bottom of SampleValues.  
-        /// </summary>
+        /// <summary>Takes values from SoilValues and puts them at the bottom of SampleValues.</summary>
         private static void InFillValues(ref double[] SampleValues, ref double[] SampleThickness,
                                          double[] SoilValues, double[] SoilThickness)
         {
@@ -232,9 +230,5 @@ namespace APSIM.Shared.Soils
                 soil.Water.SW = soil.InitialWater.SW(soil);
             soil.InitialWater = null;            
         }
-      
-
-       
-
     }
 }

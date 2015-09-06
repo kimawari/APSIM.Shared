@@ -550,6 +550,18 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Replace missing values with 'replacementValue'
+        /// </summary>
+        /// <param name="values">The values to search through.</param>
+        /// <param name="replacementValue">The value to use as the replacement.</param>
+        public static void ReplaceMissingValues(double[] values, double replacementValue)
+        {
+            for (int i = 0; i < values.Length; i++)
+                if (double.IsNaN(values[i]))
+                    values[i] = replacementValue;
+        }
+
+        /// <summary>
         /// Convert an array of strings to an array of doubles
         /// </summary>
         static public double[] StringsToDoubles(IList Values)
