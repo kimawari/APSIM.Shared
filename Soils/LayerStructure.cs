@@ -86,7 +86,7 @@ namespace APSIM.Shared.Soils
                 {
                     soilWater.KLAT = MapConcentration(soilWater.KLAT, soilWater.Thickness, thickness, MathUtilities.LastValue(soilWater.KLAT));
                     soilWater.MWCON = MapConcentration(soilWater.MWCON, soilWater.Thickness, thickness, MathUtilities.LastValue(soilWater.MWCON));
-                    soilWater.SWCON = MapConcentration(soilWater.SWCON, soilWater.Thickness, thickness, MathUtilities.LastValue(soilWater.SWCON));
+                    soilWater.SWCON = MapConcentration(soilWater.SWCON, soilWater.Thickness, thickness, 0.0);
 
                     soilWater.Thickness = thickness;
                 }
@@ -113,11 +113,11 @@ namespace APSIM.Shared.Soils
                 }
 
                 if (soilOrganicMatter.FBiom != null)
-                    MathUtilities.ReplaceMissingValues(soilOrganicMatter.FBiom, 0.0);
+                    MathUtilities.ReplaceMissingValues(soilOrganicMatter.FBiom, MathUtilities.LastValue(soilOrganicMatter.FBiom));
                 if (soilOrganicMatter.FInert != null)
-                    MathUtilities.ReplaceMissingValues(soilOrganicMatter.FInert, 0.0);
+                    MathUtilities.ReplaceMissingValues(soilOrganicMatter.FInert, MathUtilities.LastValue(soilOrganicMatter.FInert));
                 if (soilOrganicMatter.OC != null)
-                    MathUtilities.ReplaceMissingValues(soilOrganicMatter.OC, 0.0);
+                    MathUtilities.ReplaceMissingValues(soilOrganicMatter.OC, MathUtilities.LastValue(soilOrganicMatter.OC));
             }
         }
 
@@ -242,11 +242,11 @@ namespace APSIM.Shared.Soils
             if (swim != null && swim.SwimSoluteParameters != null && !MathUtilities.AreEqual(thickness, swim.SwimSoluteParameters.Thickness))
             {
                 swim.SwimSoluteParameters.NO3Exco = MapConcentration(swim.SwimSoluteParameters.NO3Exco, swim.SwimSoluteParameters.Thickness, thickness, MathUtilities.LastValue(swim.SwimSoluteParameters.NO3Exco));
-                swim.SwimSoluteParameters.NO3FIP = MapConcentration(swim.SwimSoluteParameters.NO3FIP, swim.SwimSoluteParameters.Thickness, thickness, MathUtilities.LastValue(swim.SwimSoluteParameters.NO3FIP));
-                swim.SwimSoluteParameters.NH4Exco = MapConcentration(swim.SwimSoluteParameters.NH4Exco, swim.SwimSoluteParameters.Thickness, thickness, MathUtilities.LastValue(swim.SwimSoluteParameters.NH4Exco));
-                swim.SwimSoluteParameters.NH4FIP = MapConcentration(swim.SwimSoluteParameters.NH4FIP, swim.SwimSoluteParameters.Thickness, thickness, MathUtilities.LastValue(swim.SwimSoluteParameters.NH4FIP));
+                swim.SwimSoluteParameters.NO3FIP = MapConcentration(swim.SwimSoluteParameters.NO3FIP, swim.SwimSoluteParameters.Thickness, thickness, 0.0);      // Making these use the LastValue causes C:/Apsim/Tests/UserRuns/WinteringSystems/BaseSimulation.sum to fail
+                swim.SwimSoluteParameters.NH4Exco = MapConcentration(swim.SwimSoluteParameters.NH4Exco, swim.SwimSoluteParameters.Thickness, thickness, 0.0); 
+                swim.SwimSoluteParameters.NH4FIP = MapConcentration(swim.SwimSoluteParameters.NH4FIP, swim.SwimSoluteParameters.Thickness, thickness, 0.0);  
                 swim.SwimSoluteParameters.UreaExco = MapConcentration(swim.SwimSoluteParameters.UreaExco, swim.SwimSoluteParameters.Thickness, thickness, MathUtilities.LastValue(swim.SwimSoluteParameters.UreaExco));
-                swim.SwimSoluteParameters.UreaFIP = MapConcentration(swim.SwimSoluteParameters.UreaFIP, swim.SwimSoluteParameters.Thickness, thickness, MathUtilities.LastValue(swim.SwimSoluteParameters.UreaFIP));
+                swim.SwimSoluteParameters.UreaFIP = MapConcentration(swim.SwimSoluteParameters.UreaFIP, swim.SwimSoluteParameters.Thickness, thickness, 0.0);   
                 swim.SwimSoluteParameters.ClExco = MapConcentration(swim.SwimSoluteParameters.ClExco, swim.SwimSoluteParameters.Thickness, thickness, MathUtilities.LastValue(swim.SwimSoluteParameters.ClExco));
                 swim.SwimSoluteParameters.ClFIP = MapConcentration(swim.SwimSoluteParameters.ClFIP, swim.SwimSoluteParameters.Thickness, thickness, MathUtilities.LastValue(swim.SwimSoluteParameters.ClFIP));
                 swim.SwimSoluteParameters.TracerExco = MapConcentration(swim.SwimSoluteParameters.TracerExco, swim.SwimSoluteParameters.Thickness, thickness, MathUtilities.LastValue(swim.SwimSoluteParameters.TracerExco));
@@ -298,7 +298,7 @@ namespace APSIM.Shared.Soils
             List<double> thickness = new List<double>();
             for (int i = 0; i < fromValues.Length; i++)
             {
-                if (double.IsNaN(fromValues[i]))
+                if (!allowMissingValues && double.IsNaN(fromValues[i]))
                     break;
 
                 values.Add(fromValues[i]);
@@ -367,7 +367,7 @@ namespace APSIM.Shared.Soils
             // convert from values to a mass basis with a dummy bottom layer.
             List<double> values = new List<double>();
             values.AddRange(fromValues);
-            values.Add(MathUtilities.SecondLastValue(fromValues) * 0.8);
+            values.Add(MathUtilities.LastValue(fromValues) * 0.8);
             values.Add(MathUtilities.LastValue(fromValues) * 0.4);
             values.Add(0.0);
             List<double> thickness = new List<double>();
@@ -375,24 +375,27 @@ namespace APSIM.Shared.Soils
             thickness.Add(MathUtilities.LastValue(fromThickness));
             thickness.Add(MathUtilities.LastValue(fromThickness));
             thickness.Add(3000);
-            double[] massValues = MathUtilities.Multiply(values.ToArray(), thickness.ToArray());
-
-            // Convert mass back to concentration and return
-            double[] newValues = MathUtilities.Divide(MapMass(massValues, thickness.ToArray(), toThickness), toThickness);
 
             // Get the first crop ll or ll15.
             double[] LowerBound;
             if (soil.Water.Crops.Count > 0)
-                LowerBound = LLMapped(soil.Water.Crops[0], toThickness);
+                LowerBound = LLMapped(soil.Water.Crops[0], thickness.ToArray());
             else
-                LowerBound = LL15Mapped(soil, toThickness);
+                LowerBound = LL15Mapped(soil, thickness.ToArray());
             if (LowerBound == null)
                 throw new Exception("Cannot find crop lower limit or LL15 in soil");
 
             // Make sure all SW values below LastIndex don't go below CLL.
             int bottomLayer = fromThickness.Length - 1;
-            for (int i = bottomLayer + 1; i < toThickness.Length; i++)
-                newValues[i] = Math.Max(newValues[i], LowerBound[i]);
+            for (int i = bottomLayer + 1; i < thickness.Count; i++)
+                values[i] = Math.Max(values[i], LowerBound[i]);
+
+            double[] massValues = MathUtilities.Multiply(values.ToArray(), thickness.ToArray());
+
+            // Convert mass back to concentration and return
+            double[] newValues = MathUtilities.Divide(MapMass(massValues, thickness.ToArray(), toThickness), toThickness);
+
+
 
             return newValues;
         }

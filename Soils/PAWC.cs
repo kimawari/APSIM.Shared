@@ -6,7 +6,10 @@ using APSIM.Shared.Utilities;
 
 namespace APSIM.Shared.Soils
 {
-    class PAWC
+    /// <summary>
+    /// A collection of PAWC methods.
+    /// </summary>
+    public class PAWC
     {
         /// <summary>Return the plant available water CAPACITY of the soil. Units: mm/mm</summary>
         /// <param name="soil">The soil to calculate PAWC for.</param>

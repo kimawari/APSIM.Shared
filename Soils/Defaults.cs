@@ -35,6 +35,9 @@ namespace APSIM.Shared.Soils
                 }
                 if (crop.KL == null)
                     FillInKLForCrop(crop);
+
+                CheckCropForMissingValues(crop, soil);
+
             }
         }
 
@@ -115,6 +118,22 @@ namespace APSIM.Shared.Soils
 
                 if (soil.Analysis.PH != null && double.IsNaN(soil.Analysis.PH[i]))
                     soil.Analysis.PH[i] = 7;
+            }
+        }
+
+        /// <summary>Checks the crop for missing values.</summary>
+        /// <param name="crop">The crop.</param>
+        /// <param name="soil">The soil.</param>
+        private static void CheckCropForMissingValues(SoilCrop crop, Soil soil)
+        {
+            for (int i = 0; i < crop.Thickness.Length; i++)
+            {
+                if (crop.LL != null && double.IsNaN(crop.LL[i]))
+                    crop.LL[i] = soil.Water.LL15[i];
+                if (crop.KL != null && double.IsNaN(crop.KL[i]))
+                    crop.KL[i] = 0;
+                if (crop.XF != null && double.IsNaN(crop.XF[i]))
+                    crop.XF[i] = 0;
             }
         }
 

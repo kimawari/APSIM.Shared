@@ -55,7 +55,7 @@ namespace APSIM.Shared.Soils
                 ll = soil.Water.LL15;
                 PAWCmm = PAWC.OfSoilmm(soil);
             }
-            else
+            else 
             {
                 SoilCrop crop = soil.Water.Crops[cropIndex];
                 ll = crop.LL;

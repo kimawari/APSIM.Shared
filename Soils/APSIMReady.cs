@@ -20,20 +20,10 @@ namespace APSIM.Shared.Soils
         public static Soil Create(Soil soil)
         {
             Unit.Convert(soil);
+            RemoveInitialWater(soil);
             LayerStructure.Standardise(soil);
             Defaults.FillInMissingValues(soil);
             RemoveSamples(soil);
-            RemoveInitialWater(soil);
-
-            // Make sure SW doesn't go below LL15.
-            if (soil.Water.SW != null)
-            {
-                double[] sw = soil.Water.SW;
-                for (int i = 2; i < sw.Length; i++)
-                    sw[i] = Math.Max(sw[i], soil.Water.LL15[i]);
-
-                soil.Water.SW = sw;
-            }
 
             return soil;
         }
@@ -227,7 +217,14 @@ namespace APSIM.Shared.Soils
         private static void RemoveInitialWater(Soil soil)
         {
             if (soil.InitialWater != null)
+            {
                 soil.Water.SW = soil.InitialWater.SW(soil);
+
+                // If any sample also has SW then get rid of it. Initial Water takes
+                // priority.
+                foreach (Sample sample in soil.Samples)
+                    sample.SW = null;
+            }
             soil.InitialWater = null;            
         }
     }
