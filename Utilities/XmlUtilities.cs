@@ -905,63 +905,55 @@ namespace APSIM.Shared.Utilities
         /// </exception>
         public static object Deserialise(XmlReader Reader, Assembly assembly)
         {
-            try
+            object ReturnObj = null;
+            string TypeName = Reader.Name;
+            string xsiType = Reader.GetAttribute("xsi:type");
+            if (xsiType != null)
             {
-                object ReturnObj = null;
-                string TypeName = Reader.Name;
-                string xsiType = Reader.GetAttribute("xsi:type");
-                if (xsiType != null)
-                {
-                    TypeName = xsiType;
-                    XmlDocument doc = new XmlDocument();
-                    doc.AppendChild(doc.CreateElement(TypeName));
-                    doc.DocumentElement.InnerXml = Reader.ReadInnerXml();
-                    Reader = new XmlNodeReader(doc);
-                }
-                // Try using the pre built serialization assembly first.
-                string[] DeserializerFileNames = System.IO.Directory.GetFiles(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), 
-                                                                             "*.XmlSerializers.dll");
-
-                // Under MONO it seems that if a class is not in the serialization assembly then exception will 
-                // be thrown. Under windows this doesn't happen. For now, only use the prebuilt serialisation
-                // dll if on windows.
-                if ((Environment.OSVersion.Platform == PlatformID.Win32NT ||
-                    Environment.OSVersion.Platform == PlatformID.Win32Windows) &&
-                    DeserializerFileNames.Length > 0 &&
-                    File.Exists(DeserializerFileNames[0]))
-                {
-                    Assembly SerialiserAssembly = Assembly.LoadFile(DeserializerFileNames[0]);
-                    string SerialiserFullName = "Microsoft.Xml.Serialization.GeneratedAssembly." + TypeName + "Serializer";
-                    object Serialiser = SerialiserAssembly.CreateInstance(SerialiserFullName);
-
-                    if (Serialiser != null)
-                    {
-                        MethodInfo Deserialise = Serialiser.GetType().GetMethod("Deserialize", new Type[] { typeof(XmlReader) });
-                        if (Deserialise != null)
-                            ReturnObj = Deserialise.Invoke(Serialiser, new object[] { Reader });
-                    }
-                }
-
-                // if no pre built assembly found then deserialise manually.
-                if (ReturnObj == null)
-                {
-                    Type[] type = ReflectionUtilities.GetTypeWithoutNameSpace(TypeName, assembly);
-                    if (type.Length == 0)
-                        throw new Exception("Cannot deserialise because type: " + TypeName + " does not exist");
-                    if (type.Length > 1)
-                        throw new Exception("Cannot deserialise because found two classes with class name: " + TypeName);
-
-                    XmlSerializer serial = new XmlSerializer(type[0]);
-                    ReturnObj = serial.Deserialize(Reader);
-                }
-
-                return ReturnObj;
+                TypeName = xsiType;
+                XmlDocument doc = new XmlDocument();
+                doc.AppendChild(doc.CreateElement(TypeName));
+                doc.DocumentElement.InnerXml = Reader.ReadInnerXml();
+                Reader = new XmlNodeReader(doc);
             }
-            catch (Exception exp)
+            // Try using the pre built serialization assembly first.
+            string[] DeserializerFileNames = System.IO.Directory.GetFiles(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), 
+                                                                            "*.XmlSerializers.dll");
+
+            // Under MONO it seems that if a class is not in the serialization assembly then exception will 
+            // be thrown. Under windows this doesn't happen. For now, only use the prebuilt serialisation
+            // dll if on windows.
+            if ((Environment.OSVersion.Platform == PlatformID.Win32NT ||
+                Environment.OSVersion.Platform == PlatformID.Win32Windows) &&
+                DeserializerFileNames.Length > 0 &&
+                File.Exists(DeserializerFileNames[0]))
             {
-                Console.WriteLine(exp.Message);
-                return null;  // most likely invalid xml.
+                Assembly SerialiserAssembly = Assembly.LoadFile(DeserializerFileNames[0]);
+                string SerialiserFullName = "Microsoft.Xml.Serialization.GeneratedAssembly." + TypeName + "Serializer";
+                object Serialiser = SerialiserAssembly.CreateInstance(SerialiserFullName);
+
+                if (Serialiser != null)
+                {
+                    MethodInfo Deserialise = Serialiser.GetType().GetMethod("Deserialize", new Type[] { typeof(XmlReader) });
+                    if (Deserialise != null)
+                        ReturnObj = Deserialise.Invoke(Serialiser, new object[] { Reader });
+                }
             }
+
+            // if no pre built assembly found then deserialise manually.
+            if (ReturnObj == null)
+            {
+                Type[] type = ReflectionUtilities.GetTypeWithoutNameSpace(TypeName, assembly);
+                if (type.Length == 0)
+                    throw new Exception("Cannot deserialise because type: " + TypeName + " does not exist");
+                if (type.Length > 1)
+                    throw new Exception("Cannot deserialise because found two classes with class name: " + TypeName);
+
+                XmlSerializer serial = new XmlSerializer(type[0]);
+                ReturnObj = serial.Deserialize(Reader);
+            }
+
+            return ReturnObj;
         }
 
 

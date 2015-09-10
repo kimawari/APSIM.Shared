@@ -73,6 +73,9 @@ namespace APSIM.Shared.Utilities
             }
         }
 
+        /// <summary>A list of all completed jobs.</summary>
+        public List<IRunnable> CompletedJobs { get; set; }
+
         /// <summary>Occurs when all jobs completed.</summary>
         public event EventHandler AllJobsCompleted;
 
@@ -104,6 +107,7 @@ namespace APSIM.Shared.Utilities
         /// <param name="waitUntilFinished">if set to <c>true</c> [wait until finished].</param>
         public void Start(bool waitUntilFinished)
         {
+            CompletedJobs = new List<IRunnable>();
             SomeHadErrors = false;
             schedulerThread = new BackgroundWorker();
             schedulerThread.WorkerSupportsCancellation = true;
@@ -193,6 +197,7 @@ namespace APSIM.Shared.Utilities
                     SomeHadErrors = true;
                     jobs[i].Value.ErrorMessage = e.Error.Message;
                 }
+                CompletedJobs.Add(jobs[i].Value);
                 jobs.RemoveAt(i);
             }
         }
