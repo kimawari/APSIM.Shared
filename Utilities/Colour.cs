@@ -16,25 +16,22 @@ namespace APSIM.Shared.Utilities
     /// </summary>
     public class ColourUtilities
     {
-        private static Color[] colours = {
-                                        Color.FromArgb(228,26,28),
-                                        Color.FromArgb(55,126,184),
-                                        Color.FromArgb(77,175,74),
-                                        Color.FromArgb(152,78,163),
-                                        Color.FromArgb(255,127,0),
-                                        //Color.FromArgb(255,255,51),
-                                        Color.FromArgb(166,86,40),
-                                        Color.FromArgb(247,129,191),
-                                        Color.FromArgb(153,153,153),
-                                        Color.FromArgb(251,180,174),
-                                        Color.FromArgb(179,205,227),
-                                        Color.FromArgb(204,235,197),
-                                        Color.FromArgb(222,203,228),
-                                        Color.FromArgb(254,217,166),
-                                        //Color.FromArgb(255,255,204),
-                                        Color.FromArgb(229,216,189),
-                                        Color.FromArgb(253,218,236),
-                                        Color.FromArgb(242,242,242)                                         
+        /// <summary>
+        ///     Colour pallette optimised for colour blindness.
+        /// </summary>
+        /// <remarks>
+        ///     Colours come from:
+        ///     Wong, B. (2011) Color blindness, Nature Methods, Vol 8, No. 6.
+        /// </remarks>
+        public static Color[] Colours = {
+                                        Color.FromArgb(0,0,0),           // black
+                                        Color.FromArgb(230, 159, 0),     // orange
+                                        Color.FromArgb(86, 180, 233),    // sky blue
+                                        Color.FromArgb(0, 158, 115),     // bluish green
+                                        Color.FromArgb(0, 114, 178),     // blue
+                                        Color.FromArgb(213, 94, 0),      // reddish purple
+                                        Color.FromArgb(204, 121, 167),   // vermillion
+                                        Color.FromArgb(240, 228, 66),    // yellow
                                          };
 
 
@@ -45,9 +42,9 @@ namespace APSIM.Shared.Utilities
         /// <returns></returns>
         public static Color ChooseColour(int colourNumber)
         {
-            if (colourNumber >= colours.Length)
-                System.Math.DivRem(colourNumber, colours.Length, out colourNumber);
-            return colours[colourNumber];
+            if (colourNumber >= Colours.Length)
+                System.Math.DivRem(colourNumber, Colours.Length, out colourNumber);
+            return Colours[colourNumber];
         }        
         
         /// <summary>

@@ -605,6 +605,8 @@ namespace APSIM.Shared.Utilities
                                     newRow[column.ColumnName] = Convert.ToDouble(row[column]);
                                 else if (toDataType == typeof(int))
                                     newRow[column.ColumnName] = Convert.ToInt32(row[column]);
+                                else if (toDataType == typeof(string))
+                                    newRow[column.ColumnName] = row[column].ToString();
                                 else
                                     throw new Exception("Cannot convert from type '" + column.DataType.ToString() +
                                                         "' to type '" + toDataType.ToString() + "'");
