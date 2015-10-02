@@ -643,6 +643,7 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// A class encapsulating regression statistics.
         /// </summary>
+        [Serializable]
         public class RegrStats
         {
             /// <summary>
