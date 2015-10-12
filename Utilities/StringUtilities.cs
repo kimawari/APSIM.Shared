@@ -856,5 +856,23 @@ namespace APSIM.Shared.Utilities
                 inSt = parseSt;
             return result;
         }
+        /// <summary>
+        /// Removes string from end of a given string
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="remove"></param>
+        /// <returns></returns>
+        public static string RemoveTrailingString(string s, string remove)
+        {
+            if (s.EndsWith(remove))
+            {
+                int pos = s.LastIndexOf(remove);
+                return s.Substring(0, pos);
+            }
+            else
+                return s;
+
+        }
+
     }
 }
