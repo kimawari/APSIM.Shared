@@ -43,6 +43,9 @@ namespace APSIM.Shared.Utilities
         [NonSerialized]
         private BackgroundWorker schedulerThread = null;
 
+        /// <summary>All jobs done?</summary>
+        private bool allDone = false;
+
         /// <summary>
         /// Gets a value indicating whether there are more jobs to run.
         /// </summary>
@@ -53,7 +56,7 @@ namespace APSIM.Shared.Utilities
             {
                 lock (this)
                 {
-                    return jobs.Count > 0;
+                    return !allDone;
                 }
             }
         }
@@ -109,6 +112,7 @@ namespace APSIM.Shared.Utilities
         {
             CompletedJobs = new List<IRunnable>();
             SomeHadErrors = false;
+            allDone = false;
             schedulerThread = new BackgroundWorker();
             schedulerThread.WorkerSupportsCancellation = true;
             schedulerThread.WorkerReportsProgress = true;
@@ -121,6 +125,32 @@ namespace APSIM.Shared.Utilities
                 while (MoreJobsToRun)
                     Thread.Sleep(200);
             }
+        }
+
+        /// <summary>Run the jobs synchronously, without extra threads.</summary>
+        /// <remarks>Non threaded runs are useful for profiling.</remarks>
+        public void Run()
+        {
+            CompletedJobs = new List<IRunnable>();
+            SomeHadErrors = false;
+            allDone = false;
+            DoWorkEventArgs args = new DoWorkEventArgs(this);
+            foreach (KeyValuePair<BackgroundWorker, IRunnable> job in jobs)
+            {
+                try
+                {
+                    job.Value.Run(this, args);
+                    job.Value.IsCompleted = true;
+                    CompletedJobs.Add(job.Value);
+                }
+                catch (Exception err)
+                {
+                    job.Value.ErrorMessage = err.ToString();
+                    SomeHadErrors = true;
+                }
+            }
+            jobs.Clear();
+            allDone = true;
         }
 
         /// <summary>Stop all jobs currently running in the scheduler.</summary>
@@ -148,6 +178,7 @@ namespace APSIM.Shared.Utilities
         {
             if (AllJobsCompleted != null)
                 AllJobsCompleted.Invoke(this, new EventArgs());
+            allDone = true;
         }
 
         /// <summary>
@@ -160,7 +191,7 @@ namespace APSIM.Shared.Utilities
             BackgroundWorker bw = sender as BackgroundWorker;
             
             // Main worker thread for keeping jobs running
-            while (!bw.CancellationPending && MoreJobsToRun)
+            while (!bw.CancellationPending && JobCount > 0)
             {
                 int i = GetNextJobToRun();
                 if (i != -1)
