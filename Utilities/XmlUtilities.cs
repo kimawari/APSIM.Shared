@@ -917,7 +917,7 @@ namespace APSIM.Shared.Utilities
                 Reader = new XmlNodeReader(doc);
             }
             // Try using the pre built serialization assembly first.
-            string[] DeserializerFileNames = System.IO.Directory.GetFiles(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), 
+            string[] DeserializerFileNames = System.IO.Directory.GetFiles(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), 
                                                                             "*.XmlSerializers.dll");
 
             // Under MONO it seems that if a class is not in the serialization assembly then exception will 
@@ -962,8 +962,9 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         /// <param name="Component">The component.</param>
         /// <param name="WithNamespace">if set to <c>true</c> [with namespace].</param>
+        /// <param name="extraTypes">Optional extra types.</param>
         /// <returns>Returns the full path of the added model if successful. Null otherwise.</returns>
-        public static string Serialise(object Component, bool WithNamespace)
+        public static string Serialise(object Component, bool WithNamespace, Type[] extraTypes = null)
         {
             XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
             if (WithNamespace)
@@ -975,7 +976,7 @@ namespace APSIM.Shared.Utilities
             StreamWriter Writer = new StreamWriter(M);
 
             // Try using the pre built serialization assembly first.
-            string DeserializerFileName = System.IO.Path.ChangeExtension(Assembly.GetExecutingAssembly().Location,
+            string DeserializerFileName = System.IO.Path.ChangeExtension(Assembly.GetCallingAssembly().Location,
                                                                          ".XmlSerializers.dll");
 
             // Under MONO it seems that if a class is not in the serialization assembly then exception will 
@@ -998,7 +999,7 @@ namespace APSIM.Shared.Utilities
             }
             else
             {
-                XmlSerializer x = new XmlSerializer(Component.GetType());
+                XmlSerializer x = new XmlSerializer(Component.GetType(), extraTypes);
                 x.Serialize(Writer, Component, ns);
             }
                
