@@ -1030,7 +1030,10 @@ namespace APSIM.Shared.Utilities
         {
             string value = XmlUtilities.Value(fromParent, fromPath);
             if (value != string.Empty)
+            {
                 XmlUtilities.SetValue(toParent, toPath, value);
+                DeleteValue(fromParent, fromPath);
+            }
         }
     }
 }
