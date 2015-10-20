@@ -492,5 +492,41 @@ namespace APSIM.Shared.Utilities
                 return x.Name.CompareTo(y.Name);
             }
         }
+
+        /// <summary>
+        /// A type comparer.
+        /// </summary>
+        public class TypeComparer : IComparer<Type>
+        {
+            /// <summary>A type comparer that uses names.</summary>
+            /// <param name="x"></param>
+            /// <param name="y"></param>
+            /// <returns></returns>
+            public int Compare(Type x, Type y)
+            {
+                return x.Name.CompareTo(y.Name);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="interfaceType"></param>
+        /// <returns></returns>
+        public static List<Type> GetTypesThatHaveInterface(Type interfaceType)
+        {
+            List<Type> types = new List<Type>();
+
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach (Type t in assembly.GetTypes())
+                {
+                    if (interfaceType.IsAssignableFrom(t) && t.Name != interfaceType.Name && t.IsPublic)
+                        types.Add(t);
+                }
+            }
+
+            return types;
+        }
     }
 }
