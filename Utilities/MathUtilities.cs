@@ -556,9 +556,10 @@ namespace APSIM.Shared.Utilities
         /// <param name="replacementValue">The value to use as the replacement.</param>
         public static void ReplaceMissingValues(double[] values, double replacementValue)
         {
-            for (int i = 0; i < values.Length; i++)
-                if (double.IsNaN(values[i]))
-                    values[i] = replacementValue;
+            if (values != null)
+                for (int i = 0; i < values.Length; i++)
+                    if (double.IsNaN(values[i]))
+                        values[i] = replacementValue;
         }
 
         /// <summary>
