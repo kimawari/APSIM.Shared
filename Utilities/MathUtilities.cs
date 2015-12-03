@@ -647,6 +647,11 @@ namespace APSIM.Shared.Utilities
         public class RegrStats
         {
             /// <summary>
+            /// Name of the variable being analysed
+            /// </summary>
+            public string Name;
+
+            /// <summary>
             /// Number of observations
             /// </summary>
             public int n;
@@ -720,10 +725,11 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Calculate regression statistics for the given x and y values.
         /// </summary>
-        /// <param name="X"></param>
-        /// <param name="Y"></param>
+        /// <param name="name">Name of variable being analysed.</param>
+        /// <param name="X">Collection of X values.</param>
+        /// <param name="Y">Collection of Y values.</param>
         /// <returns></returns>
-        static public RegrStats CalcRegressionStats(IEnumerable X, IEnumerable Y)
+        static public RegrStats CalcRegressionStats(string name, IEnumerable X, IEnumerable Y)
         {
             RegrStats stats = new RegrStats();
             double SumX = 0;
@@ -744,6 +750,7 @@ namespace APSIM.Shared.Utilities
             double SumOfSquaredOPResiduals = 0; //SUM i=1->n  ((O(i) - P(i)) ^ 2)
             double SumOfSquaredSD = 0;          //SUM i=1->n  ((O(i) - Omean) ^ 2)
 
+            stats.Name = name;
             stats.n = 0;
             stats.m = 0.0;
             stats.c = 0.0;
