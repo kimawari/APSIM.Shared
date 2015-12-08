@@ -33,19 +33,11 @@ namespace APSIM.Shared.Utilities
             void Run(object sender, DoWorkEventArgs e);
         }
 
-        private class JobInfo
-        {
-            public BackgroundWorker worker;
-            public IRunnable job;
-        }
-
         /// <summary>The maximum number of processors used by this job manager.</summary>
         private int MaximumNumOfProcessors = 1;
 
-        private int numCompleted = 0;
-
         /// <summary>A job queue containing all jobs.</summary>
-        private List<JobInfo> jobs = new List<JobInfo>();
+        private List<KeyValuePair<BackgroundWorker, IRunnable>> jobs = new List<KeyValuePair<BackgroundWorker, IRunnable>>();
 
         /// <summary>Main scheduler thread that goes through all jobs and sets them running.</summary>
         [NonSerialized]
@@ -62,7 +54,10 @@ namespace APSIM.Shared.Utilities
         {
             get
             {
-                return !allDone;
+                lock (this)
+                {
+                    return !allDone;
+                }
             }
         }
 
@@ -74,25 +69,15 @@ namespace APSIM.Shared.Utilities
         {
             get
             {
-                return jobs.Count;
+                lock (this)
+                {
+                    return jobs.Count;
+                }
             }
         }
 
         /// <summary>A list of all completed jobs.</summary>
-        public List<IRunnable> CompletedJobs
-        {
-            get
-            {
-                List<IRunnable> completedJobs = new List<IRunnable>();
-                foreach (JobInfo job in jobs)
-                {
-                    if (job.job.IsCompleted)
-                        completedJobs.Add(job.job);
-                }
-                return completedJobs;
-            }
-        }
-
+        public List<IRunnable> CompletedJobs { get; set; }
 
         /// <summary>Occurs when all jobs completed.</summary>
         public event EventHandler AllJobsCompleted;
@@ -115,7 +100,7 @@ namespace APSIM.Shared.Utilities
         /// <param name="job">The job to add to the queue</param>
         public void AddJob(IRunnable job)
         {
-            lock (this) { jobs.Add(new JobInfo() { job = job }); }
+            lock (this) { jobs.Add(new KeyValuePair<BackgroundWorker, IRunnable>(null, job)); }
         }
 
         /// <summary>
@@ -125,6 +110,7 @@ namespace APSIM.Shared.Utilities
         /// <param name="waitUntilFinished">if set to <c>true</c> [wait until finished].</param>
         public void Start(bool waitUntilFinished)
         {
+            CompletedJobs = new List<IRunnable>();
             SomeHadErrors = false;
             allDone = false;
             schedulerThread = new BackgroundWorker();
@@ -145,20 +131,21 @@ namespace APSIM.Shared.Utilities
         /// <remarks>Non threaded runs are useful for profiling.</remarks>
         public void Run()
         {
+            CompletedJobs = new List<IRunnable>();
             SomeHadErrors = false;
             allDone = false;
             DoWorkEventArgs args = new DoWorkEventArgs(this);
-            foreach (JobInfo job in jobs)
+            foreach (KeyValuePair<BackgroundWorker, IRunnable> job in jobs)
             {
                 try
                 {
-                    job.job.Run(this, args);
-                    job.job.IsCompleted = true;
-                    CompletedJobs.Add(job.job);
+                    job.Value.Run(this, args);
+                    job.Value.IsCompleted = true;
+                    CompletedJobs.Add(job.Value);
                 }
                 catch (Exception err)
                 {
-                    job.job.ErrorMessage = err.ToString();
+                    job.Value.ErrorMessage = err.ToString();
                     SomeHadErrors = true;
                 }
             }
@@ -172,11 +159,11 @@ namespace APSIM.Shared.Utilities
             lock (this)
             {
                 // Change status of jobs.
-                foreach (JobInfo job in jobs)
+                foreach (KeyValuePair<BackgroundWorker, IRunnable> job in jobs)
                 {
-                    job.job.IsCompleted = true;
-                    if (job.worker.IsBusy)
-                        job.worker.CancelAsync();
+                    job.Value.IsCompleted = true;
+                    if (job.Key.IsBusy)
+                        job.Key.CancelAsync();
                 }
             }
 
@@ -202,26 +189,50 @@ namespace APSIM.Shared.Utilities
         private void DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker bw = sender as BackgroundWorker;
-
+            
             // Main worker thread for keeping jobs running
-            do
+            while (!bw.CancellationPending && JobCount > 0)
             {
                 int i = GetNextJobToRun();
                 if (i != -1)
                 {
-                    BackgroundWorker worker = new BackgroundWorker();
-                    jobs[i].worker = worker;
-                    worker.DoWork += jobs[i].job.Run;
-                    worker.WorkerSupportsCancellation = true;
-                    worker.RunWorkerAsync(this);
+                    lock (this) 
+                    {
+                        BackgroundWorker worker = new BackgroundWorker();
+                        jobs[i] = new KeyValuePair<BackgroundWorker,IRunnable>(worker, jobs[i].Value);
+                        worker.DoWork += jobs[i].Value.Run;
+                        worker.RunWorkerCompleted += OnJobCompleted;
+                        worker.WorkerSupportsCancellation = true;
+                        worker.RunWorkerAsync(this);
+                    }
                 }
-                else
-                    Thread.Sleep(30);
-
+                Thread.Sleep(300);
             }
-            while (!bw.CancellationPending && numCompleted < JobCount);
         }
 
+        /// <summary>
+        /// This event handler will be invoked, on the scheduler thread, everytime a job is completed.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
+        private void OnJobCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            BackgroundWorker bw = sender as BackgroundWorker;
+            
+            lock (this)
+            {
+                int i = GetJob(bw);
+                jobs[i].Value.IsCompleted = true;
+                if (e.Error != null)
+                {
+                    SomeHadErrors = true;
+                    jobs[i].Value.ErrorMessage = e.Error.Message;
+                }
+                CompletedJobs.Add(jobs[i].Value);
+                jobs.RemoveAt(i);
+            }
+        }
+        
         /// <summary>Gets a job</summary>
         /// <param name="bw">Background worker of job to find</param>
         /// <returns>The IRunnable job.</returns>
@@ -229,7 +240,7 @@ namespace APSIM.Shared.Utilities
         {
             for (int i = 0; i < jobs.Count; i++)
             {
-                if (jobs[i].worker == bw)
+                if (jobs[i].Key == bw)
                     return i;
             }
 
@@ -240,26 +251,25 @@ namespace APSIM.Shared.Utilities
         /// <returns>Index of job or -1.</returns>
         private int GetNextJobToRun()
         {
-            int index = 0;
-            int countRunning = 0;
-            numCompleted = 0;
-            foreach (JobInfo job in jobs)
+            lock (this)
             {
-                if (countRunning == MaximumNumOfProcessors)
+                int index = 0;
+                int countRunning = 0;
+                foreach (KeyValuePair<BackgroundWorker, IRunnable> job in jobs)
                 {
-                    return -1;
+                    if (countRunning == MaximumNumOfProcessors)
+                    {
+                        return -1;
+                    }
+
+                    // Is this job running?
+                    if (job.Key == null)
+                        return index;     // not running so return it to be run next.
+                    else if (job.Value.IsComputationallyTimeConsuming)
+                        countRunning++;   // is running.
+
+                    index++;
                 }
-
-                if (job.worker != null && !job.worker.IsBusy)
-                    numCompleted++;
-
-                // Is this job running?
-                if (job.worker == null)
-                    return index;     // not running so return it to be run next.
-                else if (job.job.IsComputationallyTimeConsuming && job.worker.IsBusy)
-                    countRunning++;   // is running.
-
-                index++;
             }
             
             return -1;
