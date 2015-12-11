@@ -660,12 +660,12 @@ namespace APSIM.Shared.Utilities
             /// <summary>
             /// The slope
             /// </summary>
-            public double m;
+            public double Slope;
 
             /// <summary>
             /// The intercept
             /// </summary>
-            public double c;
+            public double Intercept;
 
             /// <summary>
             /// Standard error of the slope
@@ -675,7 +675,7 @@ namespace APSIM.Shared.Utilities
             /// <summary>
             /// Standard error of the intercept
             /// </summary>
-            public double SEcoeff;
+            public double SEintercept;
 
             /// <summary>
             /// The R squared
@@ -683,24 +683,9 @@ namespace APSIM.Shared.Utilities
             public double R2;
 
             /// <summary>
-            /// 
+            /// The root mean squared error
             /// </summary>
-            public double ADJR2;
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public double R2YX;
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public double VarRatio;
-
-            /// <summary>
-            /// The root mean squared deviation
-            /// </summary>
-            public double RMSD;
+            public double RMSE;
 
             /// <summary>
             /// Nash-Sutcliff efficiency
@@ -738,7 +723,6 @@ namespace APSIM.Shared.Utilities
             double SumXY = 0;
             double SumX2 = 0;
             double SumY2 = 0;
-            double SumXYdiff2 = 0;
             double CSSX, CSSXY;
             double Xbar, Ybar;
             double TSS, TSSM;
@@ -753,15 +737,12 @@ namespace APSIM.Shared.Utilities
 
             stats.Name = name;
             stats.n = 0;
-            stats.m = 0.0;
-            stats.c = 0.0;
+            stats.Slope = 0.0;
+            stats.Intercept = 0.0;
             stats.SEslope = 0.0;
-            stats.SEcoeff = 0.0;
+            stats.SEintercept = 0.0;
             stats.R2 = 0.0;
-            stats.ADJR2 = 0.0;
-            stats.R2YX = 0.0;
-            stats.VarRatio = 0.0;
-            stats.RMSD = 0.0;
+            stats.RMSE = 0.0;
 
             int Num_points = 0;
             IEnumerator xEnum = X.GetEnumerator();
@@ -807,12 +788,12 @@ namespace APSIM.Shared.Utilities
             CSSXY = SumXY - SumX * SumY / Num_points;     // Corrected SS for products
             CSSX = SumX2 - SumX * SumX / Num_points;      // Corrected SS for X
             stats.n = Num_points;
-            stats.m = CSSXY / CSSX;                             // Calculate slope
-            stats.c = Ybar - stats.m * Xbar;                          // Calculate intercept
+            stats.Slope = CSSXY / CSSX;                             // Calculate slope
+            stats.Intercept = Ybar - stats.Slope * Xbar;                          // Calculate intercept
 
             TSS = SumY2 - SumY * SumY / Num_points;       // Corrected SS for Y = Sum((y-ybar)^2)
             TSSM = TSS / (Num_points - 1);                // Total mean SS
-            REGSS = stats.m * CSSXY;                            // SS due to regression = Sum((yest-ybar)^2)
+            REGSS = stats.Slope * CSSXY;                            // SS due to regression = Sum((yest-ybar)^2)
             REGSSM = REGSS;                               // Regression mean SS
             RESIDSS = TSS - REGSS;                        // SS about the regression = Sum((y-yest)^2)
 
@@ -821,22 +802,14 @@ namespace APSIM.Shared.Utilities
             else
                 RESIDSSM = 0.0;
 
-            stats.RMSD = System.Math.Sqrt(RESIDSSM);                        // Root mean square deviation
-            stats.VarRatio = REGSSM / RESIDSSM;                  // Variance ratio - for F test (1,n-2)
+            stats.RMSE = System.Math.Sqrt(RESIDSSM);                        // Root mean square deviation
             stats.R2 = 1.0 - (RESIDSS / TSS);                   // Unadjusted R2 calculated from SS
-            stats.ADJR2 = 1.0 - (RESIDSSM / TSSM);              // Adjusted R2 calculated from mean SS
-            if (stats.ADJR2 < 0.0)
-                stats.ADJR2 = 0.0;
             S2 = RESIDSSM;                                // Resid. MSS is estimate of variance
             // about the regression
             stats.SEslope = System.Math.Sqrt(S2) / System.Math.Sqrt(CSSX);              // Standard errors estimated from S2 & CSSX
-            stats.SEcoeff = System.Math.Sqrt(S2) * System.Math.Sqrt(SumX2 / (Num_points * CSSX));
+            stats.SEintercept = System.Math.Sqrt(S2) * System.Math.Sqrt(SumX2 / (Num_points * CSSX));
 
             // Statistical parameters of Butler, Mayer and Silburn
-
-            stats.R2YX = 1.0 - (SumXYdiff2 / TSS);              // If you are on the 1:1 line then R2YX=1
-
-            // If R2YX is -ve then the 1:1 line is a worse fit than the line y=ybar
 
             //      MeanAbsError = SumXYdiff / Num_points;
             //      MeanAbsPerError = SumXYDiffPer / Num_points;  // very dangerous when y is low
