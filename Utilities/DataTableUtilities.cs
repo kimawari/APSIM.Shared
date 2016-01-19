@@ -599,7 +599,9 @@ namespace APSIM.Shared.Utilities
                             bool conversionNeeded = column.DataType != toDataType;
                             if (conversionNeeded)
                             {
-                                if (toDataType == typeof(float))
+                                if (row[column].ToString() == "-1.#IND00")
+                                    newRow[column.ColumnName] = double.NaN;
+                                else if (toDataType == typeof(float))
                                     newRow[column.ColumnName] = Convert.ToSingle(row[column]);
                                 else if (toDataType == typeof(double))
                                     newRow[column.ColumnName] = Convert.ToDouble(row[column]);

@@ -118,8 +118,7 @@ namespace APSIM.Shared.Utilities
             schedulerThread.WorkerReportsProgress = true;
             schedulerThread.DoWork += DoWork;
             schedulerThread.RunWorkerAsync();
-            schedulerThread.RunWorkerCompleted += OnWorkerCompleted;
-
+                
             if (waitUntilFinished)
             {
                 while (MoreJobsToRun)
@@ -171,16 +170,6 @@ namespace APSIM.Shared.Utilities
                 schedulerThread.CancelAsync();            
         }
 
-        /// <summary>Called when [worker completed].</summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
-        private void OnWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (AllJobsCompleted != null)
-                AllJobsCompleted.Invoke(this, new EventArgs());
-            allDone = true;
-        }
-
         /// <summary>
         /// Main DoWork method for the scheduler thread. NB this does NOT run on the UI thread.
         /// </summary>
@@ -208,6 +197,10 @@ namespace APSIM.Shared.Utilities
                 }
                 Thread.Sleep(300);
             }
+
+            if (AllJobsCompleted != null)
+                AllJobsCompleted.Invoke(this, new EventArgs());
+            allDone = true;
         }
 
         /// <summary>
