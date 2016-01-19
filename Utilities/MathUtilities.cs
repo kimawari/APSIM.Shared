@@ -715,7 +715,7 @@ namespace APSIM.Shared.Utilities
         /// <param name="X">Collection of X values.</param>
         /// <param name="Y">Collection of Y values.</param>
         /// <returns></returns>
-        static public RegrStats CalcRegressionStats(string name, IEnumerable X, IEnumerable Y)
+        static public RegrStats CalcRegressionStats(string name, IEnumerable Y, IEnumerable X)
         {
             RegrStats stats = new RegrStats();
             double SumX = 0;
@@ -762,10 +762,10 @@ namespace APSIM.Shared.Utilities
                     SumY2 = SumY2 + yValue * yValue;       // SS for y
                     SumXY = SumXY + xValue * yValue;       // SS for products
 
-                    SumOfSquaredResiduals += System.Math.Pow(xValue - yValue, 2);
-                    SumOfResiduals += xValue - yValue;
-                    SumOfAbsResiduals += System.Math.Abs(xValue - yValue);
-                    SumOfSquaredOPResiduals += System.Math.Pow(yValue - xValue, 2);
+                    SumOfSquaredResiduals += Math.Pow(yValue - xValue, 2);
+                    SumOfResiduals += yValue - xValue;
+                    SumOfAbsResiduals += Math.Abs(yValue - xValue);
+                    SumOfSquaredOPResiduals += Math.Pow(yValue - xValue, 2);
 
                     Num_points++;
                 }
@@ -781,44 +781,40 @@ namespace APSIM.Shared.Utilities
             {
                 double xValue = Convert.ToDouble(xEnum.Current);
                 double yValue = Convert.ToDouble(yEnum.Current);
-                if (!double.IsNaN(xValue) && !double.IsNaN(yValue) )
-                    SumOfSquaredSD += System.Math.Pow(xValue - Xbar, 2);
+                if (!double.IsNaN(xValue) && !double.IsNaN(yValue))
+                {
+                    SumOfSquaredSD += Math.Pow(xValue - Xbar, 2);
+                }
             }
 
             CSSXY = SumXY - SumX * SumY / Num_points;     // Corrected SS for products
             CSSX = SumX2 - SumX * SumX / Num_points;      // Corrected SS for X
             stats.n = Num_points;
-            stats.Slope = CSSXY / CSSX;                             // Calculate slope
-            stats.Intercept = Ybar - stats.Slope * Xbar;                          // Calculate intercept
+            stats.Slope = CSSXY / CSSX;                   // Calculate slope
+            stats.Intercept = Ybar - stats.Slope * Xbar;  // Calculate intercept
 
             TSS = SumY2 - SumY * SumY / Num_points;       // Corrected SS for Y = Sum((y-ybar)^2)
             TSSM = TSS / (Num_points - 1);                // Total mean SS
-            REGSS = stats.Slope * CSSXY;                            // SS due to regression = Sum((yest-ybar)^2)
+            REGSS = stats.Slope * CSSXY;                  // SS due to regression = Sum((yest-ybar)^2)
             REGSSM = REGSS;                               // Regression mean SS
             RESIDSS = TSS - REGSS;                        // SS about the regression = Sum((y-yest)^2)
 
             if (Num_points > 2)                           // MUST HAVE MORE THAN TWO POINTS FOR REG
-                RESIDSSM = RESIDSS / (Num_points - 2);     // Residual mean SS, variance of residual
+                RESIDSSM = RESIDSS / (Num_points - 2);    // Residual mean SS, variance of residual
             else
                 RESIDSSM = 0.0;
 
-            stats.RMSE = System.Math.Sqrt(RESIDSSM);                        // Root mean square deviation
-            stats.R2 = 1.0 - (RESIDSS / TSS);                   // Unadjusted R2 calculated from SS
-            S2 = RESIDSSM;                                // Resid. MSS is estimate of variance
+            stats.RMSE = Math.Sqrt(SumOfSquaredResiduals / stats.n); // Root mean square error
+            stats.R2 = 1.0 - (RESIDSS / TSS);                        // Unadjusted R2 calculated from SS
+            S2 = RESIDSSM;                                           // Resid. MSS is estimate of variance
             // about the regression
             stats.SEslope = System.Math.Sqrt(S2) / System.Math.Sqrt(CSSX);              // Standard errors estimated from S2 & CSSX
             stats.SEintercept = System.Math.Sqrt(S2) * System.Math.Sqrt(SumX2 / (Num_points * CSSX));
 
-            // Statistical parameters of Butler, Mayer and Silburn
-
-            //      MeanAbsError = SumXYdiff / Num_points;
-            //      MeanAbsPerError = SumXYDiffPer / Num_points;  // very dangerous when y is low
-            // could use MeanAbsError over mean
-
-            stats.NSE = 1 - SumOfSquaredResiduals / SumOfSquaredSD;                    // Nash-Sutcliff efficiency
-            stats.ME = 1 / (double)stats.n * SumOfResiduals;                         // Mean error
-            stats.MAE = 1 / (double)stats.n * SumOfAbsResiduals;                     // Mean Absolute Error
-            stats.RSR = Sqr(SumOfSquaredOPResiduals) / Sqr(SumOfSquaredSD);  // Root mean square error to Standard deviation Ratio
+            stats.NSE = 1.0 - SumOfSquaredResiduals / SumOfSquaredSD;     // Nash-Sutcliff efficiency
+            stats.ME =  1.0 / (double)stats.n * SumOfResiduals;           // Mean error
+            stats.MAE = 1.0 / (double)stats.n * SumOfAbsResiduals;        // Mean Absolute Error
+            stats.RSR = stats.RMSE / Math.Sqrt((1.0 / (stats.n - 1)) * SumOfSquaredSD);         // Root mean square error to Standard deviation Ratio
             
             return stats;
         }
