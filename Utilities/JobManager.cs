@@ -200,6 +200,12 @@ namespace APSIM.Shared.Utilities
 
             if (AllJobsCompleted != null)
                 AllJobsCompleted.Invoke(this, new EventArgs());
+
+            // Look for errors in jobs.
+            foreach (IRunnable job in CompletedJobs)
+                if (job.ErrorMessage != null)
+                    SomeHadErrors = true;
+
             allDone = true;
         }
 
