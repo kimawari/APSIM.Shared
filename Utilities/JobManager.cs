@@ -117,6 +117,7 @@ namespace APSIM.Shared.Utilities
             schedulerThread.WorkerSupportsCancellation = true;
             schedulerThread.WorkerReportsProgress = true;
             schedulerThread.DoWork += DoWork;
+            schedulerThread.RunWorkerCompleted += OnWorkerCompleted;
             schedulerThread.RunWorkerAsync();
                 
             if (waitUntilFinished)
@@ -170,6 +171,22 @@ namespace APSIM.Shared.Utilities
                 schedulerThread.CancelAsync();            
         }
 
+        /// <summary>Called when [worker completed].</summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
+        private void OnWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (AllJobsCompleted != null)
+                AllJobsCompleted.Invoke(this, new EventArgs());
+
+            // Look for errors in jobs.
+            foreach (IRunnable job in CompletedJobs)
+                if (job.ErrorMessage != null)
+                    SomeHadErrors = true;
+
+            allDone = true;
+        }
+
         /// <summary>
         /// Main DoWork method for the scheduler thread. NB this does NOT run on the UI thread.
         /// </summary>
@@ -197,16 +214,6 @@ namespace APSIM.Shared.Utilities
                 }
                 Thread.Sleep(300);
             }
-
-            if (AllJobsCompleted != null)
-                AllJobsCompleted.Invoke(this, new EventArgs());
-
-            // Look for errors in jobs.
-            foreach (IRunnable job in CompletedJobs)
-                if (job.ErrorMessage != null)
-                    SomeHadErrors = true;
-
-            allDone = true;
         }
 
         /// <summary>
