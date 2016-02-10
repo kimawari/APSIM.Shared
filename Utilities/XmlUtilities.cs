@@ -1035,6 +1035,20 @@ namespace APSIM.Shared.Utilities
                 DeleteValue(fromParent, fromPath);
             }
         }
+
+        /// <summary>Helper class to ignore namespaces when de-serializing</summary>
+        public class NamespaceIgnorantXmlTextReader : XmlTextReader
+        {
+            /// <summary>Constructor</summary>
+            /// <param name="reader">The text reader.</param>
+            public NamespaceIgnorantXmlTextReader(System.IO.TextReader reader) : base(reader) { }
+
+            /// <summary>Override the namespace.</summary>
+            public override string NamespaceURI
+            {
+                get { return ""; }
+            }
+        }
     }
 }
 

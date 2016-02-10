@@ -11,6 +11,7 @@ namespace APSIM.Shared.Utilities
     using System.Net.Sockets;
     using System.Text;
     using System.Threading;
+    using System.Xml.Serialization;
 
     /// <summary>
     /// A class containing some web utilities
@@ -82,6 +83,35 @@ namespace APSIM.Shared.Utilities
                 if (Server != null) Server.Close();
             }
             return Response;
+        }
+
+        /// <summary>Call REST web service.</summary>
+        /// <typeparam name="T">The return type</typeparam>
+        /// <param name="url">The URL of the REST service.</param>
+        /// <returns>The return data</returns>
+        public static T CallRESTService<T>(string url)
+        {
+            WebRequest wrGETURL;
+            wrGETURL = WebRequest.Create(url);
+            wrGETURL.Method = "GET";
+            wrGETURL.ContentType = @"application/xml; charset=utf-8";
+            wrGETURL.ContentLength = 0;
+            using (HttpWebResponse webresponse = wrGETURL.GetResponse() as HttpWebResponse)
+            {
+                Encoding enc = System.Text.Encoding.GetEncoding("utf-8");
+                // read response stream from response object
+                using (StreamReader loResponseStream = new StreamReader(webresponse.GetResponseStream(), enc))
+                {
+                    string st = loResponseStream.ReadToEnd();
+                    if (typeof(T).Name == "Object")
+                        return default(T);
+
+                    XmlSerializer serializer = new XmlSerializer(typeof(T));
+
+                    //ResponseData responseData;
+                    return (T)serializer.Deserialize(new XmlUtilities.NamespaceIgnorantXmlTextReader(new StringReader(st)));
+                }
+            }
         }
     }
 }
