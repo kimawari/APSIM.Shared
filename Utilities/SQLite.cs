@@ -309,6 +309,64 @@ namespace APSIM.Shared.Utilities
             Finalize(stmHandle);
         }
 
+        private class Column
+        {
+            public string name;
+            public Type dataType;
+            public List<object> values = new List<object>();
+
+            public void addIntValue(int value)
+            {
+                if (dataType == null)
+                    dataType = typeof(int);
+                values.Add(value);
+            }
+
+            public void addDoubleValue(double value)
+            {
+                if (dataType == null || dataType == typeof(int))
+                    dataType = typeof(double);
+                values.Add(value);
+            }
+            public void addTextValue(string value)
+            {
+                DateTime date;
+                if (DateTime.TryParse(value, out date))
+                {
+                    if (dataType == null)
+                        dataType = typeof(DateTime);
+                    values.Add(date);
+                }
+                else
+                {
+                    dataType = typeof(string);
+                    values.Add(value);
+                }
+            }
+            public void addNull()
+            {
+                values.Add(null);
+            }
+
+            internal object GetValue(int rowIndex)
+            {
+                if (rowIndex >= values.Count)
+                    throw new Exception("Not enough values found when creating DataTable from SQLITE query.");
+                if (values[rowIndex] == null)
+                    return DBNull.Value;
+                else if (dataType == typeof(int))
+                    return Convert.ToInt32(values[rowIndex]);
+                else if (dataType == typeof(double))
+                    return Convert.ToDouble(values[rowIndex]);
+                else if (dataType == typeof(DateTime))
+                    return Convert.ToDateTime(values[rowIndex]);
+                else
+                    return values[rowIndex].ToString();
+
+            }
+        }
+
+
         /// <summary>
         /// Executes a query and stores the results in
         /// a DataTable
@@ -328,139 +386,59 @@ namespace APSIM.Shared.Utilities
 
             // Create a datatable that may have column of type object. This occurs
             // when the first row of a table has null values.
-            bool missingDataFound = false;
-            System.Data.DataTable dTable = null;
+            List<Column> columns = new List<Column>();
             while (sqlite3_step(stmHandle) == SQLITE_ROW)
             {
-                // create datatable and columns    
-                if (dTable == null)
-                {
-                    dTable = new System.Data.DataTable();
-                    for (int i = 0; i < columnCount; i++)
-                    {
-                        string ColumnName = Marshal.PtrToStringAnsi(sqlite3_column_name(stmHandle, i));
-                        if (dTable.Columns.Contains(ColumnName))
-                            ColumnName = "Report." + ColumnName;
-
-                        int ColType = sqlite3_column_type(stmHandle, i);
-                        if (ColType == SQLITE_INTEGER)
-                            dTable.Columns.Add(ColumnName, typeof(int));
-                        else if (ColType == SQLITE_FLOAT)
-                            dTable.Columns.Add(ColumnName, typeof(double));
-                        else if (ColType == SQLITE_TEXT)
-                        {
-                            IntPtr iptr = sqlite3_column_text(stmHandle, i);
-                            string Value = Marshal.PtrToStringAnsi(iptr);
-                            DateTime D;
-                            if (DateTime.TryParse(Value, out D))
-                                dTable.Columns.Add(ColumnName, typeof(DateTime));
-                            else
-                                dTable.Columns.Add(ColumnName, typeof(string));
-                        }
-                        else
-                        {
-                            dTable.Columns.Add(ColumnName, typeof(object));
-                            missingDataFound = true;
-                        }
-                    }
-                }
-
-                // create rows in data table.
-                object[] row = new object[columnCount];
                 for (int i = 0; i < columnCount; i++)
                 {
-                    int colType = sqlite3_column_type(stmHandle, i);
-                    if (colType != SQLITE_NULL)
+                    if (i >= columns.Count)
                     {
-                        if (dTable.Columns[i].DataType == typeof(DateTime))
-                        {
-                            IntPtr iptr = sqlite3_column_text(stmHandle, i);
-                            string Value = Marshal.PtrToStringAnsi(iptr);
-                            if (Value != null)
-                                row[i] = DateTime.ParseExact(Value, "yyyy-MM-dd hh:mm:ss", null);
-                        }
-                        else if (dTable.Columns[i].DataType == typeof(int))
-                            row[i] = sqlite3_column_int(stmHandle, i);
-                        else if (dTable.Columns[i].DataType == typeof(double))
-                            row[i] = sqlite3_column_double(stmHandle, i);
-                        else if (dTable.Columns[i].DataType == typeof(string) ||
-                                 dTable.Columns[i].DataType == typeof(object))
-                        {
-                            IntPtr iptr = sqlite3_column_text(stmHandle, i);
-                            row[i] = Marshal.PtrToStringAnsi(iptr);
-                        }
+                        // add a new column
+                        string columnName = Marshal.PtrToStringAnsi(sqlite3_column_name(stmHandle, i));
+                        columns.Add(new Column() { name = columnName });
                     }
+
+                    int sqliteType = sqlite3_column_type(stmHandle, i);
+
+                    if (sqliteType == SQLITE_INTEGER)
+                        columns[i].addIntValue(sqlite3_column_int(stmHandle, i));
+                    else if (sqliteType == SQLITE_FLOAT)
+                        columns[i].addDoubleValue(sqlite3_column_double(stmHandle, i));
+                    else if (sqliteType == SQLITE_TEXT)
+                    {
+                        IntPtr iptr = sqlite3_column_text(stmHandle, i);
+                        columns[i].addTextValue(Marshal.PtrToStringAnsi(iptr));
+                    }
+                    else
+                        columns[i].addNull();
                 }
-                dTable.Rows.Add(row);
             }
 
             Finalize(stmHandle);
 
-            // At this point the data table may have columns of type object because the 
-            // first row was null for that column. When this happens (missing data) we 
-            // want to convert the column type to a better data type. As .NET doesn't 
-            // allow data tables of tables to change once they have data in them, we
-            // will need to create a new data table with the correct column data types
-            // and them copy all rows to it. When can then return this new data table.
-            // This will maintain the proper column order.
-            if (missingDataFound)
+            // At this point we have a list of columns, each with values for each row.
+            // Need to convert this to a DataTable.
+
+            DataTable table = new DataTable();
+            if (columns.Count > 0)
             {
-                System.Data.DataTable newDataTable = new System.Data.DataTable();
-                foreach (DataColumn column in dTable.Columns)
+                foreach (Column column in columns)
                 {
-                    if (column.DataType.Equals(typeof(object)))
-                    {
-                        object firstNonNullValue = FindFirstNonNullValueInColumn(column);
-                        if (firstNonNullValue == null)
-                            newDataTable.Columns.Add(column.ColumnName, typeof(object));
-                        else
-                            newDataTable.Columns.Add(column.ColumnName, firstNonNullValue.GetType());
-                    }
+                    if (column.dataType == null)
+                        table.Columns.Add(column.name, typeof(object));
                     else
-                    {
-                        newDataTable.Columns.Add(column.ColumnName, column.DataType);
-                    }
+                        table.Columns.Add(column.name, column.dataType);
                 }
 
-                // Now we can copy all data to the new table.
-                foreach (DataRow row in dTable.Rows)
+                for (int row = 0; row != columns[0].values.Count; row++)
                 {
-                    newDataTable.ImportRow(row);
-                }
-
-                return newDataTable;
-            }
-            
-            return dTable;
-        }
-
-        /// <summary>Find the first non null value in the specified column.</summary>
-        /// <param name="dataColumn">The data column to look in</param>
-        /// <returns>The first non null value. Null is returned when all values are null in column.</returns>
-        private object FindFirstNonNullValueInColumn(DataColumn dataColumn)
-        {
-            foreach (DataRow row in dataColumn.Table.Rows)
-            {
-                if (!Convert.IsDBNull(row[dataColumn]))
-                {
-                    string stringValue = row[dataColumn].ToString();
-                    double doubleValue;
-                    DateTime dateValue;
-                    if (double.TryParse(stringValue, out doubleValue))
-                    {
-                        return doubleValue;
-                    }
-                    else if (DateTime.TryParse(stringValue, out dateValue))
-                    {
-                        return dateValue;
-                    }
-                    else
-                    {
-                        return stringValue;
-                    }
+                    DataRow newRow = table.NewRow();
+                    for (int col = 0; col != columns.Count; col++)
+                        newRow[col] = columns[col].GetValue(row);
+                    table.Rows.Add(newRow);
                 }
             }
-            return null;
+            return table;
         }
 
         /// <summary>
