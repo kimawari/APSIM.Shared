@@ -331,7 +331,7 @@ namespace APSIM.Shared.Utilities
             public void addTextValue(string value)
             {
                 DateTime date;
-                if (DateTime.TryParse(value, out date))
+                if (DateTime.TryParseExact(value, "yyyy-MM-dd hh:mm:ss", null, System.Globalization.DateTimeStyles.None, out date))
                 {
                     if (dataType == null)
                         dataType = typeof(DateTime);
@@ -361,7 +361,11 @@ namespace APSIM.Shared.Utilities
                 else if (dataType == typeof(DateTime))
                     return Convert.ToDateTime(values[rowIndex]);
                 else
+                {
+                    if (values[rowIndex].GetType() == typeof(DateTime))
+                        return Convert.ToDateTime(values[rowIndex]).ToString("yyyy-MM-dd hh:mm:ss");
                     return values[rowIndex].ToString();
+                }
 
             }
         }
