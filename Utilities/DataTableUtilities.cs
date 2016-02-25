@@ -511,7 +511,7 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Write the specified DataTable to a CSV string, excluding the specified column names.
         /// </summary>
-        static public string DataTableToText(System.Data.DataTable data, int startColumnIndex, string delimiter, bool showHeadings)
+        static public string DataTableToText(System.Data.DataTable data, int startColumnIndex, string delimiter, bool showHeadings, bool excelFriendly = false)
         {
             // Convert the data table to a table of strings. This will make it easier for
             // calculating widths.
@@ -544,7 +544,10 @@ namespace APSIM.Shared.Utilities
                 {
                     if (i > startColumnIndex) 
                         st.Append(delimiter);
-                    st.AppendFormat("{0," + columnWidths[i] + "}", stringTable.Columns[i].ColumnName);
+                    if (excelFriendly)
+                        st.Append(stringTable.Columns[i].ColumnName);
+                    else
+                        st.AppendFormat("{0," + columnWidths[i] + "}", stringTable.Columns[i].ColumnName);
                 }
                 st.Append(Environment.NewLine);
             }
@@ -556,7 +559,10 @@ namespace APSIM.Shared.Utilities
                 {
                     if (i > startColumnIndex) 
                         st.Append(delimiter);
-                    st.AppendFormat("{0," + columnWidths[i] + "}", row[i]);
+                    if (excelFriendly)
+                        st.Append(row[i]);
+                    else
+                        st.AppendFormat("{0," + columnWidths[i] + "}", row[i]);
                 }
                 st.Append(Environment.NewLine);
             }
