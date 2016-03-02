@@ -966,6 +966,23 @@ namespace APSIM.Shared.Utilities
         /// <returns>Returns the full path of the added model if successful. Null otherwise.</returns>
         public static string Serialise(object Component, bool WithNamespace, Type[] extraTypes = null)
         {
+            // Try using the pre built serialization assembly first.
+            string DeserializerFileName = System.IO.Path.ChangeExtension(Assembly.GetCallingAssembly().Location,
+                                                                         ".XmlSerializers.dll");
+
+            return Serialise(Component, WithNamespace, DeserializerFileName, extraTypes);
+        }
+
+        /// <summary>
+        /// Serialise component
+        /// </summary>
+        /// <param name="Component">The component.</param>
+        /// <param name="WithNamespace">if set to <c>true</c> [with namespace].</param>
+        /// <param name="extraTypes">Optional extra types.</param>
+        /// <param name="DeserializerFileName">Pre-compiled deserialiser file name</param>
+        /// <returns>Returns the full path of the added model if successful. Null otherwise.</returns>
+        public static string Serialise(object Component, bool WithNamespace, string DeserializerFileName, Type[] extraTypes = null)
+        {
             XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
             if (WithNamespace)
                 ns.Add("xsi", "http://www.w3.org/2001/XMLSchema-instance");
@@ -974,10 +991,6 @@ namespace APSIM.Shared.Utilities
 
             MemoryStream M = new MemoryStream();
             StreamWriter Writer = new StreamWriter(M);
-
-            // Try using the pre built serialization assembly first.
-            string DeserializerFileName = System.IO.Path.ChangeExtension(Assembly.GetCallingAssembly().Location,
-                                                                         ".XmlSerializers.dll");
 
             // Under MONO it seems that if a class is not in the serialization assembly then exception will 
             // be thrown. Under windows this doesn't happen. For now, only use the prebuilt serialisation
@@ -1002,7 +1015,7 @@ namespace APSIM.Shared.Utilities
                 XmlSerializer x = new XmlSerializer(Component.GetType(), extraTypes);
                 x.Serialize(Writer, Component, ns);
             }
-               
+
             M.Seek(0, SeekOrigin.Begin);
             StreamReader R = new StreamReader(M);
             return R.ReadToEnd();
