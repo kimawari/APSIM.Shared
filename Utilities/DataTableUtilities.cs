@@ -560,7 +560,12 @@ namespace APSIM.Shared.Utilities
                     if (i > startColumnIndex) 
                         st.Append(delimiter);
                     if (excelFriendly)
-                        st.Append(row[i]);
+                    {
+                        if (data.Columns[i].DataType == typeof(string))
+                            st.Append("\"" + row[i] + "\"");
+                        else
+                            st.Append(row[i]);
+                    }
                     else
                         st.AppendFormat("{0," + columnWidths[i] + "}", row[i]);
                 }
