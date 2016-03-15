@@ -245,14 +245,14 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>Get columns as doubles within specific data range</summary>
-        /// <param name="dTable"></param>
-        /// <param name="colName"></param>
-        /// <param name="firstDate"></param>
-        /// <param name="lastDate"></param>
-        /// <returns></returns>
-        public static double[] GetColumnAsDoubles(System.Data.DataTable dTable, string colName, DateTime firstDate, DateTime lastDate)
+        /// <param name="table">The data table to get the values from</param>
+        /// <param name="colName">The name of the column to be referenced in the data table</param>
+        /// <param name="firstDate">The start date of the data to be returned</param>
+        /// <param name="lastDate">The end date of the data to be returned</param>
+        /// <returns>The specified column of data, filtered by the dates, as an array of doubles. </returns>
+        public static double[] GetColumnAsDoubles(System.Data.DataTable table, string colName, DateTime firstDate, DateTime lastDate)
         {
-            var result = from row in dTable.AsEnumerable()
+            var result = from row in table.AsEnumerable()
                          where (DataTableUtilities.GetDateFromRow(row) >= firstDate &&
                                 DataTableUtilities.GetDateFromRow(row) <= lastDate)
                          select new
@@ -330,9 +330,9 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Get a column as dates.
         /// </summary>
-        /// <param name="Table"></param>
-        /// <param name="ColumnName"></param>
-        /// <returns></returns>
+        /// <param name="Table">The data table that contains the data required</param>
+        /// <param name="ColumnName">The name of the Date Column</param>
+        /// <returns>An array of dates</returns>
         static public DateTime[] GetColumnAsDates(System.Data.DataTable Table, string ColumnName)
         {
             DateTime[] Values = new DateTime[Table.Rows.Count];
@@ -346,7 +346,7 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         /// <param name="view">The data view.</param>
         /// <param name="ColumnName">The column name.</param>
-        /// <returns></returns>
+        /// <returns>An array of dates</returns>
         static public DateTime[] GetColumnAsDates(DataView view, string ColumnName)
         {
             DateTime[] Values = new DateTime[view.Count];
@@ -357,15 +357,15 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>Get a column as dates.</summary>
-        /// <param name="dTable">The data table that contains the data required</param>
+        /// <param name="table">The data table that contains the data required</param>
         /// <param name="colName">The name of the Date Column</param>
         /// <param name="firstDate">The Start date for the date range required</param>
         /// <param name="lastDate">The ending date for the date range required</param>
         /// <returns>An array of dates</returns>
-        static public DateTime[] GetColumnAsDates(DataTable dTable, string colName, DateTime firstDate, DateTime lastDate)
+        static public DateTime[] GetColumnAsDates(DataTable table, string colName, DateTime firstDate, DateTime lastDate)
         {
             //where row.Field<DateTime>(colName) >= firstDate
-            var result = from row in dTable.AsEnumerable()
+            var result = from row in table.AsEnumerable()
                          where (DataTableUtilities.GetDateFromRow(row) >= firstDate &&
                                 DataTableUtilities.GetDateFromRow(row) <= lastDate)
                          select row;
@@ -379,14 +379,14 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>Gets string array of the months from a datatable</summary>
-        /// <param name="dTable">The datatable to seach</param>
+        /// <param name="table">The datatable to seach</param>
         /// <param name="firstDate">The start of the date range to search</param>
         /// <param name="lastDate">The end of the date range to search</param>
         /// <returns>A String array containing the distinct month names (abbreviated), in order, ie, "Jan, Feb, Mar"</returns>
-        static public string[] GetDistinctMonthsasStrings(DataTable dTable, DateTime firstDate, DateTime lastDate)
+        static public string[] GetDistinctMonthsasStrings(DataTable table, DateTime firstDate, DateTime lastDate)
         {
             //where row.Field<DateTime>(colName) >= firstDate
-            var result = (from row in dTable.AsEnumerable()
+            var result = (from row in table.AsEnumerable()
                          where (DataTableUtilities.GetDateFromRow(row) >= firstDate &&
                                 DataTableUtilities.GetDateFromRow(row) <= lastDate)
                          orderby DataTableUtilities.GetDateFromRow(row)
@@ -400,7 +400,6 @@ namespace APSIM.Shared.Utilities
                 rValues.Add(CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(row.Month));
 
             return rValues.ToArray();
-
         }
 
 
