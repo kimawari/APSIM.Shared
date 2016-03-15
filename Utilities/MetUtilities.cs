@@ -6,7 +6,7 @@
 namespace APSIM.Shared.Utilities
 {
     using System;
-
+    using System.Data;
     /// <summary>
     /// A collection of weather utility functions
     /// </summary>
@@ -371,6 +371,59 @@ namespace APSIM.Shared.Utilities
             return functionReturnValue;
 
         }
+
+        /// <summary>Calculates the MaxRadiation on all rows in datatable</summary>
+        /// <param name="table">The datatable containing weather data</param>
+        /// <param name="latitude">The latitude for the weather data location</param>
+        public static void CalcQmax(DataTable table, double latitude)
+        {
+            if (!double.IsNaN(latitude))
+            {
+                // ----------------------------------------------------------------------------------
+                // Add a calculated QMax column to the daily data.
+                // ----------------------------------------------------------------------------------
+                if (((table.Columns["Qmax"] == null)))
+                {
+                    table.Columns.Add("Qmax", Type.GetType("System.Single"));
+                }
+                // Do we have a VP column?
+                bool haveVPColumn = (table.Columns["VP"] != null);
+
+                //do we have a "doy" or "day" column, and which column is it in
+                bool haveDOYColumn = true;
+                int dayCol = table.Columns.IndexOf("day");
+
+                // Loop through all rows and calculate a QMax
+                DateTime cDate;
+                DataRow row;
+                int doy = 0;
+                for (int r = 0; r <= table.Rows.Count - 1; r++)
+                {
+                    if (haveDOYColumn == true)
+                    {
+                        doy = Convert.ToInt16(table.Rows[r][dayCol]);
+                    }
+                    else {
+                        row = table.Rows[r];
+                        cDate = DataTableUtilities.GetDateFromRow(row);
+                        doy = cDate.DayOfYear;
+                    }
+
+                    if (haveVPColumn && !Convert.IsDBNull(table.Rows[r]["vp"]))
+                    {
+                        table.Rows[r]["Qmax"] = MetUtilities.QMax(doy + 1, latitude, MetUtilities.Taz, MetUtilities.Alpha,
+                            Convert.ToSingle(table.Rows[r]["vp"]));
+                    }
+                    else
+                    {
+                        table.Rows[r]["Qmax"] = MetUtilities.QMax(doy + 1, latitude, MetUtilities.Taz, MetUtilities.Alpha,
+                            MetUtilities.svp(Convert.ToSingle(table.Rows[r]["mint"])));
+                    }
+                }
+            }
+        }
+
+
 
         // ------------------------------------------------------------------------
         /// <summary>ts the maximum.</summary>

@@ -9,6 +9,8 @@ namespace APSIM.Shared.Utilities
     using System.Collections;
     using System.Collections.Generic;
     using System.Data;
+    using System.Globalization;
+    using System.Linq;
     using System.Text;
 
     /// <summary>
@@ -242,6 +244,31 @@ namespace APSIM.Shared.Utilities
             return Values;
         }
 
+        /// <summary>Get columns as doubles within specific data range</summary>
+        /// <param name="table">The data table to get the values from</param>
+        /// <param name="colName">The name of the column to be referenced in the data table</param>
+        /// <param name="firstDate">The start date of the data to be returned</param>
+        /// <param name="lastDate">The end date of the data to be returned</param>
+        /// <returns>The specified column of data, filtered by the dates, as an array of doubles. </returns>
+        public static double[] GetColumnAsDoubles(System.Data.DataTable table, string colName, DateTime firstDate, DateTime lastDate)
+        {
+            var result = from row in table.AsEnumerable()
+                         where (DataTableUtilities.GetDateFromRow(row) >= firstDate &&
+                                DataTableUtilities.GetDateFromRow(row) <= lastDate)
+                         select new
+                         {
+                             val = row.Field<float>(colName)
+                         };
+
+            List<double> rValues = new List<double>();
+            foreach (var row in result)
+                rValues.Add(row.val);
+
+            return rValues.ToArray();
+        }
+
+
+
         /// <summary>
         /// Get a column of values from the specified data table
         /// </summary>
@@ -303,9 +330,9 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Get a column as dates.
         /// </summary>
-        /// <param name="Table"></param>
-        /// <param name="ColumnName"></param>
-        /// <returns></returns>
+        /// <param name="Table">The data table that contains the data required</param>
+        /// <param name="ColumnName">The name of the Date Column</param>
+        /// <returns>An array of dates</returns>
         static public DateTime[] GetColumnAsDates(System.Data.DataTable Table, string ColumnName)
         {
             DateTime[] Values = new DateTime[Table.Rows.Count];
@@ -319,7 +346,7 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         /// <param name="view">The data view.</param>
         /// <param name="ColumnName">The column name.</param>
-        /// <returns></returns>
+        /// <returns>An array of dates</returns>
         static public DateTime[] GetColumnAsDates(DataView view, string ColumnName)
         {
             DateTime[] Values = new DateTime[view.Count];
@@ -327,6 +354,52 @@ namespace APSIM.Shared.Utilities
                 Values[Row] = Convert.ToDateTime(view[Row][ColumnName]);
 
             return Values;
+        }
+
+        /// <summary>Get a column as dates.</summary>
+        /// <param name="table">The data table that contains the data required</param>
+        /// <param name="colName">The name of the Date Column</param>
+        /// <param name="firstDate">The Start date for the date range required</param>
+        /// <param name="lastDate">The ending date for the date range required</param>
+        /// <returns>An array of dates</returns>
+        static public DateTime[] GetColumnAsDates(DataTable table, string colName, DateTime firstDate, DateTime lastDate)
+        {
+            //where row.Field<DateTime>(colName) >= firstDate
+            var result = from row in table.AsEnumerable()
+                         where (DataTableUtilities.GetDateFromRow(row) >= firstDate &&
+                                DataTableUtilities.GetDateFromRow(row) <= lastDate)
+                         select row;
+
+            List<DateTime> rValues = new List<DateTime>();
+            foreach (var row in result)
+                rValues.Add(Convert.ToDateTime(row[colName]));
+
+            return rValues.ToArray();
+
+        }
+
+        /// <summary>Gets string array of the months from a datatable</summary>
+        /// <param name="table">The datatable to seach</param>
+        /// <param name="firstDate">The start of the date range to search</param>
+        /// <param name="lastDate">The end of the date range to search</param>
+        /// <returns>A String array containing the distinct month names (abbreviated), in order, ie, "Jan, Feb, Mar"</returns>
+        static public string[] GetDistinctMonthsasStrings(DataTable table, DateTime firstDate, DateTime lastDate)
+        {
+            //where row.Field<DateTime>(colName) >= firstDate
+            var result = (from row in table.AsEnumerable()
+                         where (DataTableUtilities.GetDateFromRow(row) >= firstDate &&
+                                DataTableUtilities.GetDateFromRow(row) <= lastDate)
+                         orderby DataTableUtilities.GetDateFromRow(row)
+                         select new
+                         {
+                             Month = DataTableUtilities.GetDateFromRow(row).Month
+                         }).Distinct();
+
+            List<string> rValues = new List<string>();
+            foreach (var row in result)
+                rValues.Add(CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(row.Month));
+
+            return rValues.ToArray();
         }
 
 
