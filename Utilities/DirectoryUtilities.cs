@@ -15,36 +15,36 @@ namespace APSIM.Shared.Utilities
         /// Ensure the specified filename is unique (by appending a number). 
         /// Returns the updated filename to caller. 
         /// </summary>
-        public static string EnsureFileNameIsUnique(string FileName)
+        public static string EnsureFileNameIsUnique(string fileName)
         {
-            string BaseName = System.IO.Path.GetFileNameWithoutExtension(FileName);
+            string BaseName = System.IO.Path.GetFileNameWithoutExtension(fileName);
             int Number = 1;
-            while (File.Exists(FileName))
+            while (File.Exists(fileName))
             {
-                FileName = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(FileName), BaseName + Number.ToString() + System.IO.Path.GetExtension(FileName));
+                fileName = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(fileName), BaseName + Number.ToString() + System.IO.Path.GetExtension(fileName));
                 Number++;
             }
-            if (File.Exists(FileName))
+            if (File.Exists(fileName))
                 throw new Exception("Cannot find a unique filename for file: " + BaseName);
 
-            return FileName;
+            return fileName;
         }
 
         /// <summary>
         /// Delete files that match the specified filespec (e.g. *.out). If Recurse is true
         /// then it will look for matching files to delete in all sub directories.
         /// </summary>
-        public static void DeleteFiles(string FileSpec, bool Recurse)
+        public static void DeleteFiles(string fileSpec, bool recurse)
         {
-            if (System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(FileSpec)))
+            if (System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(fileSpec)))
             {
-                foreach (string FileName in System.IO.Directory.GetFiles(System.IO.Path.GetDirectoryName(FileSpec),
-                                                               System.IO.Path.GetFileName(FileSpec)))
+                foreach (string FileName in System.IO.Directory.GetFiles(System.IO.Path.GetDirectoryName(fileSpec),
+                                                               System.IO.Path.GetFileName(fileSpec)))
                     File.Delete(FileName);
-                if (Recurse)
+                if (recurse)
                 {
-                    foreach (string SubDirectory in System.IO.Directory.GetDirectories(System.IO.Path.GetDirectoryName(FileSpec)))
-                        DeleteFiles(System.IO.Path.Combine(SubDirectory, System.IO.Path.GetFileName(FileSpec)), true);
+                    foreach (string SubDirectory in System.IO.Directory.GetDirectories(System.IO.Path.GetDirectoryName(fileSpec)))
+                        DeleteFiles(System.IO.Path.Combine(SubDirectory, System.IO.Path.GetFileName(fileSpec)), true);
                 }
             }
         }
@@ -54,21 +54,21 @@ namespace APSIM.Shared.Utilities
         /// then it will look for matching files in all sub directories. If SearchHiddenFolders is
         /// true then it will look in hidden folders as well.
         /// </summary>
-        public static void FindFiles(string DirectoryName, string FileSpec, ref List<string> FileNames,
-                                     bool Recurse = false, bool SearchHiddenFolders = false)
+        public static void FindFiles(string directoryName, string fileSpec, ref List<string> fileNames,
+                                     bool recurse = false, bool searchHiddenFolders = false)
         {
-            foreach (string FileName in System.IO.Directory.GetFiles(DirectoryName, FileSpec))
-                FileNames.Add(FileName);
-            if (Recurse)
-                foreach (string ChildDirectoryName in System.IO.Directory.GetDirectories(DirectoryName))
-                    if (SearchHiddenFolders || (File.GetAttributes(ChildDirectoryName) & FileAttributes.Hidden) != FileAttributes.Hidden)
-                        FindFiles(ChildDirectoryName, FileSpec, ref FileNames, Recurse, SearchHiddenFolders);
+            foreach (string FileName in System.IO.Directory.GetFiles(directoryName, fileSpec))
+                fileNames.Add(FileName);
+            if (recurse)
+                foreach (string ChildDirectoryName in System.IO.Directory.GetDirectories(directoryName))
+                    if (searchHiddenFolders || (File.GetAttributes(ChildDirectoryName) & FileAttributes.Hidden) != FileAttributes.Hidden)
+                        FindFiles(ChildDirectoryName, fileSpec, ref fileNames, recurse, searchHiddenFolders);
         }
 
         /// <summary>
         /// Find the specified file (using the environment PATH variable) and return its full path.
         /// </summary>
-        public static string FindFileOnPath(string FileName)
+        public static string FindFileOnPath(string fileName)
         {
             string PathVariable = Environment.GetEnvironmentVariable("PATH");
             if (PathVariable == null)
@@ -85,7 +85,7 @@ namespace APSIM.Shared.Utilities
 
             foreach (string DirectoryName in Paths)
             {
-                string FullPath = System.IO.Path.Combine(DirectoryName, FileName);
+                string FullPath = System.IO.Path.Combine(DirectoryName, fileName);
                 if (File.Exists(FullPath))
                     return FullPath;
             }

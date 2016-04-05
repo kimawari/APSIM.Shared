@@ -21,100 +21,100 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Add a value to the specified data table
         /// </summary>
-        static public void AddValue(System.Data.DataTable Table, string ColumnName, string Value, int StartRow, int Count)
+        static public void AddValue(DataTable table, string columnName, string value, int startRow, int count)
         {
-            string[] Values = new string[Count];
-            for (int i = 0; i != Count; i++)
-                Values[i] = Value;
-            AddColumn(Table, ColumnName, Values, StartRow, Count);
+            string[] Values = new string[count];
+            for (int i = 0; i != count; i++)
+                Values[i] = value;
+            AddColumn(table, columnName, Values, startRow, count);
         }
 
         /// <summary>
         /// Add a value to the specified data table
         /// </summary>
-        static public void AddValue(System.Data.DataTable Table, string ColumnName, double Value, int StartRow, int Count)
+        static public void AddValue(DataTable table, string columnName, double value, int startRow, int count)
         {
-            string[] Values = new string[Count];
-            for (int i = 0; i != Count; i++)
+            string[] values = new string[count];
+            for (int i = 0; i != count; i++)
             {
-                if (Value == MathUtilities.MissingValue)
-                    Values[i] = "";
+                if (value == MathUtilities.MissingValue)
+                    values[i] = "";
                 else
-                    Values[i] = Value.ToString();
+                    values[i] = value.ToString();
             }
-            AddColumn(Table, ColumnName, Values, StartRow, Count);
+            AddColumn(table, columnName, values, startRow, count);
         }
 
 
         /// <summary>
         /// Add a column of values to the specified data table
         /// </summary>
-        static public void AddColumn(System.Data.DataTable Table, string ColumnName, double[] Values, int StartRow, int Count)
+        static public void AddColumn(DataTable table, string columnName, double[] values, int startRow, int count)
         {
-            if (Table.Columns.IndexOf(ColumnName) == -1)
-                Table.Columns.Add(ColumnName, typeof(double));
+            if (table.Columns.IndexOf(columnName) == -1)
+                table.Columns.Add(columnName, typeof(double));
 
-            if (Values == null)
+            if (values == null)
                 return;
 		
             // Make sure there are enough values in the table.
-            while (Table.Rows.Count < Values.Length + StartRow)
-                Table.Rows.Add(Table.NewRow());
+            while (table.Rows.Count < values.Length + startRow)
+                table.Rows.Add(table.NewRow());
 
-            int Row = StartRow;
-            for (int Index = 0; Index != Values.Length; Index++)
+            int row = startRow;
+            for (int Index = 0; Index != values.Length; Index++)
             {
-                if (Values[Index] != MathUtilities.MissingValue)
-                    Table.Rows[Row][ColumnName] = Values[Index];
+                if (values[Index] != MathUtilities.MissingValue)
+                    table.Rows[row][columnName] = values[Index];
                 else
-                    Table.Rows[Row][ColumnName] = DBNull.Value;
-                Row++;
+                    table.Rows[row][columnName] = DBNull.Value;
+                row++;
             }
         }
 
         /// <summary>
         /// Add a column of values to the specified data table
         /// </summary>
-        static public void AddColumn(System.Data.DataTable Table, string ColumnName, double[] Values)
+        static public void AddColumn(DataTable table, string columnName, double[] values)
         {
             int Count = 0;
-            if (Values != null)
-                Count = Values.Length;
-            AddColumn(Table, ColumnName, Values, 0, Count);
+            if (values != null)
+                Count = values.Length;
+            AddColumn(table, columnName, values, 0, Count);
         }
 
         /// <summary> 
         /// Add a column of values to the specified data table
         /// </summary>
-        static public void AddColumn(System.Data.DataTable Table, string ColumnName, string[] Values)
+        static public void AddColumn(DataTable table, string columnName, string[] values)
         {
-            int Count = 0;
-            if (Values != null)
-                Count = Values.Length;
-            AddColumn(Table, ColumnName, Values, 0, Count);
+            int count = 0;
+            if (values != null)
+                count = values.Length;
+            AddColumn(table, columnName, values, 0, count);
         }
 
         /// <summary>
         /// Add a column of values to the specified data table
         /// </summary>
-        static public void AddColumn(System.Data.DataTable Table, string ColumnName, string[] Values, int StartRow, int Count)
+        static public void AddColumn(DataTable table, string columnName, string[] values, int startRow, int count)
         {
-            if (Table.Columns.IndexOf(ColumnName) == -1)
-                Table.Columns.Add(ColumnName, typeof(string));
+            if (table.Columns.IndexOf(columnName) == -1)
+                table.Columns.Add(columnName, typeof(string));
 
-            if (Values == null)
+            if (values == null)
                 return;
 			
             // Make sure there are enough values in the table.
-            while (Table.Rows.Count < Values.Length + StartRow)
-                Table.Rows.Add(Table.NewRow());
+            while (table.Rows.Count < values.Length + startRow)
+                table.Rows.Add(table.NewRow());
 
-            int Row = StartRow;
-            for (int Index = 0; Index != Values.Length; Index++)
+            int row = startRow;
+            for (int Index = 0; Index != values.Length; Index++)
             {
-                if (Values[Index] != "")
-                    Table.Rows[Row][ColumnName] = Values[Index];
-                Row++;
+                if (values[Index] != "")
+                    table.Rows[row][columnName] = values[Index];
+                row++;
             }
         }
 
@@ -166,47 +166,47 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Get a column of values from the specified data table
         /// </summary>
-        static public double[] GetColumnAsDoubles(System.Data.DataTable Table, string ColumnName)
+        static public double[] GetColumnAsDoubles(DataTable table, string columnName)
         {
-            return GetColumnAsDoubles(Table, ColumnName, Table.Rows.Count);
+            return GetColumnAsDoubles(table, columnName, table.Rows.Count);
         }
 
         /// <summary>
         /// Get a column as doubles
         /// </summary>
-        /// <param name="Table"></param>
-        /// <param name="ColumnName"></param>
-        /// <param name="NumValues"></param>
+        /// <param name="table"></param>
+        /// <param name="columnName"></param>
+        /// <param name="numValues"></param>
         /// <returns></returns>
-        static public double[] GetColumnAsDoubles(System.Data.DataTable Table, string ColumnName, int NumValues)
+        static public double[] GetColumnAsDoubles(DataTable table, string columnName, int numValues)
         {
-            double[] Values = new double[NumValues];
-            for (int Row = 0; Row != Table.Rows.Count && Row != NumValues; Row++)
+            double[] values = new double[numValues];
+            for (int Row = 0; Row != table.Rows.Count && Row != numValues; Row++)
             {
-                if (Table.Rows[Row][ColumnName].ToString() == "")
-                    Values[Row] = double.NaN;
+                if (table.Rows[Row][columnName].ToString() == "")
+                    values[Row] = double.NaN;
                 else
-                    Values[Row] = Convert.ToDouble(Table.Rows[Row][ColumnName]);
+                    values[Row] = Convert.ToDouble(table.Rows[Row][columnName]);
             }
-            return Values;
+            return values;
         }
 
         /// <summary>
         /// Get a column as doubles
         /// </summary>
-        /// <param name="Table"></param>
-        /// <param name="ColumnName"></param>
+        /// <param name="table"></param>
+        /// <param name="columnName"></param>
         /// <returns></returns>
-        static public double[] GetColumnAsDoubles(DataView Table, string ColumnName)
+        static public double[] GetColumnAsDoubles(DataView table, string columnName)
         {
-            int NumValues = Table.Count;
+            int NumValues = table.Count;
             double[] Values = new double[NumValues];
-            for (int Row = 0; Row != Table.Count; Row++)
+            for (int Row = 0; Row != table.Count; Row++)
             {
-                if (Table[Row][ColumnName].ToString() == "")
+                if (table[Row][columnName].ToString() == "")
                     Values[Row] = double.NaN;
                 else
-                    Values[Row] = Convert.ToDouble(Table[Row][ColumnName]);
+                    Values[Row] = Convert.ToDouble(table[Row][columnName]);
             }
             return Values;
         }
@@ -214,34 +214,34 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Get a column as doubles.
         /// </summary>
-        /// <param name="Table"></param>
-        /// <param name="ColumnName"></param>
-        /// <param name="NumValues"></param>
-        /// <param name="StartRow"></param>
+        /// <param name="table"></param>
+        /// <param name="columnName"></param>
+        /// <param name="numValues"></param>
+        /// <param name="startRow"></param>
         /// <returns></returns>
-        static public double[] GetColumnAsDoubles(System.Data.DataTable Table, string ColumnName, int NumValues, int StartRow)
+        static public double[] GetColumnAsDoubles(DataTable table, string columnName, int numValues, int startRow)
         {
-            double[] Values = new double[NumValues];
-            int Index = 0;
-            for (int Row = StartRow; Row != Table.Rows.Count && Index != NumValues; Row++)
+            double[] values = new double[numValues];
+            int index = 0;
+            for (int Row = startRow; Row != table.Rows.Count && index != numValues; Row++)
             {
-                if (Table.Rows[Row][ColumnName].ToString() == "")
-                    Values[Index] = MathUtilities.MissingValue;
+                if (table.Rows[Row][columnName].ToString() == "")
+                    values[index] = MathUtilities.MissingValue;
                 else
                 {
                     try
                     {
-                        Values[Index] = Convert.ToDouble(Table.Rows[Row][ColumnName]);
+                        values[index] = Convert.ToDouble(table.Rows[Row][columnName]);
                     }
                     catch (Exception)
                     {
-                        throw new Exception("Invalid number found: " + Table.Rows[Row][ColumnName].ToString() +
-                                       ". Row: " + Row.ToString() + ". Column name: " + ColumnName);
+                        throw new Exception("Invalid number found: " + table.Rows[Row][columnName].ToString() +
+                                       ". Row: " + Row.ToString() + ". Column name: " + columnName);
                     }
                 }
-                Index++;
+                index++;
             }
-            return Values;
+            return values;
         }
 
         /// <summary>Get columns as doubles within specific data range</summary>
@@ -250,7 +250,7 @@ namespace APSIM.Shared.Utilities
         /// <param name="firstDate">The start date of the data to be returned</param>
         /// <param name="lastDate">The end date of the data to be returned</param>
         /// <returns>The specified column of data, filtered by the dates, as an array of doubles. </returns>
-        public static double[] GetColumnAsDoubles(System.Data.DataTable table, string colName, DateTime firstDate, DateTime lastDate)
+        public static double[] GetColumnAsDoubles(DataTable table, string colName, DateTime firstDate, DateTime lastDate)
         {
             var result = from row in table.AsEnumerable()
                          where (DataTableUtilities.GetDateFromRow(row) >= firstDate &&
@@ -272,88 +272,88 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Get a column of values from the specified data table
         /// </summary>
-        static public string[] GetColumnAsStrings(System.Data.DataTable Table, string ColumnName)
+        static public string[] GetColumnAsStrings(DataTable table, string columnName)
         {
-            return GetColumnAsStrings(Table, ColumnName, Table.Rows.Count);
+            return GetColumnAsStrings(table, columnName, table.Rows.Count);
         }
         
         /// <summary>
         /// Get a column as strings
         /// </summary>
-        /// <param name="Table"></param>
-        /// <param name="ColumnName"></param>
-        /// <param name="NumValues"></param>
+        /// <param name="table"></param>
+        /// <param name="columnName"></param>
+        /// <param name="numValues"></param>
         /// <returns></returns>
-        static public string[] GetColumnAsStrings(System.Data.DataTable Table, string ColumnName, int NumValues)
+        static public string[] GetColumnAsStrings(DataTable table, string columnName, int numValues)
         {
-            string[] Values = new string[NumValues];
-            for (int Row = 0; Row != Table.Rows.Count && Row != NumValues; Row++)
-                Values[Row] = Convert.ToString(Table.Rows[Row][ColumnName]);
-            return Values;
+            string[] values = new string[numValues];
+            for (int row = 0; row != table.Rows.Count && row != numValues; row++)
+                values[row] = Convert.ToString(table.Rows[row][columnName]);
+            return values;
         }
         
         /// <summary>
         /// Get a column as strings.
         /// </summary>
-        /// <param name="Table"></param>
-        /// <param name="ColumnName"></param>
-        /// <param name="NumValues"></param>
-        /// <param name="StartRow"></param>
+        /// <param name="table"></param>
+        /// <param name="columnName"></param>
+        /// <param name="numValues"></param>
+        /// <param name="startRow"></param>
         /// <returns></returns>
-        static public string[] GetColumnAsStrings(System.Data.DataTable Table, string ColumnName, int NumValues, int StartRow)
+        static public string[] GetColumnAsStrings(DataTable table, string columnName, int numValues, int startRow)
         {
-            string[] Values = new string[NumValues];
-            int Index = 0;
-            for (int Row = StartRow; Row != Table.Rows.Count && Index != NumValues; Row++)
+            string[] values = new string[numValues];
+            int index = 0;
+            for (int Row = startRow; Row != table.Rows.Count && index != numValues; Row++)
             {
-                Values[Index] = Convert.ToString(Table.Rows[Row][ColumnName]);
-                Index++;
+                values[index] = Convert.ToString(table.Rows[Row][columnName]);
+                index++;
             }
-            return Values;
+            return values;
         }
 
         /// <summary>
         /// Get a column as strings
         /// </summary>
         /// <param name="view">The data view.</param>
-        /// <param name="ColumnName">The column name.</param>
+        /// <param name="columnName">The column name.</param>
         /// <returns></returns>
-        static public string[] GetColumnAsStrings(DataView view, string ColumnName)
+        static public string[] GetColumnAsStrings(DataView view, string columnName)
         {
-            string[] Values = new string[view.Count];
-            for (int Row = 0; Row != view.Count; Row++)
-                Values[Row] = view[Row][ColumnName].ToString();
+            string[] values = new string[view.Count];
+            for (int row = 0; row != view.Count; row++)
+                values[row] = view[row][columnName].ToString();
                 
-            return Values;
+            return values;
         }
 
         /// <summary>
         /// Get a column as dates.
         /// </summary>
-        /// <param name="Table">The data table that contains the data required</param>
-        /// <param name="ColumnName">The name of the Date Column</param>
+        /// <param name="table">The data table that contains the data required</param>
+        /// <param name="columnName">The name of the Date Column</param>
         /// <returns>An array of dates</returns>
-        static public DateTime[] GetColumnAsDates(System.Data.DataTable Table, string ColumnName)
+        static public DateTime[] GetColumnAsDates(DataTable table, string columnName)
         {
-            DateTime[] Values = new DateTime[Table.Rows.Count];
-            for (int Row = 0; Row != Table.Rows.Count; Row++)
-                Values[Row] = Convert.ToDateTime(Table.Rows[Row][ColumnName]);
-            return Values;
+            DateTime[] values = new DateTime[table.Rows.Count];
+            for (int row = 0; row != table.Rows.Count; row++)
+                values[row] = Convert.ToDateTime(table.Rows[row][columnName]);
+            return values;
         }
 
         /// <summary>
         /// Get a column as dates
         /// </summary>
         /// <param name="view">The data view.</param>
-        /// <param name="ColumnName">The column name.</param>
+        /// <param name="columnName">The column name.</param>
         /// <returns>An array of dates</returns>
-        static public DateTime[] GetColumnAsDates(DataView view, string ColumnName)
+        static public DateTime[] GetColumnAsDates(DataView view, string columnName)
         {
-            DateTime[] Values = new DateTime[view.Count];
-            for (int Row = 0; Row != view.Count; Row++)
-                Values[Row] = Convert.ToDateTime(view[Row][ColumnName]);
+            DateTime[] values = new DateTime[view.Count];
+            for (int row = 0; row != view.Count; row++)
+                values[row] = Convert.ToDateTime(view[row][columnName]);
 
-            return Values;
+            return values;
         }
 
         /// <summary>Get a column as dates.</summary>
@@ -406,14 +406,14 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Get a list of column names
         /// </summary>
-        static public string[] GetColumnNames(System.Data.DataTable Table)
+        static public string[] GetColumnNames(DataTable table)
         {
-            if (Table != null)
+            if (table != null)
             {
-                string[] ColumnNames = new string[Table.Columns.Count];
-                for (int Col = 0; Col != Table.Columns.Count; Col++)
-                    ColumnNames[Col] = Table.Columns[Col].ColumnName;
-                return ColumnNames;
+                string[] columnNames = new string[table.Columns.Count];
+                for (int col = 0; col != table.Columns.Count; col++)
+                    columnNames[col] = table.Columns[col].ColumnName;
+                return columnNames;
             }
             else
                 return new string[0];
@@ -422,22 +422,22 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Get number of non blank values in column of the specified data table
         /// </summary>
-        static public int GetNumberOfNonBlankRows(System.Data.DataTable Table, string ColumnName)
+        static public int GetNumberOfNonBlankRows(DataTable table, string columnName)
         {
-            for (int Row = Table.Rows.Count - 1; Row >= 0; Row--)
+            for (int row = table.Rows.Count - 1; row >= 0; row--)
             {
-                if (Table.Rows[Row][ColumnName].ToString() != "")
-                    return Row + 1;
+                if (table.Rows[row][columnName].ToString() != "")
+                    return row + 1;
             }
-            return Table.Rows.Count;
+            return table.Rows.Count;
         }
 
         /// <summary>
         /// Get a date from the specified row
         /// </summary>
-        /// <param name="Row"></param>
+        /// <param name="row"></param>
         /// <returns></returns>
-        static public DateTime GetDateFromRow(System.Data.DataRow Row)
+        static public DateTime GetDateFromRow(DataRow row)
         {
             // ---------------------------------------------------------------------
             // Try and return a date for the specified row in the specified table.
@@ -446,22 +446,22 @@ namespace APSIM.Shared.Utilities
             int Year = 0;
             int Month = 0;
             int Day = 0;
-            for (int Col = 0; Col != Row.Table.Columns.Count; Col++)
+            for (int Col = 0; Col != row.Table.Columns.Count; Col++)
             {
-                string ColumnName = Row.Table.Columns[Col].ColumnName.ToLower();
+                string ColumnName = row.Table.Columns[Col].ColumnName.ToLower();
                 if (ColumnName == "date")
                 {
-                    if (Row.Table.Columns[Col].DataType == typeof(DateTime))
-                        return (DateTime)Row[Col];
+                    if (row.Table.Columns[Col].DataType == typeof(DateTime))
+                        return (DateTime)row[Col];
                     else
-                        return DateTime.Parse(Row[Col].ToString());
+                        return DateTime.Parse(row[Col].ToString());
                 }
                 else if (ColumnName == "year")
-                    Year = Convert.ToInt32(Row[Col]);
+                    Year = Convert.ToInt32(row[Col]);
                 else if (ColumnName == "month")
-                    Month = Convert.ToInt32(Row[Col]);
+                    Month = Convert.ToInt32(row[Col]);
                 else if (ColumnName == "day")
-                    Day = Convert.ToInt32(Row[Col]);
+                    Day = Convert.ToInt32(row[Col]);
             }
             if (Year > 0)
             {
@@ -483,108 +483,108 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Filter the specified table for the given date range.
         /// </summary>
-        /// <param name="Table"></param>
-        /// <param name="StartYear"></param>
-        /// <param name="EndYear"></param>
+        /// <param name="table"></param>
+        /// <param name="startYear"></param>
+        /// <param name="endYear"></param>
         /// <returns></returns>
-        static public DataView FilterTableForYear(System.Data.DataTable Table, int StartYear, int EndYear)
+        static public DataView FilterTableForYear(DataTable table, int startYear, int endYear)
         {
             // ---------------------------------------------------------------------
             // Filter the specified data table for the specified year range.
             // ---------------------------------------------------------------------
-            DataView View = new DataView();
-            View.Table = Table;
-            if (Table.Columns.IndexOf("year") != -1)
-                View.RowFilter = "Year >= " + StartYear.ToString() + " and Year <= " + EndYear;
+            DataView view = new DataView();
+            view.Table = table;
+            if (table.Columns.IndexOf("year") != -1)
+                view.RowFilter = "Year >= " + startYear.ToString() + " and Year <= " + endYear;
 
-            else if (Table.Columns.IndexOf("date") != -1)
+            else if (table.Columns.IndexOf("date") != -1)
             {
                 // This uses system locale to decode a date string, we should really
                 // be using the units attribute instead.
-                DateTime d1 = new DateTime(StartYear, 1, 1);
+                DateTime d1 = new DateTime(startYear, 1, 1);
                 string filter = string.Format(System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat, "Date >= #{0}#", d1);
-                DateTime d2 = new DateTime(EndYear, 12, 31);
+                DateTime d2 = new DateTime(endYear, 12, 31);
                 filter += string.Format(System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat, "AND Date <= #{0}#", d2);
-                View.RowFilter = filter;
+                view.RowFilter = filter;
             }
             else
                 throw new Exception("Cannot find a date column in data");
-            return View;
+            return view;
         }
 
         /// <summary>
         /// Get the distinct rows from the specified table using the values in the specified column
         /// </summary>
-        /// <param name="Table"></param>
-        /// <param name="ColumnName"></param>
+        /// <param name="table"></param>
+        /// <param name="columnName"></param>
         /// <returns></returns>
-        static public List<string> GetDistinctValues(System.Data.DataTable Table, string ColumnName)
+        static public List<string> GetDistinctValues(DataTable table, string columnName)
         {
             // ---------------------------------------------------------------------
             // Return a list of unique values for the specified column in the
             // specified table.
             // ---------------------------------------------------------------------
-            List<string> Values = new List<string>();
+            List<string> values = new List<string>();
 
-            foreach (DataRow Row in Table.Rows)
+            foreach (DataRow row in table.Rows)
             {
-                if (Values.IndexOf(Row[ColumnName].ToString()) == -1)
-                    Values.Add(Row[ColumnName].ToString());
+                if (values.IndexOf(row[columnName].ToString()) == -1)
+                    values.Add(row[columnName].ToString());
             }
-            return Values;
+            return values;
         }
 
         /// <summary>
         /// Get a list of monthly sums for the specified data view.
         /// </summary>
-        /// <param name="View"></param>
+        /// <param name="view"></param>
         /// <returns></returns>
-        static public System.Data.DataTable MonthlySums(DataView View)
+        static public DataTable MonthlySums(DataView view)
         {
             // ----------------------------------------------------------------------------------
             // From the daily data in the Metfile object, calculate monthly sums of all variables
             // ----------------------------------------------------------------------------------
-            System.Data.DataTable MonthlyData = new System.Data.DataTable();
-            MonthlyData.TableName = "MonthlyData";
+            DataTable monthlyData = new DataTable();
+            monthlyData.TableName = "MonthlyData";
 
-            if (View.Table.Columns.IndexOf("Date") == -1)
-                MonthlyData.Columns.Add("Date", Type.GetType("System.DateTime"));
+            if (view.Table.Columns.IndexOf("Date") == -1)
+                monthlyData.Columns.Add("Date", Type.GetType("System.DateTime"));
 
-            foreach (DataColumn Column in View.Table.Columns)
-                MonthlyData.Columns.Add(Column.ColumnName, Column.DataType);
+            foreach (DataColumn Column in view.Table.Columns)
+                monthlyData.Columns.Add(Column.ColumnName, Column.DataType);
 
-            int PreviousMonth = 0;
-            DataRow MonthRow = null;
-            for (int Row = 0; Row != View.Count; Row++)
+            int previousMonth = 0;
+            DataRow monthRow = null;
+            for (int row = 0; row != view.Count; row++)
             {
-                DateTime RowDate = DataTableUtilities.GetDateFromRow(View[Row].Row);
-                if (PreviousMonth != RowDate.Month)
+                DateTime rowDate = DataTableUtilities.GetDateFromRow(view[row].Row);
+                if (previousMonth != rowDate.Month)
                 {
-                    MonthRow = MonthlyData.NewRow();
-                    MonthlyData.Rows.Add(MonthRow);
-                    MonthRow["Date"] = RowDate;
-                    PreviousMonth = RowDate.Month;
+                    monthRow = monthlyData.NewRow();
+                    monthlyData.Rows.Add(monthRow);
+                    monthRow["Date"] = rowDate;
+                    previousMonth = rowDate.Month;
                 }
 
-                foreach (DataColumn Column in View.Table.Columns)
+                foreach (DataColumn Column in view.Table.Columns)
                 {
-                    if (Convert.IsDBNull(MonthRow[Column.ColumnName]))
-                        MonthRow[Column.ColumnName] = View[Row][Column.ColumnName];
+                    if (Convert.IsDBNull(monthRow[Column.ColumnName]))
+                        monthRow[Column.ColumnName] = view[row][Column.ColumnName];
                     else if (Column.DataType.ToString() == "System.Single" || Column.DataType.ToString() == "System.Double")
-                        MonthRow[Column.ColumnName] = Convert.ToDouble(MonthRow[Column.ColumnName]) +
-                                                      Convert.ToDouble(View[Row][Column.ColumnName]);
+                        monthRow[Column.ColumnName] = Convert.ToDouble(monthRow[Column.ColumnName]) +
+                                                      Convert.ToDouble(view[row][Column.ColumnName]);
                     else
-                        MonthRow[Column.ColumnName] = View[Row][Column.ColumnName];
+                        monthRow[Column.ColumnName] = view[row][Column.ColumnName];
 
                 }
             }
-            return MonthlyData;
+            return monthlyData;
         }
 
         /// <summary>
         /// Write the specified DataTable to a CSV string, excluding the specified column names.
         /// </summary>
-        static public string DataTableToText(System.Data.DataTable data, int startColumnIndex, string delimiter, bool showHeadings, bool excelFriendly = false)
+        static public string DataTableToText(DataTable data, int startColumnIndex, string delimiter, bool showHeadings, bool excelFriendly = false)
         {
             // Convert the data table to a table of strings. This will make it easier for
             // calculating widths.

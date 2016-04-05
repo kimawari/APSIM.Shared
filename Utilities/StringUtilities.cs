@@ -19,19 +19,19 @@ namespace APSIM.Shared.Utilities
         /// This function converts a C string to a vb string by returning everything 
         /// up to the null character 
         /// </summary>
-        /// <param name="Cstring"></param>
+        /// <param name="cstring"></param>
         /// <returns></returns>
-        public static string CStringToVBString(string Cstring)
+        public static string CStringToVBString(string cstring)
         {
             string result;
             try
             {
                 char NullChar = new char();
-                result = Cstring.Substring(0, Cstring.IndexOf(NullChar));
+                result = cstring.Substring(0, cstring.IndexOf(NullChar));
             }
             catch (System.Exception)
             {
-                throw new Exception("Error converting string type from CS to VB: " + Cstring);
+                throw new Exception("Error converting string type from CS to VB: " + cstring);
             }
 
             return result;
@@ -40,12 +40,12 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// A version of IndexOf that is case insensitive. 
         /// </summary>
-        public static int IndexOfCaseInsensitive(string[] Values, string St)
+        public static int IndexOfCaseInsensitive(string[] values, string st)
         {
-            string StLower = St.ToLower();
-            for (int i = 0; (i <= (Values.Length - 1)); i++)
+            string StLower = st.ToLower();
+            for (int i = 0; (i <= (values.Length - 1)); i++)
             {
-                if ((Values[i].ToLower() == StLower))
+                if ((values[i].ToLower() == StLower))
                 {
                     return i;
                 }
@@ -56,12 +56,12 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// A version of IndexOf that is case insensitive. 
         /// </summary>
-        public static int IndexOfCaseInsensitive(StringCollection Values, string St)
+        public static int IndexOfCaseInsensitive(StringCollection values, string st)
         {
-            string StLower = St.ToLower();
-            for (int i = 0; (i <= (Values.Count - 1)); i++)
+            string StLower = st.ToLower();
+            for (int i = 0; (i <= (values.Count - 1)); i++)
             {
-                if ((Values[i].ToLower() == StLower))
+                if ((values[i].ToLower() == StLower))
                 {
                     return i;
                 }
@@ -73,12 +73,12 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// A version of IndexOf that is case insensitive. 
         /// </summary> 
-        public static int IndexOfCaseInsensitive(List<string> Values, string St)
+        public static int IndexOfCaseInsensitive(List<string> values, string st)
         {
-            string StLower = St.ToLower();
-            for (int i = 0; (i <= (Values.Count - 1)); i++)
+            string StLower = st.ToLower();
+            for (int i = 0; (i <= (values.Count - 1)); i++)
             {
-                if ((Values[i].ToLower() == StLower))
+                if ((values[i].ToLower() == StLower))
                 {
                     return i;
                 }
@@ -90,10 +90,10 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// A version of Array.Contains that is case insensitive. 
         /// </summary>
-        public static bool Contains(IEnumerable Values, string St)
+        public static bool Contains(IEnumerable values, string st)
         {
-            foreach (string Value in Values)
-                if (Value.Equals(St, StringComparison.CurrentCultureIgnoreCase))
+            foreach (string Value in values)
+                if (Value.Equals(st, StringComparison.CurrentCultureIgnoreCase))
                     return true; 
             return false;
         }
@@ -102,9 +102,9 @@ namespace APSIM.Shared.Utilities
         /// providing a NOT version. Returns -1 if non of the specified
         /// characters are found in specified string.
         /// </summary>
-        public static int IndexNotOfAny(string Text, char[] Delimiters)
+        public static int IndexNotOfAny(string text, char[] delimiters)
         {
-            return IndexNotOfAny(Text, Delimiters, 0);
+            return IndexNotOfAny(text, delimiters, 0);
         }
 
         /// <summary>
@@ -112,12 +112,12 @@ namespace APSIM.Shared.Utilities
         /// providing a NOT version. Returns -1 if non of the specified
         /// characters are found in specified string.
         /// </summary>
-        public static int IndexNotOfAny(string Text, char[] Delimiters, int Pos)
+        public static int IndexNotOfAny(string text, char[] delimiters, int pos)
         {
-            string DelimitersString = new string(Delimiters);
-            for (int i = Pos; i < Text.Length; i++)
+            string DelimitersString = new string(delimiters);
+            for (int i = pos; i < text.Length; i++)
             {
-                if (DelimitersString.IndexOf(Text[i]) == -1)
+                if (DelimitersString.IndexOf(text[i]) == -1)
                     return i;
             }
             return -1;
@@ -132,33 +132,33 @@ namespace APSIM.Shared.Utilities
         ///           words[2] = value3
         /// All values returned have been trimmed of spaces and double quotes.
         /// </summary>
-        public static StringCollection SplitStringHonouringQuotes(string Text, string Delimiters)
+        public static StringCollection SplitStringHonouringQuotes(string text, string delimiters)
         {
             StringCollection ReturnStrings = new StringCollection();
-            if (Text.Trim() == "")
+            if (text.Trim() == "")
                 return ReturnStrings;
 
             bool InsideQuotes = false;
-            int Start = IndexNotOfAny(Text, " ".ToCharArray());
-            for (int i = Start; i < Text.Length; i++)
+            int Start = IndexNotOfAny(text, " ".ToCharArray());
+            for (int i = Start; i < text.Length; i++)
             {
-                if (Text[i] == '"')
+                if (text[i] == '"')
                     InsideQuotes = !InsideQuotes; // toggle
 
                 else if (!InsideQuotes)
                 {
-                    if (Delimiters.IndexOf(Text[i]) != -1)
+                    if (delimiters.IndexOf(text[i]) != -1)
                     {
                         // Found a word - store it.
                         if (Start != i)
-                            ReturnStrings.Add(Text.Substring(Start, i - Start).Trim(" ".ToCharArray()));
+                            ReturnStrings.Add(text.Substring(Start, i - Start).Trim(" ".ToCharArray()));
                         Start = i+1;
 
                     }
                 }
             }
-            if (Start != Text.Length)
-                ReturnStrings.Add(Text.Substring(Start, Text.Length - Start).Trim(" ".ToCharArray()));
+            if (Start != text.Length)
+                ReturnStrings.Add(text.Substring(Start, text.Length - Start).Trim(" ".ToCharArray()));
 
             // remove leading and trailing quote if necessary.
             for (int i = 0; i < ReturnStrings.Count; i++)
@@ -188,39 +188,39 @@ namespace APSIM.Shared.Utilities
         ///         Bits[1]=Leaves[Leaf.CurrentRank]
         ///         Bits[2]=CoverAbove
         /// </summary>
-        public static string[] SplitStringHonouringBrackets(string Text, char Delimiter, char OpenBracket, char CloseBracket)
+        public static string[] SplitStringHonouringBrackets(string text, char delimiter, char openBracket, char closeBracket)
         {
             List<string> ReturnStrings = new List<string>();
-            if (Text.Trim() == "")
+            if (text.Trim() == "")
                 return ReturnStrings.ToArray();
             //if no delimiters in the string then return the original
-            if (!Text.Contains("."))
+            if (!text.Contains("."))
             {
-                ReturnStrings.Add(Text.Trim());
+                ReturnStrings.Add(text.Trim());
                 return ReturnStrings.ToArray();
             }
 
             bool InsideBracket = false;
-            int Start = IndexNotOfAny(Text, Delimiter.ToString().ToCharArray());
-            for (int i = Start; i < Text.Length; i++)
+            int Start = IndexNotOfAny(text, delimiter.ToString().ToCharArray());
+            for (int i = Start; i < text.Length; i++)
             {
-                if (Text[i] == OpenBracket)
+                if (text[i] == openBracket)
                     InsideBracket = true; // toggle
-                else if (Text[i] == CloseBracket)
+                else if (text[i] == closeBracket)
                     InsideBracket = false;
                 else if (!InsideBracket)
                 {
-                    if (Text[i] == Delimiter)
+                    if (text[i] == delimiter)
                     {
                         // Found a word - store it.
                         if (Start != i)
-                            ReturnStrings.Add(Text.Substring(Start, i - Start).Trim());
+                            ReturnStrings.Add(text.Substring(Start, i - Start).Trim());
                         Start = i + 1;
                     }
                 }
             }
-            if (Start != Text.Length)
-                ReturnStrings.Add(Text.Substring(Start, Text.Length - Start).Trim());
+            if (Start != text.Length)
+                ReturnStrings.Add(text.Substring(Start, text.Length - Start).Trim());
 
             return ReturnStrings.ToArray();
         }
@@ -228,26 +228,26 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Returns true if the 2 specified strings are equal
         /// </summary>
-        /// <param name="St1"></param>
-        /// <param name="St2"></param>
+        /// <param name="st1"></param>
+        /// <param name="st2"></param>
         /// <returns></returns>
-        public static bool StringsAreEqual(string St1, string St2)
+        public static bool StringsAreEqual(string st1, string st2)
         {
-            return St1.ToLower() == St2.ToLower();
+            return st1.ToLower() == st2.ToLower();
         }
 
         /// <summary>
         /// Remove, and return everything after the specified
         /// delimiter from the specified string. 
         /// </summary>
-        public static string SplitOffAfterDelimiter(ref string St, string Delimiter)
+        public static string SplitOffAfterDelimiter(ref string st, string delimiter)
         {
             string ReturnString = "";
-            int PosDelimiter = St.IndexOf(Delimiter);
+            int PosDelimiter = st.IndexOf(delimiter);
             if (PosDelimiter != -1)
             {
-                ReturnString = St.Substring(PosDelimiter + Delimiter.Length).Trim();
-                St = St.Remove(PosDelimiter, St.Length - PosDelimiter);
+                ReturnString = st.Substring(PosDelimiter + delimiter.Length).Trim();
+                st = st.Remove(PosDelimiter, st.Length - PosDelimiter);
             }
             return ReturnString;
         }
@@ -257,18 +257,18 @@ namespace APSIM.Shared.Utilities
         /// The bracketed value is then returned, without the brackets,
         /// or blank if not found.
         /// </summary>
-        public static string SplitOffBracketedValue(ref string St, char OpenBracket, char CloseBracket)
+        public static string SplitOffBracketedValue(ref string st, char openBracket, char closeBracket)
         {
             string ReturnString = "";
 
-            int PosOpenBracket = St.LastIndexOf(OpenBracket);
+            int PosOpenBracket = st.LastIndexOf(openBracket);
             if (PosOpenBracket != -1)
             {
-            int PosCloseBracket = St.LastIndexOf(CloseBracket);
+            int PosCloseBracket = st.LastIndexOf(closeBracket);
                 if (PosCloseBracket != -1 && PosOpenBracket < PosCloseBracket)
             {
-                ReturnString = St.Substring(PosOpenBracket + 1, PosCloseBracket - PosOpenBracket - 1).Trim();
-                St = St.Remove(PosOpenBracket, PosCloseBracket - PosOpenBracket + 1).Trim();
+                ReturnString = st.Substring(PosOpenBracket + 1, PosCloseBracket - PosOpenBracket - 1).Trim();
+                st = st.Remove(PosOpenBracket, PosCloseBracket - PosOpenBracket + 1).Trim();
                 }
             }
             return ReturnString;
@@ -277,52 +277,52 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Remove a substring (starting from OpenBracket) from a string.
         /// </summary>
-        public static string RemoveAfter(string St, char OpenBracket)
+        public static string RemoveAfter(string st, char openBracket)
         {
-            int Pos = St.IndexOf(OpenBracket);
+            int Pos = st.IndexOf(openBracket);
             if (Pos != -1)
-                return St.Substring(0, Pos);
+                return st.Substring(0, Pos);
             else
-                return St;
+                return st;
         }
 
         /// <summary>
         /// Return true if specified string is numeric
         /// </summary>
-        public static bool IsNumeric(string St)
+        public static bool IsNumeric(string st)
         {
             float Value;
-            return Single.TryParse(St, out Value);
+            return Single.TryParse(st, out Value);
         }
 
         /// <summary>
         /// Return true if specified string is a date time.
         /// </summary>
-        public static bool IsDateTime(string St)
+        public static bool IsDateTime(string st)
         {
             DateTime Value;
-            return DateTime.TryParse(St, out Value);
+            return DateTime.TryParse(st, out Value);
         }
 
         /// <summary>
         /// Indent the specified string a certain number of spaces.
         /// </summary>
-        public static string IndentText(string St, int numChars)
+        public static string IndentText(string st, int numChars)
         {
-            if (St == null)
-                return St;
+            if (st == null)
+                return st;
             string space = new string(' ', numChars);
-            return space + St.Replace("\n", "\n" + space);
+            return space + st.Replace("\n", "\n" + space);
         }
 
         /// <summary>
         /// Indent the specified string a certain number of spaces.
         /// </summary>
-        public static string UnIndentText(string St, int numChars)
+        public static string UnIndentText(string st, int numChars)
         {
-            if (St.Length < numChars)
-                return St;
-            string returnString = St.Remove(0, numChars);
+            if (st.Length < numChars)
+                return st;
+            string returnString = st.Remove(0, numChars);
 
             string space = "\r\n" + new string(' ', numChars);
             return returnString.Replace(space, "\r\n");
@@ -331,38 +331,38 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Return a string with double quotes around St
         /// </summary>
-        /// <param name="St"></param>
+        /// <param name="st"></param>
         /// <returns></returns>
-        public static string DQuote(string St)
+        public static string DQuote(string st)
         {
-            if (St.IndexOfAny(new char[] { ' ', '&', '<', '>', '(', ')', 
+            if (st.IndexOfAny(new char[] { ' ', '&', '<', '>', '(', ')', 
                                            '[', ']', '{', '}', '=', ';', 
                                            '!', '\'', '+', ',', '^', 
                                            '`', '~', '|','@' }) >= 0)
-              return "\"" + St + "\"";
-            return St;
+              return "\"" + st + "\"";
+            return st;
         }
 
         /// <summary>
         /// Return a type for the specified string
         /// </summary>
-        /// <param name="Value"></param>
-        /// <param name="Units"></param>
+        /// <param name="value"></param>
+        /// <param name="units"></param>
         /// <returns></returns>
-        public static Type DetermineType(string Value, string Units)
+        public static Type DetermineType(string value, string units)
         {
             Type ColumnType;
-            if (Value == "?")
+            if (value == "?")
                 ColumnType = Type.GetType("System.String");
 
-            else if (MathUtilities.IsNumericalenUS(Value))
+            else if (MathUtilities.IsNumericalenUS(value))
                 ColumnType = Type.GetType("System.Single");
 
-            else if (Units == "" && StringUtilities.IsDateTime(Value))
+            else if (units == "" && StringUtilities.IsDateTime(value))
                 ColumnType = Type.GetType("System.DateTime");
 
-            else if ((Units.Contains("d") && Units.Contains("/") && Units.Contains("y"))
-                      || StringUtilities.IsDateTime(Value))
+            else if ((units.Contains("d") && units.Contains("/") && units.Contains("y"))
+                      || StringUtilities.IsDateTime(value))
                 ColumnType = Type.GetType("System.DateTime");
 
             else
@@ -374,41 +374,41 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Create a string array containing the specified number of values.
         /// </summary>
-        /// <param name="Value"></param>
-        /// <param name="NumValues"></param>
+        /// <param name="value"></param>
+        /// <param name="numValues"></param>
         /// <returns></returns>
-        public static string[] CreateStringArray(string Value, int NumValues)
+        public static string[] CreateStringArray(string value, int numValues)
         {
-            string[] Arr = new string[NumValues];
-            for (int i = 0; i < NumValues; i++)
-                Arr[i] = Value;
+            string[] Arr = new string[numValues];
+            for (int i = 0; i < numValues; i++)
+                Arr[i] = value;
             return Arr;
         }
 
         /// <summary>
         /// Find the matching closing bracket.
         /// </summary>
-        /// <param name="Contents"></param>
-        /// <param name="StartPos"></param>
-        /// <param name="OpenBracket"></param>
-        /// <param name="CloseBracket"></param>
+        /// <param name="contents"></param>
+        /// <param name="startPos"></param>
+        /// <param name="openBracket"></param>
+        /// <param name="closeBracket"></param>
         /// <returns></returns>
-        public static int FindMatchingClosingBracket(string Contents, int StartPos, char OpenBracket, char CloseBracket)
+        public static int FindMatchingClosingBracket(string contents, int startPos, char openBracket, char closeBracket)
         {
-            char[] CharSet = new char[2] { OpenBracket, CloseBracket };
-            int Pos = Contents.IndexOfAny(CharSet, StartPos);
+            char[] CharSet = new char[2] { openBracket, closeBracket };
+            int Pos = contents.IndexOfAny(CharSet, startPos);
 
             int Count = 0;
             while (Pos != -1)
             {
-                if (Contents[Pos] == OpenBracket)
+                if (contents[Pos] == openBracket)
                     Count++;
                 else
                     Count--;
                 if (Count == 0)
                     return Pos;
 
-                Pos = Contents.IndexOfAny(CharSet, Pos + 1);
+                Pos = contents.IndexOfAny(CharSet, Pos + 1);
             }
 
             return -1;
@@ -418,22 +418,22 @@ namespace APSIM.Shared.Utilities
         /// Convert a FORTRAN type APSIM name e.g. canopy_water_balance into a camel case name
         /// like CanopyWaterBalance
         /// </summary>
-        public static string CamelCase(string Name)
+        public static string CamelCase(string name)
         {
             int PosUnderScore = -1;
             do
             {
-                string UpperChar = Name[PosUnderScore + 1].ToString();
+                string UpperChar = name[PosUnderScore + 1].ToString();
                 UpperChar = UpperChar.ToUpper();
-                Name = Name.Remove(PosUnderScore + 1, 1);
-                Name = Name.Insert(PosUnderScore + 1, UpperChar);
+                name = name.Remove(PosUnderScore + 1, 1);
+                name = name.Insert(PosUnderScore + 1, UpperChar);
 
                 if (PosUnderScore != -1)
-                    Name = Name.Remove(PosUnderScore, 1);
-                PosUnderScore = Name.IndexOf('_');
+                    name = name.Remove(PosUnderScore, 1);
+                PosUnderScore = name.IndexOf('_');
             }
             while (PosUnderScore != -1);
-            return Name;
+            return name;
         }
 
         /// <summary>
@@ -442,14 +442,14 @@ namespace APSIM.Shared.Utilities
         /// e.g. if Name = Paddock.ModelB
         ///      then returns Paddock
         /// </summary>
-        public static string ParentName(string Name, char Delimiter = '.')
+        public static string ParentName(string name, char delimiter = '.')
         {
             string ReturnName = "";
-            if (Name.Length > 0)
+            if (name.Length > 0)
             {
-                int PosLastPeriod = Name.LastIndexOf(Delimiter);
+                int PosLastPeriod = name.LastIndexOf(delimiter);
                 if (PosLastPeriod >= 0)
-                    ReturnName = Name.Substring(0, PosLastPeriod);
+                    ReturnName = name.Substring(0, PosLastPeriod);
             }
             return ReturnName;
         }
@@ -460,14 +460,14 @@ namespace APSIM.Shared.Utilities
         /// e.g. if Name = Paddock.ModelB
         ///      then returns ModelB
         /// </summary>
-        public static string ChildName(string Name, char Delimiter = '.')
+        public static string ChildName(string name, char delimiter = '.')
         {
             string ReturnName = "";
-            if (Name.Length > 0)
+            if (name.Length > 0)
             {
-                int PosLastPeriod = Name.LastIndexOf(Delimiter);
+                int PosLastPeriod = name.LastIndexOf(delimiter);
                 if (PosLastPeriod >= 0)
-                    ReturnName = Name.Substring(PosLastPeriod+1);
+                    ReturnName = name.Substring(PosLastPeriod+1);
             }
             return ReturnName;
         }
@@ -476,11 +476,11 @@ namespace APSIM.Shared.Utilities
         /// A helper function for building a string from an array of values.
         /// Format specifies the level of precision written e.g. "f2"
         /// </summary>
-        public static string BuildString(double[] Values, string Format)
+        public static string BuildString(double[] values, string format)
         {
             string ReturnString = "";
-            foreach (double Value in Values)
-                ReturnString += "   " + Value.ToString(Format);
+            foreach (double Value in values)
+                ReturnString += "   " + Value.ToString(format);
             return ReturnString;
         }
 
@@ -488,16 +488,16 @@ namespace APSIM.Shared.Utilities
         /// A helper function for building a string from an array of strings.
         /// Separator is inserted between each string.
         /// </summary>
-        public static string BuildString(string[] Values, string separator)
+        public static string BuildString(string[] values, string separator)
         {
-            if (Values == null)
+            if (values == null)
                 return "";
             string ReturnString = "";
-            for (int i = 0; i < Values.Length; i++)
+            for (int i = 0; i < values.Length; i++)
             {
                 if (i > 0)
                     ReturnString += separator;
-                ReturnString += Values[i];
+                ReturnString += values[i];
             }
             return ReturnString;
         }
@@ -552,19 +552,19 @@ namespace APSIM.Shared.Utilities
         /// Look through the specified string for an environment variable name surrounded by
         /// % characters. Replace them with the environment variable value.
         /// </summary>
-        public static string ReplaceEnvironmentVariables(string CommandLine)
+        public static string ReplaceEnvironmentVariables(string commandLine)
         {
-            if (CommandLine == null)
-                return CommandLine;
+            if (commandLine == null)
+                return commandLine;
 
-            int PosPercent = CommandLine.IndexOf('%');
+            int PosPercent = commandLine.IndexOf('%');
             while (PosPercent != -1)
             {
                 string Value = null;
-                int EndVariablePercent = CommandLine.IndexOf('%', PosPercent + 1);
+                int EndVariablePercent = commandLine.IndexOf('%', PosPercent + 1);
                 if (EndVariablePercent != -1)
                 {
-                    string VariableName = CommandLine.Substring(PosPercent + 1, EndVariablePercent - PosPercent - 1);
+                    string VariableName = commandLine.Substring(PosPercent + 1, EndVariablePercent - PosPercent - 1);
                     Value = System.Environment.GetEnvironmentVariable(VariableName);
                     if (Value == null)
                         Value = System.Environment.GetEnvironmentVariable(VariableName, EnvironmentVariableTarget.User);
@@ -572,20 +572,20 @@ namespace APSIM.Shared.Utilities
 
                 if (Value != null)
                 {
-                    CommandLine = CommandLine.Remove(PosPercent, EndVariablePercent - PosPercent + 1);
-                    CommandLine = CommandLine.Insert(PosPercent, Value);
+                    commandLine = commandLine.Remove(PosPercent, EndVariablePercent - PosPercent + 1);
+                    commandLine = commandLine.Insert(PosPercent, Value);
                     PosPercent = PosPercent + 1;
                 }
 
                 else
                     PosPercent = PosPercent + 1;
 
-                if (PosPercent >= CommandLine.Length)
+                if (PosPercent >= commandLine.Length)
                     PosPercent = -1;
                 else
-                    PosPercent = CommandLine.IndexOf('%', PosPercent);
+                    PosPercent = commandLine.IndexOf('%', PosPercent);
             }
-            return CommandLine;
+            return commandLine;
         }
 
         /// <summary>

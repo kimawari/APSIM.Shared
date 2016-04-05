@@ -22,17 +22,17 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Returns true if the specified type T is of type TypeName
         /// </summary>
-        public static bool IsOfType(Type T, string TypeName)
+        public static bool IsOfType(Type t, string typeName)
         {
-            while (T != null)
+            while (t != null)
             {
-                if (T.ToString() == TypeName)
+                if (t.ToString() == typeName)
                     return true;
 
-                if (T.GetInterface(TypeName) != null)
+                if (t.GetInterface(typeName) != null)
                     return true;
 
-                T = T.BaseType;
+                t = t.BaseType;
             }
             return false;
         }
@@ -54,31 +54,31 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Get the value of a field or property.
         /// </summary>
-        /// <param name="Name"></param>
-        /// <param name="Obj"></param>
+        /// <param name="name"></param>
+        /// <param name="obj"></param>
         /// <returns></returns>
-        public static object GetValueOfFieldOrProperty(string Name, object Obj)
+        public static object GetValueOfFieldOrProperty(string name, object obj)
         {
-            int Pos = Name.IndexOf('.');
+            int Pos = name.IndexOf('.');
             if (Pos > -1)
             {
-                string FieldName = Name.Substring(0, Pos);
-                Obj = GetValueOfFieldOrProperty(FieldName, Obj);
-                if (Obj == null)
+                string FieldName = name.Substring(0, Pos);
+                obj = GetValueOfFieldOrProperty(FieldName, obj);
+                if (obj == null)
                     return null;
                 else
-                    return GetValueOfFieldOrProperty(Name.Substring(Pos + 1), Obj);
+                    return GetValueOfFieldOrProperty(name.Substring(Pos + 1), obj);
             }
             else
             {
                 BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase;
-                FieldInfo F = Obj.GetType().GetField(Name, Flags);
+                FieldInfo F = obj.GetType().GetField(name, Flags);
                 if (F != null)
-                    return F.GetValue(Obj);
+                    return F.GetValue(obj);
 
-                PropertyInfo P = Obj.GetType().GetProperty(Name, Flags);
+                PropertyInfo P = obj.GetType().GetProperty(name, Flags);
                 if (P != null)
-                    return P.GetValue(Obj, null);
+                    return P.GetValue(obj, null);
 
                 return null;
             }
@@ -89,36 +89,36 @@ namespace APSIM.Shared.Utilities
         /// return true if successfull. Will throw if Value is the wrong type for the field
         /// or property. Supports strings/double/int conversion or direct setting.
         /// </summary>
-        public static bool SetValueOfFieldOrProperty(string Name, object Obj, object Value)
+        public static bool SetValueOfFieldOrProperty(string name, object obj, object value)
         {
-            if (Name.Contains("."))
+            if (name.Contains("."))
             {
-                int Pos = Name.IndexOf('.');
-                string FieldName = Name.Substring(0, Pos);
-                Obj = SetValueOfFieldOrProperty(FieldName, Obj, Value);
-                if (Obj == null)
+                int Pos = name.IndexOf('.');
+                string FieldName = name.Substring(0, Pos);
+                obj = SetValueOfFieldOrProperty(FieldName, obj, value);
+                if (obj == null)
                     return false;
                 else
-                    return SetValueOfFieldOrProperty(Name.Substring(Pos + 1), Obj, Value);
+                    return SetValueOfFieldOrProperty(name.Substring(Pos + 1), obj, value);
             }
             else
             {
                 BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase;
-                FieldInfo F = Obj.GetType().GetField(Name, Flags);
+                FieldInfo F = obj.GetType().GetField(name, Flags);
                 if (F != null)
                 {
                     if (F.FieldType == typeof(string))
-                        F.SetValue(Obj, Value.ToString());
+                        F.SetValue(obj, value.ToString());
                     else if (F.FieldType == typeof(double))
-                        F.SetValue(Obj, Convert.ToDouble(Value));
+                        F.SetValue(obj, Convert.ToDouble(value));
                     else if (F.FieldType == typeof(int))
-                        F.SetValue(Obj, Convert.ToInt32(Value));
+                        F.SetValue(obj, Convert.ToInt32(value));
                     else
-                        F.SetValue(Obj, Value);
+                        F.SetValue(obj, value);
                     return true;
                 }
 
-                return SetValueOfProperty(Name, Obj, Value);
+                return SetValueOfProperty(name, obj, value);
             }
         }
 
@@ -175,11 +175,11 @@ namespace APSIM.Shared.Utilities
         /// Gets the specified attribute type.
         /// </summary>
         /// <returns>Returns the attribute or null if not found.</returns>
-        public static Attribute GetAttribute(Type T, Type AttributeTypeToFind, bool LookInBaseClasses)
+        public static Attribute GetAttribute(Type t, Type attributeTypeToFind, bool lookInBaseClasses)
         {
-            foreach (Attribute A in T.GetCustomAttributes(LookInBaseClasses))
+            foreach (Attribute A in t.GetCustomAttributes(lookInBaseClasses))
             {
-                if (A.GetType() == AttributeTypeToFind)
+                if (A.GetType() == attributeTypeToFind)
                     return A;
             }
             return null;
@@ -189,11 +189,11 @@ namespace APSIM.Shared.Utilities
         /// Gets the specified attribute type.
         /// </summary>
         /// <returns>Returns the attribute or null if not found.</returns>
-        public static Attribute GetAttribute(MemberInfo T, Type AttributeTypeToFind, bool LookInBaseClasses)
+        public static Attribute GetAttribute(MemberInfo t, Type attributeTypeToFind, bool lookInBaseClasses)
         {
-            foreach (Attribute A in T.GetCustomAttributes(LookInBaseClasses))
+            foreach (Attribute A in t.GetCustomAttributes(lookInBaseClasses))
             {
-                if (A.GetType() == AttributeTypeToFind)
+                if (A.GetType() == attributeTypeToFind)
                     return A;
             }
             return null;
@@ -203,12 +203,12 @@ namespace APSIM.Shared.Utilities
         /// Gets 0 or more attributes of the specified type.
         /// </summary>
         /// <returns>Returns the attributes or string[0] if none found.</returns>
-        public static Attribute[] GetAttributes(Type T, Type AttributeTypeToFind, bool LookInBaseClasses)
+        public static Attribute[] GetAttributes(Type t, Type attributeTypeToFind, bool lookInBaseClasses)
         {
             List<Attribute> Attributes = new List<Attribute>();
-            foreach (Attribute A in T.GetCustomAttributes(LookInBaseClasses))
+            foreach (Attribute A in t.GetCustomAttributes(lookInBaseClasses))
             {
-                if (A.GetType() == AttributeTypeToFind)
+                if (A.GetType() == attributeTypeToFind)
                     Attributes.Add(A);
             }
             return Attributes.ToArray();
@@ -218,12 +218,12 @@ namespace APSIM.Shared.Utilities
         /// Gets 0 or more attributes of the specified type.
         /// </summary>
         /// <returns>Returns the attributes or string[0] if none found.</returns>
-        public static Attribute[] GetAttributes(MemberInfo T, Type AttributeTypeToFind, bool LookInBaseClasses)
+        public static Attribute[] GetAttributes(MemberInfo t, Type attributeTypeToFind, bool lookInBaseClasses)
         {
             List<Attribute> Attributes = new List<Attribute>();
-            foreach (Attribute A in T.GetCustomAttributes(LookInBaseClasses))
+            foreach (Attribute A in t.GetCustomAttributes(lookInBaseClasses))
             {
-                if (A.GetType() == AttributeTypeToFind)
+                if (A.GetType() == attributeTypeToFind)
                     Attributes.Add(A);
             }
             return Attributes.ToArray();
@@ -233,15 +233,15 @@ namespace APSIM.Shared.Utilities
         /// Returns the name of the specified object if it has a public name property
         /// or it returns the name of the type if no name property is present.
         /// </summary>
-        public static string Name(object Obj)
+        public static string Name(object obj)
         {
-            if (Obj != null)
+            if (obj != null)
             {
-                PropertyInfo NameProperty = Obj.GetType().GetProperty("Name");
+                PropertyInfo NameProperty = obj.GetType().GetProperty("Name");
                 if (NameProperty == null)
-                    return Obj.GetType().Name;
+                    return obj.GetType().Name;
                 else
-                    return NameProperty.GetValue(Obj, null) as string;
+                    return NameProperty.GetValue(obj, null) as string;
             }
             return null;
         }
@@ -250,22 +250,22 @@ namespace APSIM.Shared.Utilities
         /// Sets the name of the specified object if it has a public name property that is settable.
         /// Will throw if cannot set the name.
         /// </summary>
-        public static void SetName(object Obj, string NewName)
+        public static void SetName(object obj, string newName)
         {
-            PropertyInfo NameProperty = Obj.GetType().GetProperty("Name");
+            PropertyInfo NameProperty = obj.GetType().GetProperty("Name");
             if (NameProperty == null || !NameProperty.CanWrite)
-                throw new Exception("Cannot set the name of object with type: " + Obj.GetType().Name + 
+                throw new Exception("Cannot set the name of object with type: " + obj.GetType().Name + 
                                     ". It does not have a public, settable, name property");
             else
-                NameProperty.SetValue(Obj, NewName, null);
+                NameProperty.SetValue(obj, newName, null);
         }
 
         /// <summary>
         /// Returns true if the specified object has a name property with a public setter.
         /// </summary>
-        public static bool NameIsSettable(object Obj)
+        public static bool NameIsSettable(object obj)
         {
-            PropertyInfo NameProperty = Obj.GetType().GetProperty("Name");
+            PropertyInfo NameProperty = obj.GetType().GetProperty("Name");
             return NameProperty != null && NameProperty.CanWrite;
         }
 
