@@ -62,8 +62,8 @@ namespace APSIM.Shared.Utilities
             try
             {
                 Server = new TcpClient(serverName, Convert.ToInt32(port));
-                Byte[] data = System.Text.Encoding.ASCII.GetBytes(data);
-                Server.GetStream().Write(data, 0, data.Length);
+                Byte[] bData = System.Text.Encoding.ASCII.GetBytes(data);
+                Server.GetStream().Write(bData, 0, data.Length);
 
                 Byte[] bytes = new Byte[8192];
 
