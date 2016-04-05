@@ -226,12 +226,12 @@ namespace APSIM.Shared.Utilities
         /// <summary>Transmissivities the specified day.</summary>
         /// <param name="day">The day.</param>
         /// <param name="lat">The lat.</param>
-        /// <param name="Radn">The radn.</param>
+        /// <param name="radn">The radn.</param>
         /// <returns></returns>
-        public static double Transmissivity(int day, double lat, double Radn)
+        public static double Transmissivity(int day, double lat, double radn)
         {
             // ------------------------------------------------------------------------
-            return Radn / Q0(day, lat);
+            return radn / Q0(day, lat);
         }
 
         // ------------------------------------------------------------------------
