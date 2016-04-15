@@ -135,22 +135,25 @@ namespace APSIM.Shared.Utilities
             SomeHadErrors = false;
             allDone = false;
             DoWorkEventArgs args = new DoWorkEventArgs(this);
-            foreach (KeyValuePair<BackgroundWorker, IRunnable> job in jobs)
+            while (jobs.Count > 0)
             {
+                IRunnable job = jobs[0].Value;
                 try
                 {
-                    job.Value.Run(this, args);
-                    job.Value.IsCompleted = true;
-                    CompletedJobs.Add(job.Value);
+                    job.Run(this, args);
+                    job.IsCompleted = true;
+                    CompletedJobs.Add(job);
+                    jobs.RemoveAt(0);
                 }
                 catch (Exception err)
                 {
-                    job.Value.ErrorMessage = err.ToString();
+                    job.ErrorMessage = err.ToString();
                     SomeHadErrors = true;
                 }
             }
-            jobs.Clear();
             allDone = true;
+            if (AllJobsCompleted != null)
+                AllJobsCompleted.Invoke(this, new EventArgs());
         }
 
         /// <summary>Stop all jobs currently running in the scheduler.</summary>

@@ -497,50 +497,50 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>Bind all parameters values to the specified query and execute the query.</summary>
-        /// <param name="Query">The query.</param>
-        /// <param name="Values">The values.</param>
-        public void BindParametersAndRunQuery(IntPtr Query, object[] Values)
+        /// <param name="query">The query.</param>
+        /// <param name="values">The values.</param>
+        public void BindParametersAndRunQuery(IntPtr query, object[] values)
         {
-            for (int i = 0; i < Values.Length; i++)
+            for (int i = 0; i < values.Length; i++)
             {
-                if (Convert.IsDBNull(Values[i]) || Values[i] == null)
+                if (Convert.IsDBNull(values[i]) || values[i] == null)
                 {
-                    sqlite3_bind_null(Query, i+1);
+                    sqlite3_bind_null(query, i+1);
                 }
-                else if (Values[i].GetType().ToString() == "System.DateTime")
+                else if (values[i].GetType().ToString() == "System.DateTime")
                 {
-                    DateTime d = (DateTime)Values[i];
-                    sqlite3_bind_text(Query, i + 1, d.ToString("yyyy-MM-dd hh:mm:ss"), -1, new IntPtr(-1));
+                    DateTime d = (DateTime)values[i];
+                    sqlite3_bind_text(query, i + 1, d.ToString("yyyy-MM-dd hh:mm:ss"), -1, new IntPtr(-1));
                 }
-                else if (Values[i].GetType().ToString() == "System.Int32")
+                else if (values[i].GetType().ToString() == "System.Int32")
                 {
-                    int integer = (int)Values[i];
-                    sqlite3_bind_int(Query, i + 1, integer);
+                    int integer = (int)values[i];
+                    sqlite3_bind_int(query, i + 1, integer);
                 }
-                else if (Values[i].GetType().ToString() == "System.Single")
+                else if (values[i].GetType().ToString() == "System.Single")
                 {
-                    float f = (float)Values[i];
-                    sqlite3_bind_double(Query, i + 1, f);
+                    float f = (float)values[i];
+                    sqlite3_bind_double(query, i + 1, f);
                 }
-                else if (Values[i].GetType().ToString() == "System.Double")
+                else if (values[i].GetType().ToString() == "System.Double")
                 {
-                    double d = (double)Values[i];
-                    sqlite3_bind_double(Query, i + 1, d);
+                    double d = (double)values[i];
+                    sqlite3_bind_double(query, i + 1, d);
                 }
                 else
                 {
-                    sqlite3_bind_text(Query, i + 1, Values[i] as string, -1, new IntPtr(-1));
+                    sqlite3_bind_text(query, i + 1, values[i] as string, -1, new IntPtr(-1));
 
                 }
 
             }
 
-            if (sqlite3_step(Query) != SQLITE_DONE)
+            if (sqlite3_step(query) != SQLITE_DONE)
             {
                 string errorMessage = Marshal.PtrToStringAnsi(sqlite3_errmsg(_db));
                 throw new SQLiteException(errorMessage);
             }
-            sqlite3_reset(Query);
+            sqlite3_reset(query);
         }
 
         /// <summary>Return a list of column names.</summary>

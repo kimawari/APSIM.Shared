@@ -112,22 +112,22 @@ namespace APSIM.Shared.Utilities
         /// Run the specified executable with the specified arguments and working directory.
         /// Returns the Process object to caller.
         /// </summary>
-        public static System.Diagnostics.Process RunProcess(string Executable, string Arguments, string WorkingDirectory)
+        public static System.Diagnostics.Process RunProcess(string executable, string arguments, string workingDirectory)
         {
-            if (!File.Exists(Executable))
-                throw new System.Exception("Cannot execute file: " + Executable + ". File not found.");
+            if (!File.Exists(executable))
+                throw new System.Exception("Cannot execute file: " + executable + ". File not found.");
             System.Diagnostics.Process PlugInProcess = new System.Diagnostics.Process();
-            PlugInProcess.StartInfo.FileName = Executable;
-            PlugInProcess.StartInfo.Arguments = Arguments;
+            PlugInProcess.StartInfo.FileName = executable;
+            PlugInProcess.StartInfo.Arguments = arguments;
             // Determine whether or not the file is an executable; execute from the shell if it's not
-            PlugInProcess.StartInfo.UseShellExecute = isManaged(Executable) == CompilationMode.Invalid;
+            PlugInProcess.StartInfo.UseShellExecute = isManaged(executable) == CompilationMode.Invalid;
             PlugInProcess.StartInfo.CreateNoWindow = true;
             if (!PlugInProcess.StartInfo.UseShellExecute)
             {
                 PlugInProcess.StartInfo.RedirectStandardOutput = true;
                 PlugInProcess.StartInfo.RedirectStandardError = true;
             }
-            PlugInProcess.StartInfo.WorkingDirectory = WorkingDirectory;
+            PlugInProcess.StartInfo.WorkingDirectory = workingDirectory;
             PlugInProcess.Start();
             return PlugInProcess;
         }
@@ -137,20 +137,20 @@ namespace APSIM.Shared.Utilities
         /// Will throw Exception with error message from process if Process exits with a non-zero
         /// exit code.
         /// </summary>
-        public static string CheckProcessExitedProperly(System.Diagnostics.Process PlugInProcess)
+        public static string CheckProcessExitedProperly(System.Diagnostics.Process plugInProcess)
         {
-            if (!PlugInProcess.StartInfo.UseShellExecute)
+            if (!plugInProcess.StartInfo.UseShellExecute)
             {
                 string msg = "";
-                if (PlugInProcess.StartInfo.RedirectStandardOutput)
-                    msg = PlugInProcess.StandardOutput.ReadToEnd();
-                PlugInProcess.WaitForExit();
-                if (PlugInProcess.ExitCode != 0)
+                if (plugInProcess.StartInfo.RedirectStandardOutput)
+                    msg = plugInProcess.StandardOutput.ReadToEnd();
+                plugInProcess.WaitForExit();
+                if (plugInProcess.ExitCode != 0)
                 {
-                    if (PlugInProcess.StartInfo.RedirectStandardError)
-                        msg += PlugInProcess.StandardError.ReadToEnd();
+                    if (plugInProcess.StartInfo.RedirectStandardError)
+                        msg += plugInProcess.StandardError.ReadToEnd();
                     if (msg != "")
-                        throw new System.Exception("Error from " + System.IO.Path.GetFileName(PlugInProcess.StartInfo.FileName) + ": "
+                        throw new System.Exception("Error from " + System.IO.Path.GetFileName(plugInProcess.StartInfo.FileName) + ": "
                                                                  + msg);
                 }
                 return msg;

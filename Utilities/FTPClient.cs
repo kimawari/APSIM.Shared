@@ -20,16 +20,16 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Uploads the specified file.
         /// </summary>
-        /// <param name="FullFileName">Full name of the file.</param>
-        /// <param name="FTPFullFileName">Name of the FTP full file.</param>
-        /// <param name="UserName">Name of the user.</param>
-        /// <param name="Password">The password.</param>
-        public static void Upload(string FullFileName, string FTPFullFileName, string UserName, string Password)
+        /// <param name="fullFileName">Full name of the file.</param>
+        /// <param name="fTPFullFileName">Name of the FTP full file.</param>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="password">The password.</param>
+        public static void Upload(string fullFileName, string fTPFullFileName, string userName, string password)
             {
-            FileInfo File = new FileInfo(FullFileName);
+            FileInfo File = new FileInfo(fullFileName);
 
-            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPFullFileName);
-            FTP.Credentials = new NetworkCredential(UserName, Password);
+            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(fTPFullFileName);
+            FTP.Credentials = new NetworkCredential(userName, password);
             FTP.KeepAlive = false;
             FTP.Method = WebRequestMethods.Ftp.UploadFile;
             FTP.UseBinary = true;
@@ -66,24 +66,24 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Downloads the specified file.
         /// </summary>
-        /// <param name="FTPFullFileName">Name of the FTP full file.</param>
-        /// <param name="DestFullFileName">Name of the dest full file.</param>
-        /// <param name="UserName">Name of the user.</param>
-        /// <param name="Password">The password.</param>
-        public static void Download(string FTPFullFileName, string DestFullFileName,
-                                    string UserName, string Password)
+        /// <param name="fTPFullFileName">Name of the FTP full file.</param>
+        /// <param name="destFullFileName">Name of the dest full file.</param>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="password">The password.</param>
+        public static void Download(string fTPFullFileName, string destFullFileName,
+                                    string userName, string password)
             {
-            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPFullFileName);
+            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(fTPFullFileName);
             FTP.Method = WebRequestMethods.Ftp.DownloadFile;
             FTP.UseBinary = true;
-            FTP.Credentials = new NetworkCredential(UserName, Password);
+            FTP.Credentials = new NetworkCredential(userName, password);
 
             FtpWebResponse Response = (FtpWebResponse)FTP.GetResponse();
             Stream FtpStream = Response.GetResponseStream();
             int BufferSize = 2048;
             byte[] Buffer = new byte[BufferSize];
 
-            FileStream OutputStream = new FileStream(DestFullFileName, FileMode.Create);
+            FileStream OutputStream = new FileStream(destFullFileName, FileMode.Create);
             int ReadCount = FtpStream.Read(Buffer, 0, BufferSize);
             while (ReadCount > 0)
                 {
@@ -99,14 +99,14 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Deletes the specified FTP file.
         /// </summary>
-        /// <param name="FTPFullFileName">Name of the FTP full file.</param>
-        /// <param name="UserName">Name of the user.</param>
-        /// <param name="Password">The password.</param>
-        public static void Delete(string FTPFullFileName, string UserName, string Password)
+        /// <param name="fTPFullFileName">Name of the FTP full file.</param>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="password">The password.</param>
+        public static void Delete(string fTPFullFileName, string userName, string password)
             {
-            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPFullFileName);
+            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(fTPFullFileName);
 
-            FTP.Credentials = new NetworkCredential(UserName, Password);
+            FTP.Credentials = new NetworkCredential(userName, password);
             FTP.KeepAlive = false;
             FTP.Method = WebRequestMethods.Ftp.DeleteFile;
 
@@ -122,17 +122,17 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Gets a directory listing.
         /// </summary>
-        /// <param name="FTPDirectory">The FTP directory.</param>
-        /// <param name="Detailed">if set to <c>true</c> [detailed].</param>
-        /// <param name="UserName">Name of the user.</param>
-        /// <param name="Password">The password.</param>
+        /// <param name="fTPDirectory">The FTP directory.</param>
+        /// <param name="detailed">if set to <c>true</c> [detailed].</param>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="password">The password.</param>
         /// <returns></returns>
-        public static string[] DirectoryListing(string FTPDirectory, bool Detailed, string UserName, string Password)
+        public static string[] DirectoryListing(string fTPDirectory, bool detailed, string userName, string password)
             {
-            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPDirectory);
-            FTP.Credentials = new NetworkCredential(UserName, Password);
+            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(fTPDirectory);
+            FTP.Credentials = new NetworkCredential(userName, password);
             FTP.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
-            if (!Detailed)
+            if (!detailed)
                 FTP.Method = WebRequestMethods.Ftp.ListDirectory;
 
             WebResponse Response = FTP.GetResponse();
@@ -156,16 +156,16 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Gets the size of a file.
         /// </summary>
-        /// <param name="FTPFullFileName">Name of the FTP full file.</param>
-        /// <param name="UserName">Name of the user.</param>
-        /// <param name="Password">The password.</param>
+        /// <param name="fTPFullFileName">Name of the FTP full file.</param>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="password">The password.</param>
         /// <returns></returns>
-        public static long FileSize(string FTPFullFileName, string UserName, string Password)
+        public static long FileSize(string fTPFullFileName, string userName, string password)
             {
-            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPFullFileName);
+            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(fTPFullFileName);
             FTP.Method = WebRequestMethods.Ftp.GetFileSize;
             FTP.UseBinary = true;
-            FTP.Credentials = new NetworkCredential(UserName, Password);
+            FTP.Credentials = new NetworkCredential(userName, password);
             FtpWebResponse Response = (FtpWebResponse)FTP.GetResponse();
             Stream FtpStream = Response.GetResponseStream();
             long FileSize = Response.ContentLength;
@@ -178,17 +178,17 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Renames the specified FTP file.
         /// </summary>
-        /// <param name="FTPFullFileName">Name of the FTP full file.</param>
-        /// <param name="NewFileName">New name of the file.</param>
-        /// <param name="UserName">Name of the user.</param>
-        /// <param name="Password">The password.</param>
-        public static void Rename(string FTPFullFileName, string NewFileName, string UserName, string Password)
+        /// <param name="fTPFullFileName">Name of the FTP full file.</param>
+        /// <param name="newFileName">New name of the file.</param>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="password">The password.</param>
+        public static void Rename(string fTPFullFileName, string newFileName, string userName, string password)
             {
-            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPFullFileName);
+            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(fTPFullFileName);
             FTP.Method = WebRequestMethods.Ftp.Rename;
-            FTP.RenameTo = NewFileName;
+            FTP.RenameTo = newFileName;
             FTP.UseBinary = true;
-            FTP.Credentials = new NetworkCredential(UserName, Password);
+            FTP.Credentials = new NetworkCredential(userName, password);
             FtpWebResponse Response = (FtpWebResponse)FTP.GetResponse();
             Stream FtpStream = Response.GetResponseStream();
             FtpStream.Close();
@@ -198,15 +198,15 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Creates the directory.
         /// </summary>
-        /// <param name="FTPDirectory">The FTP directory.</param>
-        /// <param name="UserName">Name of the user.</param>
-        /// <param name="Password">The password.</param>
-        public static void MakeDirectory(string FTPDirectory, string UserName, string Password)
+        /// <param name="fTPDirectory">The FTP directory.</param>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="password">The password.</param>
+        public static void MakeDirectory(string fTPDirectory, string userName, string password)
             {
-            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(FTPDirectory);
+            FtpWebRequest FTP = (FtpWebRequest)FtpWebRequest.Create(fTPDirectory);
             FTP.Method = WebRequestMethods.Ftp.MakeDirectory;
             FTP.UseBinary = true;
-            FTP.Credentials = new NetworkCredential(UserName, Password);
+            FTP.Credentials = new NetworkCredential(userName, password);
             FtpWebResponse Response = (FtpWebResponse)FTP.GetResponse();
             Stream FtpStream = Response.GetResponseStream();
 

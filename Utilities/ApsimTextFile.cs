@@ -252,9 +252,9 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Constants the specified constant name.
         /// </summary>
-        /// <param name="ConstantName">Name of the constant.</param>
+        /// <param name="constantName">Name of the constant.</param>
         /// <returns></returns>
-        public ApsimConstant Constant(string ConstantName)
+        public ApsimConstant Constant(string constantName)
         {
             // -------------------------------------
             // Return a given constant to caller
@@ -262,7 +262,7 @@ namespace APSIM.Shared.Utilities
 
             foreach (ApsimConstant c in _Constants)
             {
-                if (StringUtilities.StringsAreEqual(c.Name, ConstantName))
+                if (StringUtilities.StringsAreEqual(c.Name, constantName))
                 {
                     return c;
                 }
@@ -273,18 +273,18 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Returns a constant as double.
         /// </summary>
-        /// <param name="ConstantName">Name of the constant.</param>
+        /// <param name="constantName">Name of the constant.</param>
         /// <returns></returns>
-        public double ConstantAsDouble(string ConstantName)
+        public double ConstantAsDouble(string constantName)
         {
-            return Convert.ToDouble(Constant(ConstantName).Value, CultureInfo.InvariantCulture);
+            return Convert.ToDouble(Constant(constantName).Value, CultureInfo.InvariantCulture);
         }
         /// <summary>
         /// Sets the constant.
         /// </summary>
-        /// <param name="ConstantName">Name of the constant.</param>
-        /// <param name="ConstantValue">The constant value.</param>
-        public void SetConstant(string ConstantName, string ConstantValue)
+        /// <param name="constantName">Name of the constant.</param>
+        /// <param name="constantValue">The constant value.</param>
+        public void SetConstant(string constantName, string constantValue)
         {
             // -------------------------------------
             // Set a given constant's value.
@@ -292,24 +292,24 @@ namespace APSIM.Shared.Utilities
 
             foreach (ApsimConstant c in _Constants)
             {
-                if (StringUtilities.StringsAreEqual(c.Name, ConstantName))
-                    c.Value = ConstantValue;
+                if (StringUtilities.StringsAreEqual(c.Name, constantName))
+                    c.Value = constantValue;
             }
         }
         /// <summary>
         /// Adds the constant.
         /// </summary>
-        /// <param name="ConstantName">Name of the constant.</param>
-        /// <param name="ConstantValue">The constant value.</param>
-        /// <param name="Units">The units.</param>
-        /// <param name="Comment">The comment.</param>
-        public void AddConstant(string ConstantName, string ConstantValue, string Units, string Comment)
+        /// <param name="constantName">Name of the constant.</param>
+        /// <param name="constantValue">The constant value.</param>
+        /// <param name="units">The units.</param>
+        /// <param name="comment">The comment.</param>
+        public void AddConstant(string constantName, string constantValue, string units, string comment)
         {
             // -------------------------------------
             // Add and set a given constant's value.
             // -------------------------------------
 
-            _Constants.Add(new ApsimConstant(ConstantName, ConstantValue, Units, Comment));
+            _Constants.Add(new ApsimConstant(constantName, constantValue, units, comment));
         }
         /// <summary>
         /// Convert this file to a DataTable.
@@ -322,47 +322,47 @@ namespace APSIM.Shared.Utilities
 
             ArrayList addedConstants = new ArrayList();
 
-            StringCollection Words = new StringCollection();
-            bool CheckHeadingsExist = true;
-            while (GetNextLine(In, ref Words))
+            StringCollection words = new StringCollection();
+            bool checkHeadingsExist = true;
+            while (GetNextLine(In, ref words))
             {
-                if (CheckHeadingsExist)
+                if (checkHeadingsExist)
                 {
                     for (int w = 0; w != ColumnTypes.Length; w++)
                         Data.Columns.Add(new DataColumn(Headings[w], ColumnTypes[w]));
 
                     if (addConsts != null)
                     {
-                        foreach (ApsimConstant Constant in Constants)
+                        foreach (ApsimConstant constant in Constants)
                         {
-                            if (addConsts.Contains(Constant.Name, StringComparer.OrdinalIgnoreCase) && Data.Columns.IndexOf(Constant.Name) == -1)
+                            if (addConsts.Contains(constant.Name, StringComparer.OrdinalIgnoreCase) && Data.Columns.IndexOf(constant.Name) == -1)
                             {
-                                Type ColumnType = StringUtilities.DetermineType(Constant.Value, "");
-                                Data.Columns.Add(new DataColumn(Constant.Name, ColumnType));
-                                addedConstants.Add(new ApsimConstant(Constant.Name, Constant.Value, Constant.Units, ColumnType.ToString()));
+                                Type ColumnType = StringUtilities.DetermineType(constant.Value, "");
+                                Data.Columns.Add(new DataColumn(constant.Name, ColumnType));
+                                addedConstants.Add(new ApsimConstant(constant.Name, constant.Value, constant.Units, ColumnType.ToString()));
                             }
                         }
                     }
                 }
-                DataRow NewMetRow = Data.NewRow();
-                object[] Values = ConvertWordsToObjects(Words, ColumnTypes);
+                DataRow newMetRow = Data.NewRow();
+                object[] values = ConvertWordsToObjects(words, ColumnTypes);
 
-                for (int w = 0; w != Words.Count; w++)
+                for (int w = 0; w != words.Count; w++)
                 {
-                    int TableColumnNumber = NewMetRow.Table.Columns.IndexOf(Headings[w]);
-                    if (!Convert.IsDBNull(Values[TableColumnNumber]))
-                        NewMetRow[TableColumnNumber] = Values[TableColumnNumber];
+                    int TableColumnNumber = newMetRow.Table.Columns.IndexOf(Headings[w]);
+                    if (!Convert.IsDBNull(values[TableColumnNumber]))
+                        newMetRow[TableColumnNumber] = values[TableColumnNumber];
                 }
 
-                foreach (ApsimConstant Constant in addedConstants)
+                foreach (ApsimConstant constant in addedConstants)
                 {
-                    if (Constant.Comment == typeof(Single).ToString() || Constant.Comment == typeof(Double).ToString())
-                        NewMetRow[Constant.Name] = Double.Parse(Constant.Value);
+                    if (constant.Comment == typeof(Single).ToString() || constant.Comment == typeof(Double).ToString())
+                        newMetRow[constant.Name] = Double.Parse(constant.Value);
                     else
-                        NewMetRow[Constant.Name] = Constant.Value;
+                        newMetRow[constant.Name] = constant.Value;
                 }
-                Data.Rows.Add(NewMetRow);
-                CheckHeadingsExist = false;
+                Data.Rows.Add(newMetRow);
+                checkHeadingsExist = false;
             }
             return Data;
         }
@@ -370,11 +370,11 @@ namespace APSIM.Shared.Utilities
         /// Reads the apsim header lines.
         /// </summary>
         /// <param name="In">The in.</param>
-        /// <param name="ConstantLines">The constant lines.</param>
-        /// <param name="HeadingLines">The heading lines.</param>
+        /// <param name="constantLines">The constant lines.</param>
+        /// <param name="headingLines">The heading lines.</param>
         private void ReadApsimHeaderLines(StreamReaderRandomAccess In,
-                                          ref StringCollection ConstantLines,
-                                          ref StringCollection HeadingLines)
+                                          ref StringCollection constantLines,
+                                          ref StringCollection headingLines)
         {
             string PreviousLine = "";
 
@@ -385,13 +385,13 @@ namespace APSIM.Shared.Utilities
                 if (PosEquals != -1)
                 {
                     // constant found.
-                    ConstantLines.Add(Line);
+                    constantLines.Add(Line);
                 }
                 else
                 {
                     if (CSV)
                     {
-                        HeadingLines.Add(Line);
+                        headingLines.Add(Line);
                         break;
                     }
 
@@ -399,8 +399,8 @@ namespace APSIM.Shared.Utilities
                     int PosFirstNonBlankChar = StringUtilities.IndexNotOfAny(Line, whitespace);
                     if (PosFirstNonBlankChar != -1 && Line[PosFirstNonBlankChar] == '(')
                     {
-                        HeadingLines.Add(PreviousLine);
-                        HeadingLines.Add(Line);
+                        headingLines.Add(PreviousLine);
+                        headingLines.Add(Line);
                         break;
                     }
                 }
@@ -413,23 +413,23 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Add our constants to every row in the specified table beginning with the specified StartRow.
         /// </summary>
-        /// <param name="Table">The table.</param>
-        public void AddConstantsToData(System.Data.DataTable Table)
+        /// <param name="table">The table.</param>
+        public void AddConstantsToData(DataTable table)
         {
             foreach (ApsimConstant Constant in Constants)
             {
-                if (Table.Columns.IndexOf(Constant.Name) == -1)
+                if (table.Columns.IndexOf(Constant.Name) == -1)
                 {
                     Type ColumnType = StringUtilities.DetermineType(Constant.Value, "");
-                    Table.Columns.Add(new DataColumn(Constant.Name, ColumnType));
+                    table.Columns.Add(new DataColumn(Constant.Name, ColumnType));
                 }
-                for (int Row = 0; Row < Table.Rows.Count; Row++)
+                for (int Row = 0; Row < table.Rows.Count; Row++)
                 {
                     double Value;
                     if (Double.TryParse(Constant.Value, NumberStyles.Float, new CultureInfo("en-US"), out Value))
-                        Table.Rows[Row][Constant.Name] = Value;
+                        table.Rows[Row][Constant.Name] = Value;
                     else
-                        Table.Rows[Row][Constant.Name] = Constant.Value;
+                        table.Rows[Row][Constant.Name] = Constant.Value;
                 }
             }
         }
@@ -498,17 +498,17 @@ namespace APSIM.Shared.Utilities
         /// Determine and return the data types of the specfied words.
         /// </summary>
         /// <param name="In">The in.</param>
-        /// <param name="Words">The words.</param>
+        /// <param name="words">The words.</param>
         /// <returns></returns>
-        private Type[] DetermineColumnTypes(StreamReaderRandomAccess In, StringCollection Words)
+        private Type[] DetermineColumnTypes(StreamReaderRandomAccess In, StringCollection words)
         {
-            Type[] Types = new Type[Words.Count];
-            for (int w = 0; w != Words.Count; w++)
+            Type[] Types = new Type[words.Count];
+            for (int w = 0; w != words.Count; w++)
             {
-                if (Words[w] == "?" || Words[w] == "*" || Words[w] == "")
+                if (words[w] == "?" || words[w] == "*" || words[w] == "")
                     Types[w] = StringUtilities.DetermineType(LookAheadForNonMissingValue(In, w), Units[w]);
                 else
-                    Types[w] = StringUtilities.DetermineType(Words[w], Units[w]);
+                    Types[w] = StringUtilities.DetermineType(words[w], Units[w]);
             }
             return Types;
         }
@@ -516,21 +516,21 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Convert the specified words to the specified column types and return their values.
         /// </summary>
-        /// <param name="Words">The words.</param>
-        /// <param name="ColumnTypes">The column types.</param>
+        /// <param name="words">The words.</param>
+        /// <param name="columnTypes">The column types.</param>
         /// <returns></returns>
-        private object[] ConvertWordsToObjects(StringCollection Words, Type[] ColumnTypes)
+        private object[] ConvertWordsToObjects(StringCollection words, Type[] columnTypes)
         {
-            object[] Values = new object[Words.Count];
-            for (int w = 0; w != Words.Count; w++)
+            object[] values = new object[words.Count];
+            for (int w = 0; w != words.Count; w++)
             {
                 try
                 {
-                    Words[w] = Words[w].Trim();
-                    if (Words[w] == "?" || Words[w] == "*" || Words[w] == "")
-                        Values[w] = DBNull.Value;
+                    words[w] = words[w].Trim();
+                    if (words[w] == "?" || words[w] == "*" || words[w] == "")
+                        values[w] = DBNull.Value;
 
-                    else if (ColumnTypes[w] == typeof(DateTime))
+                    else if (columnTypes[w] == typeof(DateTime))
                     {
                         // Need to get a sanitised date e.g. d/M/yyyy 
                         string DateFormat = Units[w].ToLower();
@@ -541,36 +541,36 @@ namespace APSIM.Shared.Utilities
                         DateFormat = DateFormat.Replace("m", "M");
                         if (DateFormat == "")
                             DateFormat = "yyyy-MM-dd";
-                        DateTime Value = DateTime.ParseExact(Words[w], DateFormat, CultureInfo.InvariantCulture);
-                        Values[w] = Value;
+                        DateTime Value = DateTime.ParseExact(words[w], DateFormat, CultureInfo.InvariantCulture);
+                        values[w] = Value;
                     }
-                    else if (ColumnTypes[w] == typeof(float))
+                    else if (columnTypes[w] == typeof(float))
                     {
                         double Value;
-                        if (double.TryParse(Words[w], NumberStyles.Float, CultureInfo.InvariantCulture, out Value))
-                            Values[w] = Value;
+                        if (double.TryParse(words[w], NumberStyles.Float, CultureInfo.InvariantCulture, out Value))
+                            values[w] = Value;
                         else
-                            Values[w] = DBNull.Value;
+                            values[w] = DBNull.Value;
                     }
                     else
-                        Values[w] = Words[w];
+                        values[w] = words[w];
                 }
                 catch (Exception)
                 {
-                    Values[w] = DBNull.Value;
+                    values[w] = DBNull.Value;
                 }
             }
-            return Values;
+            return values;
         }
 
         /// <summary>
         /// Return the next line in the file as a collection of words.
         /// </summary>
         /// <param name="In">The in.</param>
-        /// <param name="Words">The words.</param>
+        /// <param name="words">The words.</param>
         /// <returns></returns>
         /// <exception cref="System.Exception">Invalid number of values on line:  + Line + \r\nin file:  + _FileName</exception>
-        private bool GetNextLine(StreamReaderRandomAccess In, ref StringCollection Words)
+        private bool GetNextLine(StreamReaderRandomAccess In, ref StringCollection words)
         {
             if (In.EndOfStream)
                 return false;
@@ -585,18 +585,18 @@ namespace APSIM.Shared.Utilities
 
             if (CSV)
             {
-                Words.Clear();
+                words.Clear();
                 Line = Line.TrimEnd(',');
-                Words.AddRange(Line.Split(",".ToCharArray()));
+                words.AddRange(Line.Split(",".ToCharArray()));
             }
             else
-                Words = StringUtilities.SplitStringHonouringQuotes(Line, " \t");
-            if (Words.Count != Headings.Count)
+                words = StringUtilities.SplitStringHonouringQuotes(Line, " \t");
+            if (words.Count != Headings.Count)
                 throw new Exception("Invalid number of values on line: " + Line + "\r\nin file: " + _FileName);
 
             // Remove leading / trailing double quote chars.
-            for (int i = 0; i < Words.Count; i++)
-                Words[i] = Words[i].Trim("\"".ToCharArray());
+            for (int i = 0; i < words.Count; i++)
+                words[i] = words[i].Trim("\"".ToCharArray());
             return true;
         }
         /// <summary>
@@ -628,29 +628,29 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Return the first date from the specified objects. Will return empty DateTime if not found.
         /// </summary>
-        /// <param name="Values">The values.</param>
+        /// <param name="values">The values.</param>
         /// <returns></returns>
-        public DateTime GetDateFromValues(object[] Values)
+        public DateTime GetDateFromValues(object[] values)
         {
             int Year = 0;
             int Month = 0;
             int Day = 0;
-            for (int Col = 0; Col != Values.Length; Col++)
+            for (int Col = 0; Col != values.Length; Col++)
             {
                 string ColumnName = Headings[Col];
                 if (ColumnName.Equals("date", StringComparison.CurrentCultureIgnoreCase))
                 {
                     if (ColumnTypes[Col] == typeof(DateTime))
-                        return (DateTime)Values[Col];
+                        return (DateTime)values[Col];
                     else
-                        return DateTime.Parse(Values[Col].ToString());
+                        return DateTime.Parse(values[Col].ToString());
                 }
                 else if (ColumnName.Equals("year", StringComparison.CurrentCultureIgnoreCase))
-                    Year = Convert.ToInt32(Values[Col]);
+                    Year = Convert.ToInt32(values[Col]);
                 else if (ColumnName.Equals("month", StringComparison.CurrentCultureIgnoreCase))
-                    Month = Convert.ToInt32(Values[Col]);
+                    Month = Convert.ToInt32(values[Col]);
                 else if (ColumnName.Equals("day", StringComparison.CurrentCultureIgnoreCase))
-                    Day = Convert.ToInt32(Values[Col]);
+                    Day = Convert.ToInt32(values[Col]);
             }
             if (Year > 0)
             {
@@ -668,14 +668,14 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Seek to the specified date. Will throw if date not found.
         /// </summary>
-        /// <param name="Date">The date.</param>
+        /// <param name="date">The date.</param>
         /// <exception cref="System.Exception">Date  + Date.ToString() +  doesn't exist in file:  + _FileName</exception>
-        public void SeekToDate(DateTime Date)
+        public void SeekToDate(DateTime date)
         {
-            if (Date < _FirstDate)
-                throw new Exception("Date " + Date.ToString() + " doesn't exist in file: " + _FileName);
+            if (date < _FirstDate)
+                throw new Exception("Date " + date.ToString() + " doesn't exist in file: " + _FileName);
 
-            int NumRowsToSkip = (Date - _FirstDate).Days;
+            int NumRowsToSkip = (date - _FirstDate).Days;
 
             In.Seek(FirstLinePosition, SeekOrigin.Begin);
             while (!In.EndOfStream && NumRowsToSkip > 0)
