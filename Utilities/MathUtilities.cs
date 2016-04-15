@@ -688,6 +688,11 @@ namespace APSIM.Shared.Utilities
             public double RMSE;
 
             /// <summary>
+            /// Nash-Sutcliff efficiency
+            /// </summary>
+            public double NSE;
+
+            /// <summary>
             /// Mean error
             /// </summary>
             public double ME;
@@ -696,11 +701,6 @@ namespace APSIM.Shared.Utilities
             /// Mean absolute error
             /// </summary>
             public double MAE;
-
-            /// <summary>
-            /// Nash-Sutcliff efficiency
-            /// </summary>
-            public double NSE;
 
             /// <summary>
             /// Root mean square error to Standard deviation Ratio
