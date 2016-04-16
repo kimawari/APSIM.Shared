@@ -593,14 +593,20 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         public static Dictionary<string, string> ParseCommandLine(string[] args)
         {
-            Dictionary<string, string> Options = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+            Dictionary<string, string> options = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
             for (int i = 0; i < args.Length; i++)
             {
-                StringCollection MacroBits = SplitStringHonouringQuotes(args[i], "=");
-                if (MacroBits.Count == 2)
-                    Options.Add(MacroBits[0].Replace("\"", ""), MacroBits[1].Replace("\"", ""));
+                StringCollection bits = SplitStringHonouringQuotes(args[i], "=");
+                if (bits.Count > 0)
+                {
+                    string name = bits[0].Replace("\"", "");
+                    string value = null;
+                    if (bits.Count > 1)
+                        value = bits[1].Replace("\"", "");
+                    options.Add(name, value);
+                }
             }
-            return Options;
+            return options;
         }
 
         /// <summary>

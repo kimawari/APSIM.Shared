@@ -88,12 +88,18 @@ namespace APSIM.Shared.Utilities
         public bool SomeHadErrors { get; set; }
 
         /// <summary>Initializes a new instance of the <see cref="JobManager"/> class.</summary>
-        public JobManager()
+        /// <param name="maximumNumberOfProcessors">The maximum number of cores to use.</param>
+        public JobManager(int maximumNumberOfProcessors = -1)
         {
-            string NumOfProcessorsString = Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS");
-            if (NumOfProcessorsString != null)
-                MaximumNumOfProcessors = Convert.ToInt32(NumOfProcessorsString);
-            MaximumNumOfProcessors = System.Math.Max(MaximumNumOfProcessors, 1);
+            if (maximumNumberOfProcessors != -1)
+                MaximumNumOfProcessors = maximumNumberOfProcessors;
+            else
+            {
+                string NumOfProcessorsString = Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS");
+                if (NumOfProcessorsString != null)
+                    MaximumNumOfProcessors = Convert.ToInt32(NumOfProcessorsString);
+                MaximumNumOfProcessors = System.Math.Max(MaximumNumOfProcessors, 1);
+            }
         }
 
         /// <summary>Add a job to the list of jobs that need running.</summary>
