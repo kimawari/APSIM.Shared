@@ -699,5 +699,18 @@ namespace APSIM.Shared.Utilities
             else
                 throw new Exception("End of file reached while reading file: " + _FileName);
         }
+
+        /// <summary>Return the current file position</summary>
+        public int GetCurrentPosition()
+        {
+            return In.Position;
+        }
+
+        /// <summary>Seek to the specified file position</summary>
+        public void SeekToPosition(int position)
+        {
+            In.Seek(position, SeekOrigin.Begin);
+        }
+
     }
 }
