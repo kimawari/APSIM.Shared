@@ -287,6 +287,18 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Return a substring after the delimiter
+        /// </summary>
+        public static string GetAfter(string st, string delimiter)
+        {
+            int Pos = st.IndexOf(delimiter);
+            if (Pos != -1)
+                return st.Substring(Pos + delimiter.Length);
+            else
+                return st;
+        }
+
+        /// <summary>
         /// Return true if specified string is numeric
         /// </summary>
         public static bool IsNumeric(string st)
