@@ -116,6 +116,7 @@
     <Compile Include="Soils\Unit.cs" />
     <Compile Include="Soils\Water.cs" />
     <Compile Include="Utilities\ApsimTextFile.cs" />
+    <Compile Include="Utilities\ImageUtilities.cs" />
     <Compile Include="Utilities\Colour.cs" />
     <Compile Include="Utilities\DataTableUtilities.cs" />
     <Compile Include="Utilities\DateUtilities.cs" />
