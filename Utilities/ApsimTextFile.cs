@@ -12,13 +12,12 @@
 namespace APSIM.Shared.Utilities
 {
     using System;
-    using System.Data;
-    using System.IO;
     using System.Collections;
-    using System.Collections.Specialized;
-    using System.ComponentModel;
-    using System.Globalization;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
+    using System.Data;
+    using System.Globalization;
+    using System.IO;
     using System.Linq;
 
     /// <summary>
@@ -42,21 +41,16 @@ namespace APSIM.Shared.Utilities
             Comment = comm;
         }
 
-        /// <summary>
-        /// The name
-        /// </summary>
+        /// <summary>The name</summary>
         public string Name;
-        /// <summary>
-        /// The value
-        /// </summary>
+
+        /// <summary>The value</summary>
         public string Value;
-        /// <summary>
-        /// The units
-        /// </summary>
+
+        /// <summary>The units</summary>
         public string Units;
-        /// <summary>
-        /// The comment
-        /// </summary>
+
+        /// <summary>The comment</summary>
         public string Comment;
     }
 
@@ -67,65 +61,60 @@ namespace APSIM.Shared.Utilities
     [Serializable]
     public class ApsimTextFile
     {
-        /// <summary>
-        /// The _ file name
-        /// </summary>
+        /// <summary>The file name</summary>
         private string _FileName;
-        /// <summary>
-        /// The headings
-        /// </summary>
+
+        /// <summary>The name of the excel worksheet (where applicable)</summary>
+        private string _SheetName;
+
+        /// <summary>The headings</summary>
         public StringCollection Headings;
-        /// <summary>
-        /// The units
-        /// </summary>
+
+        /// <summary>The units</summary>
         public StringCollection Units;
-        /// <summary>
-        /// The _ constants
-        /// </summary>
+
+        /// <summary>The _ constants</summary>
         private ArrayList _Constants = new ArrayList();
-        /// <summary>
-        /// The CSV
-        /// </summary>
-        private bool CSV = false;
-        /// <summary>
-        /// The in
-        /// </summary>
-        private StreamReaderRandomAccess In;
-        /// <summary>
-        /// The _ first date
-        /// </summary>
+
+        /// <summary>Is the file a CSV file</summary>
+        private bool IsCSVFile = false;
+
+        /// <summary>The inStreamReader - used for text and csv files</summary>
+        private StreamReaderRandomAccess inStreamReader;
+
+        /// <summary>This is used to hold the sheet data (in datatable format) when file opened and extracted</summary>
+        private DataTable _excelData;
+
+        /// <summary>Is the apsim file an excel spreadsheet</summary>
+        public bool IsExcelFile = false;
+
+        /// <summary>The _ first date</summary>
         private DateTime _FirstDate;
-        /// <summary>
-        /// The _ last date
-        /// </summary>
+
+        /// <summary>The _ last date</summary>
         private DateTime _LastDate;
-        /// <summary>
-        /// The first line position
-        /// </summary>
+
+        /// <summary>The first line position</summary>
         private int FirstLinePosition;
-        /// <summary>
-        /// The words
-        /// </summary>
+
+        /// <summary>The words</summary>
         private StringCollection Words = new StringCollection();
-        /// <summary>
-        /// The column types
-        /// </summary>
+
+        /// <summary>The column types</summary>
         private Type[] ColumnTypes;
 
         /// <summary>
         /// A helper to cleanly get a DataTable from the contents of a file.
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
-        /// <returns>
-        /// The data table.
-        /// </returns>
-        public static System.Data.DataTable ToTable(string fileName)
+        /// <returns>The data table.</returns>
+        public static DataTable ToTable(string fileName)
         {
             ApsimTextFile file = new ApsimTextFile();
             try
             {
                 file.Open(fileName);
-                System.Data.DataTable data = file.ToTable();
+                DataTable data = file.ToTable();
                 data.TableName = Path.GetFileNameWithoutExtension(fileName);
                 return data;
             }
@@ -138,20 +127,45 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Open the file ready for reading.
         /// </summary>
-        /// <param name="FileName">Name of the file.</param>
+        /// <param name="fileName">Name of the file.</param>
         /// <exception cref="System.Exception">Cannot find file:  + FileName</exception>
-        public void Open(string FileName)
+        public void Open(string fileName)
         {
-            if (FileName == "")
+            if (fileName == "")
                 return;
 
-            if (!File.Exists(FileName))
-                throw new Exception("Cannot find file: " + FileName);
+            if (!File.Exists(fileName))
+                throw new Exception("Cannot find file: " + fileName);
 
-            _FileName = FileName;
-            CSV = System.IO.Path.GetExtension(FileName).ToLower() == ".csv";
-            In = new StreamReaderRandomAccess(_FileName);
+            _FileName = fileName;
+            IsCSVFile = System.IO.Path.GetExtension(fileName).ToLower() == ".csv";
+
+            inStreamReader = new StreamReaderRandomAccess(_FileName);
             Open();
+        }
+
+        /// <summary>
+        /// Open the file ready for reading.  When there are two strings passed in, we are dealing with
+        /// an excel file name, and sheet name.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="sheetName">The name of the worksheet</param>
+        /// <exception cref="System.Exception">Cannot find file:  + FileName</exception>
+        public void Open(string fileName, string sheetName)
+        {
+            if (fileName == string.Empty)
+                return;
+
+            if (!File.Exists(fileName))
+                throw new Exception("Cannot find file: " + fileName);
+
+            if (sheetName == string.Empty)
+                return;
+
+            _FileName = fileName;
+            _SheetName = sheetName;
+
+            OpenExcelReader();
         }
 
         /// <summary>
@@ -161,8 +175,8 @@ namespace APSIM.Shared.Utilities
         public void Open(Stream stream)
         {
             _FileName = "Memory stream";
-            CSV = false;
-            In = new StreamReaderRandomAccess(stream);
+            IsCSVFile = false;
+            inStreamReader = new StreamReaderRandomAccess(stream);
             Open();
         }
 
@@ -177,89 +191,69 @@ namespace APSIM.Shared.Utilities
         private void Open()
         {
             _Constants.Clear();
-            ReadApsimHeader(In);
+            ReadApsimHeader(inStreamReader);
             if (Headings != null)
             {
-                FirstLinePosition = In.Position;
+                FirstLinePosition = inStreamReader.Position;
 
                 // Read in first line.
                 StringCollection Words = new StringCollection();
-                GetNextLine(In, ref Words);
-                ColumnTypes = DetermineColumnTypes(In, Words);
+                GetNextLine(inStreamReader, ref Words);
+                ColumnTypes = DetermineColumnTypes(inStreamReader, Words);
 
                 // Get first date.
-                object[] Values = ConvertWordsToObjects(Words, ColumnTypes);
-                _FirstDate = GetDateFromValues(Values);
+                object[] values = ConvertWordsToObjects(Words, ColumnTypes);
+                _FirstDate = GetDateFromValues(values);
 
                 // Now we need to seek to the end of file and find the last full line in the file.
-                In.Seek(0, SeekOrigin.End);
-                if (In.Position >= 1000 && In.Position - 1000 > FirstLinePosition)
+                inStreamReader.Seek(0, SeekOrigin.End);
+                if (inStreamReader.Position >= 1000 && inStreamReader.Position - 1000 > FirstLinePosition)
                 {
-                    In.Seek(-1000, SeekOrigin.End);
-                    In.ReadLine(); // throw away partial line.
+                    inStreamReader.Seek(-1000, SeekOrigin.End);
+                    inStreamReader.ReadLine(); // throw away partial line.
                 }
                 else
-                    In.Seek(FirstLinePosition, SeekOrigin.Begin);
-                while (GetNextLine(In, ref Words))
+                    inStreamReader.Seek(FirstLinePosition, SeekOrigin.Begin);
+
+                while (GetNextLine(inStreamReader, ref Words))
                 { }
 
                 // Get the date from the last line.
                 if (Words.Count == 0)
                     throw new Exception("Cannot find last row of file: " + _FileName);
-                Values = ConvertWordsToObjects(Words, ColumnTypes);
-                _LastDate = GetDateFromValues(Values);
 
-                In.Seek(FirstLinePosition, SeekOrigin.Begin);
+                values = ConvertWordsToObjects(Words, ColumnTypes);
+                _LastDate = GetDateFromValues(values);
+
+                inStreamReader.Seek(FirstLinePosition, SeekOrigin.Begin);
             }
         }
+
 
         /// <summary>
         /// Close this file.
         /// </summary>
         public void Close()
         {
-            In.Close();
+            inStreamReader.Close();
         }
 
-        /// <summary>
-        /// Gets the first date.
-        /// </summary>
-        /// <value>
-        /// The first date.
-        /// </value>
+        /// <summary>Gets the first date.</summary>
         public DateTime FirstDate { get { return _FirstDate; } }
-        /// <summary>
-        /// Gets the last date.
-        /// </summary>
-        /// <value>
-        /// The last date.
-        /// </value>
+
+        /// <summary>Gets the last date.</summary>
         public DateTime LastDate { get { return _LastDate; } }
 
-        /// <summary>
-        /// Gets the constants.
-        /// </summary>
-        /// <value>
-        /// The constants.
-        /// </value>
-        public ArrayList Constants
-        {
-            get
-            {
-                return _Constants;
-            }
-        }
+        /// <summary>Gets the constants.</summary>
+        public ArrayList Constants { get { return _Constants; } }
+
         /// <summary>
         /// Constants the specified constant name.
         /// </summary>
         /// <param name="constantName">Name of the constant.</param>
-        /// <returns></returns>
+        /// <returns>Return a given constant to caller</returns>
         public ApsimConstant Constant(string constantName)
         {
-            // -------------------------------------
-            // Return a given constant to caller
-            // -------------------------------------
-
             foreach (ApsimConstant c in _Constants)
             {
                 if (StringUtilities.StringsAreEqual(c.Name, constantName))
@@ -274,30 +268,28 @@ namespace APSIM.Shared.Utilities
         /// Returns a constant as double.
         /// </summary>
         /// <param name="constantName">Name of the constant.</param>
-        /// <returns></returns>
+        /// <returns>Returns a constant as double.</returns>
         public double ConstantAsDouble(string constantName)
         {
             return Convert.ToDouble(Constant(constantName).Value, CultureInfo.InvariantCulture);
         }
+
         /// <summary>
-        /// Sets the constant.
+        /// Set a given constant's value.
         /// </summary>
         /// <param name="constantName">Name of the constant.</param>
         /// <param name="constantValue">The constant value.</param>
         public void SetConstant(string constantName, string constantValue)
         {
-            // -------------------------------------
-            // Set a given constant's value.
-            // -------------------------------------
-
             foreach (ApsimConstant c in _Constants)
             {
                 if (StringUtilities.StringsAreEqual(c.Name, constantName))
                     c.Value = constantValue;
             }
         }
+
         /// <summary>
-        /// Adds the constant.
+        /// Add and set a given constant's value.
         /// </summary>
         /// <param name="constantName">Name of the constant.</param>
         /// <param name="constantValue">The constant value.</param>
@@ -305,81 +297,105 @@ namespace APSIM.Shared.Utilities
         /// <param name="comment">The comment.</param>
         public void AddConstant(string constantName, string constantValue, string units, string comment)
         {
-            // -------------------------------------
-            // Add and set a given constant's value.
-            // -------------------------------------
-
             _Constants.Add(new ApsimConstant(constantName, constantValue, units, comment));
         }
+
         /// <summary>
         /// Convert this file to a DataTable.
         /// </summary>
         /// <returns></returns>
-        public System.Data.DataTable ToTable(List<string>addConsts = null)
+        public DataTable ToTable(List<string> addConsts = null)
         {
-            System.Data.DataTable Data = new System.Data.DataTable();
-            Data.TableName = "Data";
+            System.Data.DataTable data = new System.Data.DataTable();
+            data.TableName = "Data";
 
-            ArrayList addedConstants = new ArrayList();
-
-            StringCollection words = new StringCollection();
-            bool checkHeadingsExist = true;
-            while (GetNextLine(In, ref words))
+            if (IsExcelFile == true)
             {
-                if (checkHeadingsExist)
-                {
-                    for (int w = 0; w != ColumnTypes.Length; w++)
-                        Data.Columns.Add(new DataColumn(Headings[w], ColumnTypes[w]));
+                data = ToTableFromExcel(addConsts);
+            }
+            else
+            {
+                ArrayList addedConstants = new ArrayList();
 
-                    if (addConsts != null)
+                StringCollection words = new StringCollection();
+                bool checkHeadingsExist = true;
+                while (GetNextLine(inStreamReader, ref words))
+                {
+                    if (checkHeadingsExist)
                     {
-                        foreach (ApsimConstant constant in Constants)
+                        for (int w = 0; w != ColumnTypes.Length; w++)
+                            data.Columns.Add(new DataColumn(Headings[w], ColumnTypes[w]));
+
+                        if (addConsts != null)
                         {
-                            if (addConsts.Contains(constant.Name, StringComparer.OrdinalIgnoreCase) && Data.Columns.IndexOf(constant.Name) == -1)
+                            foreach (ApsimConstant constant in Constants)
                             {
-                                Type ColumnType = StringUtilities.DetermineType(constant.Value, "");
-                                Data.Columns.Add(new DataColumn(constant.Name, ColumnType));
-                                addedConstants.Add(new ApsimConstant(constant.Name, constant.Value, constant.Units, ColumnType.ToString()));
+                                if (addConsts.Contains(constant.Name, StringComparer.OrdinalIgnoreCase) && data.Columns.IndexOf(constant.Name) == -1)
+                                {
+                                    Type ColumnType = StringUtilities.DetermineType(constant.Value, "");
+                                    data.Columns.Add(new DataColumn(constant.Name, ColumnType));
+                                    addedConstants.Add(new ApsimConstant(constant.Name, constant.Value, constant.Units, ColumnType.ToString()));
+                                }
                             }
                         }
                     }
-                }
-                DataRow newMetRow = Data.NewRow();
-                object[] values = ConvertWordsToObjects(words, ColumnTypes);
 
-                for (int w = 0; w != words.Count; w++)
-                {
-                    int TableColumnNumber = newMetRow.Table.Columns.IndexOf(Headings[w]);
-                    if (!Convert.IsDBNull(values[TableColumnNumber]))
-                        newMetRow[TableColumnNumber] = values[TableColumnNumber];
-                }
+                    DataRow newMetRow = data.NewRow();
+                    object[] values = ConvertWordsToObjects(words, ColumnTypes);
+                    for (int w = 0; w != words.Count; w++)
+                    {
+                        int TableColumnNumber = newMetRow.Table.Columns.IndexOf(Headings[w]);
+                        if (!Convert.IsDBNull(values[TableColumnNumber]))
+                            newMetRow[TableColumnNumber] = values[TableColumnNumber];
+                    }
 
-                foreach (ApsimConstant constant in addedConstants)
-                {
-                    if (constant.Comment == typeof(Single).ToString() || constant.Comment == typeof(Double).ToString())
-                        newMetRow[constant.Name] = Double.Parse(constant.Value);
-                    else
-                        newMetRow[constant.Name] = constant.Value;
+                    foreach (ApsimConstant constant in addedConstants)
+                    {
+                        if (constant.Comment == typeof(Single).ToString() || constant.Comment == typeof(Double).ToString())
+                            newMetRow[constant.Name] = Double.Parse(constant.Value);
+                        else
+                            newMetRow[constant.Name] = constant.Value;
+                    }
+                    data.Rows.Add(newMetRow);
+                    checkHeadingsExist = false;
                 }
-                Data.Rows.Add(newMetRow);
-                checkHeadingsExist = false;
             }
-            return Data;
+            return data;
         }
+
+
+        /// <summary>
+        /// Convert this file to a DataTable.
+        /// </summary>
+        /// <returns></returns>
+        public DataTable ToTableFromExcel(List<string> addConsts = null)
+        {
+            System.Data.DataTable data = new System.Data.DataTable();
+
+            if (_excelData.Rows.Count != 0)
+            {
+                data = _excelData;
+            }
+            //will I ever hit this without having any data???
+
+            return data;
+        }
+
+
         /// <summary>
         /// Reads the apsim header lines.
         /// </summary>
-        /// <param name="In">The in.</param>
+        /// <param name="inData">The in.</param>
         /// <param name="constantLines">The constant lines.</param>
         /// <param name="headingLines">The heading lines.</param>
-        private void ReadApsimHeaderLines(StreamReaderRandomAccess In,
+        private void ReadApsimHeaderLines(StreamReaderRandomAccess inData,
                                           ref StringCollection constantLines,
                                           ref StringCollection headingLines)
         {
             string PreviousLine = "";
 
-            string Line = In.ReadLine();
-            while (!In.EndOfStream)
+            string Line = inData.ReadLine();
+            while (!inData.EndOfStream)
             {
                 int PosEquals = Line.IndexOf('=');
                 if (PosEquals != -1)
@@ -389,7 +405,7 @@ namespace APSIM.Shared.Utilities
                 }
                 else
                 {
-                    if (CSV)
+                    if (IsCSVFile)
                     {
                         headingLines.Add(Line);
                         break;
@@ -405,45 +421,21 @@ namespace APSIM.Shared.Utilities
                     }
                 }
                 PreviousLine = Line;
-                Line = In.ReadLine();
+                Line = inData.ReadLine();
             }
 
-        }
-
-        /// <summary>
-        /// Add our constants to every row in the specified table beginning with the specified StartRow.
-        /// </summary>
-        /// <param name="table">The table.</param>
-        public void AddConstantsToData(DataTable table)
-        {
-            foreach (ApsimConstant Constant in Constants)
-            {
-                if (table.Columns.IndexOf(Constant.Name) == -1)
-                {
-                    Type ColumnType = StringUtilities.DetermineType(Constant.Value, "");
-                    table.Columns.Add(new DataColumn(Constant.Name, ColumnType));
-                }
-                for (int Row = 0; Row < table.Rows.Count; Row++)
-                {
-                    double Value;
-                    if (Double.TryParse(Constant.Value, NumberStyles.Float, new CultureInfo("en-US"), out Value))
-                        table.Rows[Row][Constant.Name] = Value;
-                    else
-                        table.Rows[Row][Constant.Name] = Constant.Value;
-                }
-            }
         }
 
         /// <summary>
         /// Read in the APSIM header - headings/units and constants.
         /// </summary>
-        /// <param name="In">The in.</param>
+        /// <param name="inData">The in.</param>
         /// <exception cref="System.Exception">The number of headings and units doesn't match in file:  + _FileName</exception>
-        private void ReadApsimHeader(StreamReaderRandomAccess In)
+        private void ReadApsimHeader(StreamReaderRandomAccess inData)
         {
             StringCollection ConstantLines = new StringCollection();
             StringCollection HeadingLines = new StringCollection();
-            ReadApsimHeaderLines(In, ref ConstantLines, ref HeadingLines);
+            ReadApsimHeaderLines(inData, ref ConstantLines, ref HeadingLines);
 
             bool TitleFound = false;
             foreach (string ConstantLine in ConstantLines)
@@ -469,7 +461,7 @@ namespace APSIM.Shared.Utilities
             }
             if (HeadingLines.Count >= 1)
             {
-                if (CSV)
+                if (IsCSVFile)
                 {
                     HeadingLines[0] = HeadingLines[0].TrimEnd(',');
                     Headings = new StringCollection();
@@ -497,16 +489,16 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Determine and return the data types of the specfied words.
         /// </summary>
-        /// <param name="In">The in.</param>
+        /// <param name="inData">The in.</param>
         /// <param name="words">The words.</param>
         /// <returns></returns>
-        private Type[] DetermineColumnTypes(StreamReaderRandomAccess In, StringCollection words)
+        private Type[] DetermineColumnTypes(StreamReaderRandomAccess inData, StringCollection words)
         {
             Type[] Types = new Type[words.Count];
             for (int w = 0; w != words.Count; w++)
             {
                 if (words[w] == "?" || words[w] == "*" || words[w] == "")
-                    Types[w] = StringUtilities.DetermineType(LookAheadForNonMissingValue(In, w), Units[w]);
+                    Types[w] = StringUtilities.DetermineType(LookAheadForNonMissingValue(inData, w), Units[w]);
                 else
                     Types[w] = StringUtilities.DetermineType(words[w], Units[w]);
             }
@@ -566,16 +558,16 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Return the next line in the file as a collection of words.
         /// </summary>
-        /// <param name="In">The in.</param>
+        /// <param name="inData">The in.</param>
         /// <param name="words">The words.</param>
         /// <returns></returns>
         /// <exception cref="System.Exception">Invalid number of values on line:  + Line + \r\nin file:  + _FileName</exception>
-        private bool GetNextLine(StreamReaderRandomAccess In, ref StringCollection words)
+        private bool GetNextLine(StreamReaderRandomAccess inData, ref StringCollection words)
         {
-            if (In.EndOfStream)
+            if (inData.EndOfStream)
                 return false;
 
-            string Line = In.ReadLine();
+            string Line = inData.ReadLine();
 
             if (Line == null || Line.Length == 0)
                 return false;
@@ -583,7 +575,7 @@ namespace APSIM.Shared.Utilities
             if (Line.IndexOf("!") > 0) //used to ignore "!" in a row
                 Line = Line.Substring(0, Line.IndexOf("!") - 1);
 
-            if (CSV)
+            if (IsCSVFile)
             {
                 words.Clear();
                 Line = Line.TrimEnd(',');
@@ -591,39 +583,40 @@ namespace APSIM.Shared.Utilities
             }
             else
                 words = StringUtilities.SplitStringHonouringQuotes(Line, " \t");
+
             if (words.Count != Headings.Count)
                 throw new Exception("Invalid number of values on line: " + Line + "\r\nin file: " + _FileName);
 
             // Remove leading / trailing double quote chars.
             for (int i = 0; i < words.Count; i++)
                 words[i] = words[i].Trim("\"".ToCharArray());
+
             return true;
         }
+
+
         /// <summary>
         /// Looks the ahead for non missing value.
         /// </summary>
-        /// <param name="In">The in.</param>
+        /// <param name="inData">The in.</param>
         /// <param name="w">The w.</param>
         /// <returns></returns>
-        private string LookAheadForNonMissingValue(StreamReaderRandomAccess In, int w)
+        private string LookAheadForNonMissingValue(StreamReaderRandomAccess inData, int w)
         {
-            if (In.EndOfStream)
+            if (inData.EndOfStream)
                 return "?";
 
-            int Pos = In.Position;
+            int Pos = inData.Position;
 
             StringCollection Words = new StringCollection();
-            while (GetNextLine(In, ref Words) && (Words[w] == "?" || Words[w] == "*"));
-
-            In.Position = Pos;
+            while (GetNextLine(inData, ref Words) && (Words[w] == "?" || Words[w] == "*")) ;
+            inData.Position = Pos;
 
             if (Words.Count > w)
                 return Words[w];
             else
                 return "?";
         }
-
-
 
         /// <summary>
         /// Return the first date from the specified objects. Will return empty DateTime if not found.
@@ -652,14 +645,62 @@ namespace APSIM.Shared.Utilities
                 else if (ColumnName.Equals("day", StringComparison.CurrentCultureIgnoreCase))
                     Day = Convert.ToInt32(values[Col]);
             }
+
             if (Year > 0)
             {
                 if (Day > 0)
                     return new DateTime(Year, 1, 1).AddDays(Day - 1);
                 else
                     Day = 1;
+
                 if (Month == 0)
                     Month = 1;
+
+                return new DateTime(Year, Month, Day);
+            }
+            return new DateTime();
+        }
+
+
+        /// <summary>
+        /// Returns a date from data in a Datarow
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="rowIndex"></param>
+        /// <returns></returns>
+        public DateTime GetDateFromValues(DataTable table, int rowIndex)
+        {
+            int Year = 0;
+            int Month = 0;
+            int Day = 0;
+            for (int col = 0; col < table.Columns.Count; col++)
+            {
+                string ColumnName = table.Columns[col].ColumnName;
+                if (ColumnName.Equals("date", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    if (ColumnTypes[col] == typeof(DateTime))
+                        return (DateTime)table.Rows[rowIndex][col];
+                    else
+                        return DateTime.Parse(table.Rows[rowIndex][col].ToString());
+                }
+                else if (ColumnName.Equals("year", StringComparison.CurrentCultureIgnoreCase))
+                    Year = Convert.ToInt32(table.Rows[rowIndex][col]);
+                else if (ColumnName.Equals("month", StringComparison.CurrentCultureIgnoreCase))
+                    Month = Convert.ToInt32(table.Rows[rowIndex][col]);
+                else if (ColumnName.Equals("day", StringComparison.CurrentCultureIgnoreCase))
+                    Day = Convert.ToInt32(table.Rows[rowIndex][col]);
+            }
+
+            if (Year > 0)
+            {
+                if (Day > 0)
+                    return new DateTime(Year, 1, 1).AddDays(Day - 1);
+                else
+                    Day = 1;
+
+                if (Month == 0)
+                    Month = 1;
+
                 return new DateTime(Year, Month, Day);
             }
             return new DateTime();
@@ -677,10 +718,10 @@ namespace APSIM.Shared.Utilities
 
             int NumRowsToSkip = (date - _FirstDate).Days;
 
-            In.Seek(FirstLinePosition, SeekOrigin.Begin);
-            while (!In.EndOfStream && NumRowsToSkip > 0)
+            inStreamReader.Seek(FirstLinePosition, SeekOrigin.Begin);
+            while (!inStreamReader.EndOfStream && NumRowsToSkip > 0)
             {
-                In.ReadLine();
+                inStreamReader.ReadLine();
                 NumRowsToSkip--;
             }
         }
@@ -694,7 +735,7 @@ namespace APSIM.Shared.Utilities
         {
             Words.Clear();
 
-            if (GetNextLine(In, ref Words))
+            if (GetNextLine(inStreamReader, ref Words))
                 return ConvertWordsToObjects(Words, ColumnTypes);
             else
                 throw new Exception("End of file reached while reading file: " + _FileName);
@@ -712,5 +753,164 @@ namespace APSIM.Shared.Utilities
             In.Seek(position, SeekOrigin.Begin);
         }
 
+
+        #region Excel File Reader Function
+
+        /// <summary>
+        /// This is used to read an excel file, extracting header, unit and constant information
+        /// </summary>
+        public void OpenExcelReader()
+        {
+            _excelData = new DataTable();
+
+            if ((_FileName.Length <= 0) || (_SheetName.Length <= 0))
+                return;
+
+            try
+            {
+                Units = new StringCollection();
+                Headings = new StringCollection();
+                bool headingsFound = false;
+                bool measuresFound = false;
+                bool titleFound = false;
+
+                DataTable resultDt = ExcelUtilities.ReadExcelFileData(_FileName, _SheetName);
+
+                if (resultDt == null)
+                    throw new Exception("The selected excel Sheet does not have any data.");
+
+                DataRow row;
+
+                int rowCount = -1;
+                string coltext0, coltext1;
+                bool dataFound = false;
+                while (dataFound == false)
+                {
+                    rowCount++;
+                    coltext0 = resultDt.Rows[rowCount][0].ToString();
+                    coltext1 = resultDt.Rows[rowCount][1].ToString();
+
+                    //Assumptions are made here about the data, based on the values in the first two columns:
+                    // If they are both blank, then this is a blank line.
+                    // If there is data in first column, but not second, then this is the header/constant details line
+                    // If there is data in both columns, then this is the first of our data for the datatable, with
+                    //   the first line being the column titles, and if the second line starts with a '(' then this is
+                    //   a measurement line, otherwise we are looking at the actual data values.
+
+                    if ((coltext0.Length == 0) && (coltext1.Length == 0))
+                    {
+                        //this is a blank row, need to make sure we remove these
+                        resultDt.Rows[rowCount].Delete();
+                    }
+                    else if ((coltext0.Length > 0) && (coltext1.Length == 0))
+                    {
+                        //if the first cell value has a "=", it is considered a constant
+                        int posEquals = coltext0.IndexOf('=');
+                        if (posEquals != -1)
+                        {
+                            //constantLines.Add(text);
+                            string comment = StringUtilities.SplitOffAfterDelimiter(ref coltext0, "!");
+                            comment.Trim();
+                            posEquals = coltext0.IndexOf('=');
+                            if (posEquals != -1)
+                            {
+                                string name = coltext0.Substring(0, posEquals).Trim();
+                                if (name.ToLower() == "title")
+                                {
+                                    titleFound = true;
+                                    name = "Title";
+                                }
+                                string value = coltext0.Substring(posEquals + 1).Trim();
+                                string unit = string.Empty;
+
+                                if (name != "Title")
+                                    unit = StringUtilities.SplitOffBracketedValue(ref value, '(', ')');
+
+                                _Constants.Add(new ApsimConstant(name, value, unit, comment));
+                            }
+                        }
+                        resultDt.Rows[rowCount].Delete();
+                    }
+
+                    //the first line that has data in first and second columns
+                    else if ((coltext0.Length > 0) && (coltext1.Length > 0))
+                    {
+                        //we need to work with the whole row here
+                        row = resultDt.Rows[rowCount];
+                        if (!headingsFound)
+                        {
+                            Headings.AddRange(row.ItemArray.Cast<string>().ToArray());
+                            headingsFound = true;
+                            resultDt.Rows[rowCount].Delete();
+                        }
+                        else if (!measuresFound)
+                        {
+                            if (coltext0.StartsWith("("))
+                            {
+                                Units.AddRange(row.ItemArray.Cast<string>().ToArray());
+                                resultDt.Rows[rowCount].Delete();
+                            }
+                            else
+                            {
+                                //this is where the units are missing, so we need to create the measure Units, and
+                                //then update the data
+                                if (!measuresFound)
+                                {
+                                    for (int i = 0; i < Headings.Count; i++)
+                                    {
+                                        Units.Add("()");
+                                    }
+                                }
+                            }
+                            measuresFound = true;
+                        }
+                        else
+                        {
+                            //we have got both headings and measurements, so we can exit the while loop
+                            dataFound = true;
+                        }
+                    }
+                    //to ensure that we never get stuck on infinite loop;
+                    if (rowCount >= resultDt.Rows.Count - 1) { dataFound = true; }
+                }
+
+
+                //this will actually delete all of the rows that we flagged for delete (above)
+                resultDt.AcceptChanges();
+
+                //this is where we clone the current datatable, so that we can set the datatypes to what they should be,
+                //based on the first row of actual data (Need to do this as cannot change datatype once a column as data).
+                _excelData = resultDt.Clone();
+                for (int i = 0; i < resultDt.Columns.Count; i++)
+                {
+                    _excelData.Columns[i].DataType = StringUtilities.DetermineType(resultDt.Rows[0][i].ToString(), Units[i]);
+                }
+                _excelData.Load(resultDt.CreateDataReader());
+
+
+                //now do the column names, need to have data loaded before we rename columns, else the above won't work.
+                for (int i = 0; i < resultDt.Columns.Count; i++)
+                {
+                    _excelData.Columns[i].ColumnName = Headings[i];
+                }
+
+
+                _FirstDate = GetDateFromValues(_excelData, 0);
+                _LastDate = GetDateFromValues(_excelData, _excelData.Rows.Count - 1);
+
+                if (!titleFound)
+                    _Constants.Add(new ApsimConstant("Title", System.IO.Path.GetFileNameWithoutExtension(_FileName), "", ""));
+
+            }
+            catch (Exception)
+            {
+                throw new Exception("The selected excel Sheet is not a recognised Weather file.");
+            }
+        }
+
+        #endregion
     }
 }
+
+
+
