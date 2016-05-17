@@ -744,13 +744,13 @@ namespace APSIM.Shared.Utilities
         /// <summary>Return the current file position</summary>
         public int GetCurrentPosition()
         {
-            return In.Position;
+            return inStreamReader.Position;
         }
 
         /// <summary>Seek to the specified file position</summary>
         public void SeekToPosition(int position)
         {
-            In.Seek(position, SeekOrigin.Begin);
+            inStreamReader.Seek(position, SeekOrigin.Begin);
         }
 
 
