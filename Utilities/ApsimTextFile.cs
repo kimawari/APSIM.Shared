@@ -128,8 +128,9 @@ namespace APSIM.Shared.Utilities
         /// Open the file ready for reading.
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
+        /// <param name="sheetName">Name of excel worksheet, if applicable</param>
         /// <exception cref="System.Exception">Cannot find file:  + FileName</exception>
-        public void Open(string fileName)
+        public void Open(string fileName, string sheetName = "")
         {
             if (fileName == "")
                 return;
@@ -138,35 +139,22 @@ namespace APSIM.Shared.Utilities
                 throw new Exception("Cannot find file: " + fileName);
 
             _FileName = fileName;
-            IsCSVFile = System.IO.Path.GetExtension(fileName).ToLower() == ".csv";
-
-            inStreamReader = new StreamReaderRandomAccess(_FileName);
-            Open();
-        }
-
-        /// <summary>
-        /// Open the file ready for reading.  When there are two strings passed in, we are dealing with
-        /// an excel file name, and sheet name.
-        /// </summary>
-        /// <param name="fileName">Name of the file.</param>
-        /// <param name="sheetName">The name of the worksheet</param>
-        /// <exception cref="System.Exception">Cannot find file:  + FileName</exception>
-        public void Open(string fileName, string sheetName)
-        {
-            if (fileName == string.Empty)
-                return;
-
-            if (!File.Exists(fileName))
-                throw new Exception("Cannot find file: " + fileName);
-
-            if (sheetName == string.Empty)
-                return;
-
-            _FileName = fileName;
             _SheetName = sheetName;
 
-            OpenExcelReader();
+            IsCSVFile = System.IO.Path.GetExtension(fileName).ToLower() == ".csv";
+            IsExcelFile = System.IO.Path.GetExtension(fileName).ToLower() == ExcelUtilities.ExcelExtension;
+
+            if (IsExcelFile)
+            {
+                OpenExcelReader();
+            }
+            else
+            {
+                inStreamReader = new StreamReaderRandomAccess(_FileName);
+                Open();
+            }
         }
+
 
         /// <summary>
         /// Opens the specified stream.
@@ -770,25 +758,25 @@ namespace APSIM.Shared.Utilities
             {
                 Units = new StringCollection();
                 Headings = new StringCollection();
-                bool headingsFound = false;
-                bool measuresFound = false;
-                bool titleFound = false;
 
                 DataTable resultDt = ExcelUtilities.ReadExcelFileData(_FileName, _SheetName);
 
                 if (resultDt == null)
-                    throw new Exception("The selected excel Sheet does not have any data.");
+                    throw new Exception("There does not appear to be any data.");
 
-                DataRow row;
-
-                int rowCount = -1;
-                string coltext0, coltext1;
+                int posEquals, rowCount = -1;
+                string coltext1, coltext2, coltext3, coltext4;
+                string unit, name, value, comment;
+                bool titleFound = false;
                 bool dataFound = false;
+
                 while (dataFound == false)
                 {
                     rowCount++;
-                    coltext0 = resultDt.Rows[rowCount][0].ToString();
-                    coltext1 = resultDt.Rows[rowCount][1].ToString();
+                    coltext1 = resultDt.Rows[rowCount][0].ToString();
+                    coltext2 = resultDt.Rows[rowCount][1].ToString();
+                    coltext3 = resultDt.Rows[rowCount][2].ToString();
+                    coltext4 = resultDt.Rows[rowCount][3].ToString();
 
                     //Assumptions are made here about the data, based on the values in the first two columns:
                     // If they are both blank, then this is a blank line.
@@ -797,83 +785,87 @@ namespace APSIM.Shared.Utilities
                     //   the first line being the column titles, and if the second line starts with a '(' then this is
                     //   a measurement line, otherwise we are looking at the actual data values.
 
-                    if ((coltext0.Length == 0) && (coltext1.Length == 0))
+                    //if no data only in columns 1 and 2, then it is a blank line
+                    //if data only in columns 1, then it could be a comments line, and is ignored
+                    //if data only in columns 1 & 2, then it is a constants row
+                    //if data on 3 or more columns then is actual data
+                    //all measurements (in both constants and data headings) are in brackets after name (title)
+
+                    unit = string.Empty;
+                    name = string.Empty;
+                    value = string.Empty;
+                    comment = string.Empty;
+
+                    posEquals = coltext1.IndexOf('!');
+                    if (posEquals != -1)
                     {
-                        //this is a blank row, need to make sure we remove these
+                        //this is a comment line, and can be ignored
                         resultDt.Rows[rowCount].Delete();
                     }
-                    else if ((coltext0.Length > 0) && (coltext1.Length == 0))
+                    else if (((coltext1.Length == 0) || (coltext2.Length == 0)))
                     {
-                        //if the first cell value has a "=", it is considered a constant
-                        int posEquals = coltext0.IndexOf('=');
-                        if (posEquals != -1)
+                        //if no data in columns 1 or column 2, then this is a blank row, need to make sure we remove these
+                        resultDt.Rows[rowCount].Delete();
+                    }
+                    else if ((coltext1.Length > 0) && (coltext2.Length > 0) && (coltext4.Length == 0))
+                    {
+                        //the unit, if it exists, is after the title (name) of the constant
+                        unit = StringUtilities.SplitOffBracketedValue(ref coltext1, '(', ')');
+
+                        name = coltext1.Trim();
+                        if (name.ToLower() == "title")
                         {
-                            //constantLines.Add(text);
-                            string comment = StringUtilities.SplitOffAfterDelimiter(ref coltext0, "!");
+                            titleFound = true;
+                            name = "Title";
+                        }
+
+                        //now look at what is left in the first row
+                        value = coltext2.Trim();
+
+                        //comments are in column three - need to strip out any '!' at the start
+                        if (coltext3.Length > 0)
+                        {
+                            comment = StringUtilities.SplitOffAfterDelimiter(ref coltext3, "!");
                             comment.Trim();
-                            posEquals = coltext0.IndexOf('=');
-                            if (posEquals != -1)
-                            {
-                                string name = coltext0.Substring(0, posEquals).Trim();
-                                if (name.ToLower() == "title")
-                                {
-                                    titleFound = true;
-                                    name = "Title";
-                                }
-                                string value = coltext0.Substring(posEquals + 1).Trim();
-                                string unit = string.Empty;
-
-                                if (name != "Title")
-                                    unit = StringUtilities.SplitOffBracketedValue(ref value, '(', ')');
-
-                                _Constants.Add(new ApsimConstant(name, value, unit, comment));
-                            }
                         }
+                        _Constants.Add(new ApsimConstant(name, value, unit, comment));
                         resultDt.Rows[rowCount].Delete();
                     }
 
-                    //the first line that has data in first and second columns
-                    else if ((coltext0.Length > 0) && (coltext1.Length > 0))
+                    //the first line that has data in the first 4 columns
+                    else if ((coltext1.Length > 0) && (coltext2.Length > 0) && (coltext3.Length > 0) && (coltext4.Length > 0))
                     {
-                        //we need to work with the whole row here
-                        row = resultDt.Rows[rowCount];
-                        if (!headingsFound)
+                        for (int i = 0; i < resultDt.Columns.Count; i++)
                         {
-                            Headings.AddRange(row.ItemArray.Cast<string>().ToArray());
-                            headingsFound = true;
-                            resultDt.Rows[rowCount].Delete();
-                        }
-                        else if (!measuresFound)
-                        {
-                            if (coltext0.StartsWith("("))
+                            value = resultDt.Rows[rowCount][i].ToString();
+                            if (value.Length > 0)
                             {
-                                Units.AddRange(row.ItemArray.Cast<string>().ToArray());
-                                resultDt.Rows[rowCount].Delete();
+                                //extract the measurment if it exists, else need to crate blank, and add to Units collection
+                                unit = StringUtilities.SplitOffBracketedValue(ref value, '(', ')');
+                                if (unit.Length <= 0) { unit = "()"; }
+                                Units.Add(unit.Trim());
+
+                                //add the title(name to Units collection
+                                Headings.Add(value.Trim());
                             }
-                            else
-                            {
-                                //this is where the units are missing, so we need to create the measure Units, and
-                                //then update the data
-                                if (!measuresFound)
-                                {
-                                    for (int i = 0; i < Headings.Count; i++)
-                                    {
-                                        Units.Add("()");
-                                    }
-                                }
-                            }
-                            measuresFound = true;
                         }
-                        else
-                        {
-                            //we have got both headings and measurements, so we can exit the while loop
-                            dataFound = true;
-                        }
+
+                        resultDt.Rows[rowCount].Delete();
+                        //we have got both headings and measurements, so we can exit the while loop
+                        dataFound = true;
                     }
                     //to ensure that we never get stuck on infinite loop;
                     if (rowCount >= resultDt.Rows.Count - 1) { dataFound = true; }
                 }
 
+                //make sure that the next row doesn't have '()' measurements in it
+                coltext1 = resultDt.Rows[rowCount+1][0].ToString().Trim();
+                posEquals = coltext1.IndexOf('(');
+                if (posEquals == 0)
+                {
+                    //this line contains brackets, SHOULD be DATA
+                    throw new Exception();
+                }
 
                 //this will actually delete all of the rows that we flagged for delete (above)
                 resultDt.AcceptChanges();
@@ -887,13 +879,11 @@ namespace APSIM.Shared.Utilities
                 }
                 _excelData.Load(resultDt.CreateDataReader());
 
-
                 //now do the column names, need to have data loaded before we rename columns, else the above won't work.
                 for (int i = 0; i < resultDt.Columns.Count; i++)
                 {
                     _excelData.Columns[i].ColumnName = Headings[i];
                 }
-
 
                 _FirstDate = GetDateFromValues(_excelData, 0);
                 _LastDate = GetDateFromValues(_excelData, _excelData.Rows.Count - 1);
@@ -902,9 +892,9 @@ namespace APSIM.Shared.Utilities
                     _Constants.Add(new ApsimConstant("Title", System.IO.Path.GetFileNameWithoutExtension(_FileName), "", ""));
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                throw new Exception("The selected excel Sheet is not a recognised Weather file.");
+                throw new Exception(string.Format("The excel Sheet {0} is not in a recognised Weather file format." + e.Message.ToString(), _SheetName));
             }
         }
 
