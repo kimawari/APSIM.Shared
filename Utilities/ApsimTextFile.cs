@@ -125,6 +125,16 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Open the text file for reading
+        /// </summary>
+        /// <param name="fileName">The Name of the file to open</param>
+        public void Open(string fileName)
+        {
+            Open(fileName, "");
+        }
+
+
+        /// <summary>
         /// Open the file ready for reading.
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
