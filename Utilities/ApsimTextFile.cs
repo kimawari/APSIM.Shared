@@ -133,7 +133,6 @@ namespace APSIM.Shared.Utilities
             Open(fileName, "");
         }
 
-
         /// <summary>
         /// Open the file ready for reading.
         /// </summary>
@@ -779,14 +778,15 @@ namespace APSIM.Shared.Utilities
                 string unit, name, value, comment;
                 bool titleFound = false;
                 bool dataFound = false;
+                bool unitsFound = false;
 
                 while (dataFound == false)
                 {
                     rowCount++;
-                    coltext1 = resultDt.Rows[rowCount][0].ToString();
-                    coltext2 = resultDt.Rows[rowCount][1].ToString();
-                    coltext3 = resultDt.Rows[rowCount][2].ToString();
-                    coltext4 = resultDt.Rows[rowCount][3].ToString();
+                    coltext1 = resultDt.Rows[rowCount][0].ToString().Trim();
+                    coltext2 = resultDt.Rows[rowCount][1].ToString().Trim();
+                    coltext3 = resultDt.Rows[rowCount][2].ToString().Trim();
+                    coltext4 = resultDt.Rows[rowCount][3].ToString().Trim();
 
                     //Assumptions are made here about the data, based on the values in the first two columns:
                     // If they are both blank, then this is a blank line.
@@ -807,14 +807,34 @@ namespace APSIM.Shared.Utilities
                     comment = string.Empty;
 
                     posEquals = coltext1.IndexOf('!');
-                    if (posEquals != -1)
+                    if (posEquals == 0)
                     {
                         //this is a comment line, and can be ignored
                         resultDt.Rows[rowCount].Delete();
                     }
-                    else if (((coltext1.Length == 0) || (coltext2.Length == 0)))
+                    else if (coltext1.Length == 0)
                     {
-                        //if no data in columns 1 or column 2, then this is a blank row, need to make sure we remove these
+                        //if no data in column 1, then this is a blank row, need to make sure we remove these
+                        resultDt.Rows[rowCount].Delete();
+                    }
+                    // Check for and handle "old style" constants
+                    else if ((coltext1.Length > 0) && coltext2.Length == 0)
+                    {
+                        comment = StringUtilities.SplitOffAfterDelimiter(ref coltext1, "!").Trim();
+                        posEquals = coltext1.IndexOf('=');
+                        if (posEquals != -1)
+                        {
+                            name = coltext1.Substring(0, posEquals).Trim();
+                            if (name.ToLower() == "title")
+                            {
+                                titleFound = true;
+                                name = "Title";
+                            }
+                            value = coltext1.Substring(posEquals + 1).Trim();
+                            if (name != "Title")
+                                unit = StringUtilities.SplitOffBracketedValue(ref value, '(', ')');
+                            _Constants.Add(new ApsimConstant(name, value, unit, comment));
+                        }
                         resultDt.Rows[rowCount].Delete();
                     }
                     else if ((coltext1.Length > 0) && (coltext2.Length > 0) && (coltext4.Length == 0))
@@ -850,9 +870,12 @@ namespace APSIM.Shared.Utilities
                             value = resultDt.Rows[rowCount][i].ToString();
                             if (value.Length > 0)
                             {
-                                //extract the measurment if it exists, else need to crate blank, and add to Units collection
+                                //extract the measurment if it exists, else need to create blank, and add to Units collection
                                 unit = StringUtilities.SplitOffBracketedValue(ref value, '(', ')');
-                                if (unit.Length <= 0) { unit = "()"; }
+                                if (unit.Length <= 0)
+                                    unit = "()";
+                                else
+                                    unitsFound = true;
                                 Units.Add(unit.Trim());
 
                                 //add the title(name to Units collection
@@ -874,7 +897,19 @@ namespace APSIM.Shared.Utilities
                 if (posEquals == 0)
                 {
                     //this line contains brackets, SHOULD be DATA
-                    throw new Exception();
+                    if (unitsFound)
+                        throw new Exception();
+                    // but if we haven't already seen units,
+                    // read units from this line
+                    // (to support "old style" layouts)
+                    else
+                    {
+                        for (int i = 0; i < resultDt.Columns.Count; i++)
+                        {
+                            Units[i] = resultDt.Rows[rowCount+1][i].ToString();
+                        }
+                        resultDt.Rows[rowCount+1].Delete();
+                    }
                 }
 
                 //this will actually delete all of the rows that we flagged for delete (above)
