@@ -25,8 +25,10 @@ namespace APSIM.Shared.Utilities
         static Regex
             rxDD = new Regex(@"\d\d?"),
             rxMMM = new Regex(@"\w{3}"),
-            rxDMY = new Regex(@"^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$");
-            
+            rxDMY = new Regex(@"^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$"),
+            rxddMMM = new Regex(@"^(([0-9])|([0-2][0-9])|([3][0-1]))\-(Jan|jan|Feb|feb|Mar|mar|Apr|apr|May|may|Jun|jun|Jul|jul|Aug|aug|Sep|sep|Oct|oct|Nov|nov|Dec|dec)");
+
+
         /// <summary>
         /// Convert a Julian Date to a DateTime object
         /// Where the Julian day begins at Greenwich mean noon 12pm. 12h UT.
@@ -322,6 +324,55 @@ namespace APSIM.Shared.Utilities
                 return new DateTime(Convert.ToInt32(m.Groups[3].Value), Convert.ToInt32(m.Groups[2].Value), Convert.ToInt32(m.Groups[1].Value));
             else
                 return new DateTime();    // default??
+        }
+
+        /// <summary>
+        /// Takes in a string and checks to see if it is in the correct format for either a 'dd-mmm' value, or a full date
+        /// with year, month and date (in any recognised date format).
+        /// </summary>
+        /// <param name="dateStr"></param>
+        /// <returns>a string with the valid dd-Mmm string or a valid date as a string (yyyy-mm-dd)</returns>
+        public static string validateDateString(string dateStr)
+        {
+            string returnDate = string.Empty;
+            DateTime d;
+
+            Match m = rxddMMM.Match(dateStr);
+            //also need to look at the length just in case input value is a full date as 20-Jan-2016 (and not just 20-Jan).
+            if ((m.Success) && (dateStr.Length <= 6))
+            {
+                d = GetDate(dateStr, 2000);
+                //for consistency, return it as 'Title' case (ie, 01-Jan, not 1-jan)
+                returnDate = d.ToString("dd-MMM");  
+            }
+            else
+            {
+                DateTime.TryParse(dateStr, out d);
+                returnDate = d.ToString("yyyy-MM-dd");
+            }
+            return returnDate;
+        }
+
+        /// <summary>
+        /// Takes in a string and validates it as a 'dd-mmm' value, or as a full date, and a year value.  When
+        /// the 'dd-MMM' value is passed the year value is used to build a valid date.
+        /// </summary>
+        /// <param name="dateStr">the date as a string, (ie, 01-jan or 2010-01-21)</param>
+        /// <param name="year">the year to be added to date, if it doesn't exist (ie, 01-jan)</param>
+        /// <returns>a valid date as a datetime value</returns>
+        public static DateTime validateDateString(string dateStr, int year)
+        {
+            DateTime returnDate = new DateTime();
+
+            Match m = rxddMMM.Match(dateStr);
+            //also need to look at the length just in case input value is a full date as 20-Jan-2016 (and not just 20-Jan).
+            if ((m.Success) && (dateStr.Length <= 6))
+                returnDate = DateUtilities.GetDate(dateStr, year);
+            else
+            {
+                DateTime.TryParse(dateStr, out returnDate);
+            }
+            return returnDate;
         }
 
     }
