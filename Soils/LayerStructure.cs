@@ -181,9 +181,12 @@ namespace APSIM.Shared.Soils
                 sample.Name = sample.Name;
                 sample.Date = sample.Date;
 
-                sample.SW = MapSW(sample.SW, sample.Thickness, thickness, soil);
-                sample.NH4 = MapConcentration(sample.NH4, sample.Thickness, thickness, 0.01);
-                sample.NO3 = MapConcentration(sample.NO3, sample.Thickness, thickness, 0.01);
+                if (sample.SW != null)
+                    sample.SW = MapSW(sample.SW, sample.Thickness, thickness, soil);
+                if (sample.NH4 != null)
+                    sample.NH4 = MapConcentration(sample.NH4, sample.Thickness, thickness, 0.01);
+                if (sample.NO3 != null)
+                    sample.NO3 = MapConcentration(sample.NO3, sample.Thickness, thickness, 0.01);
 
                 // The elements below will be overlaid over other arrays of values so we want 
                 // to have missing values (double.NaN) used at the bottom of the profile.
@@ -290,29 +293,35 @@ namespace APSIM.Shared.Soils
                                                   double defaultValueForBelowProfile,
                                                   bool allowMissingValues = false)
         {
-            if (fromValues == null || fromThickness == null)
-                return null;
-
-            // convert from values to a mass basis with a dummy bottom layer.
-            List<double> values = new List<double>();
-            List<double> thickness = new List<double>();
-            for (int i = 0; i < fromValues.Length; i++)
+            if (fromValues != null)
             {
-                if (!allowMissingValues && double.IsNaN(fromValues[i]))
-                    break;
+                if (fromValues.Length != fromThickness.Length)
+                    throw new Exception("In MapConcentraction, the number of values doesn't match the number of thicknesses.");
+                if (fromValues == null || fromThickness == null)
+                    return null;
 
-                values.Add(fromValues[i]);
-                thickness.Add(fromThickness[i]);
+                // convert from values to a mass basis with a dummy bottom layer.
+                List<double> values = new List<double>();
+                List<double> thickness = new List<double>();
+                for (int i = 0; i < fromValues.Length; i++)
+                {
+                    if (!allowMissingValues && double.IsNaN(fromValues[i]))
+                        break;
+
+                    values.Add(fromValues[i]);
+                    thickness.Add(fromThickness[i]);
+                }
+
+                values.Add(defaultValueForBelowProfile);
+                thickness.Add(3000);
+                double[] massValues = MathUtilities.Multiply(values.ToArray(), thickness.ToArray());
+
+                double[] newValues = MapMass(massValues, thickness.ToArray(), toThickness, allowMissingValues);
+
+                // Convert mass back to concentration and return
+                return MathUtilities.Divide(newValues, toThickness);
             }
-
-            values.Add(defaultValueForBelowProfile);
-            thickness.Add(3000);
-            double[] massValues = MathUtilities.Multiply(values.ToArray(), thickness.ToArray());
-
-            double[] newValues = MapMass(massValues, thickness.ToArray(), toThickness, allowMissingValues);
-
-            // Convert mass back to concentration and return
-            return MathUtilities.Divide(newValues, toThickness);
+            return null;
         }
 
         /// <summary>Map soil variables (using BD) from one layer structure to another.</summary>
