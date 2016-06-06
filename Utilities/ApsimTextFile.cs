@@ -232,7 +232,8 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         public void Close()
         {
-            inStreamReader.Close();
+            if (inStreamReader != null)
+               inStreamReader.Close();
         }
 
         /// <summary>Gets the first date.</summary>
