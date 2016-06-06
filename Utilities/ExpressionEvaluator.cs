@@ -36,6 +36,7 @@ namespace APSIM.Shared.Utilities
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public struct Symbol
     {
         /// <summary>The m_name</summary>
@@ -187,6 +188,7 @@ namespace APSIM.Shared.Utilities
         {
             int state = 1;
             string temp = "";
+            
             Symbol ctSymbol;
             ctSymbol.m_values = null;
 
