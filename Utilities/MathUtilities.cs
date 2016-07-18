@@ -550,6 +550,34 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Returns true if there are values in the specified array that aren't missing values.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        static public bool ValuesInArray(IEnumerable values)
+        {
+            if (values != null)
+            {
+                IEnumerator e = values.GetEnumerator();
+                while (e.MoveNext())
+                {
+                    if (e.Current is double)
+                    {
+                        double value = Convert.ToDouble(e.Current);
+                        if (value != MissingValue && !double.IsNaN(value))
+                            return true;
+                    }
+                    else if (e.Current is string)
+                    {
+                        if (e.Current as string != "")
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Replace missing values with 'replacementValue'
         /// </summary>
         /// <param name="values">The values to search through.</param>
