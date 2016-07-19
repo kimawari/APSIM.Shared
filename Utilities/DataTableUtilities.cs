@@ -351,7 +351,12 @@ namespace APSIM.Shared.Utilities
         {
             DateTime[] values = new DateTime[view.Count];
             for (int row = 0; row != view.Count; row++)
-                values[row] = Convert.ToDateTime(view[row][columnName]);
+            {
+                if (Convert.IsDBNull(view[row][columnName]))
+                    values[row] = DateTime.MinValue;
+                else
+                    values[row] = Convert.ToDateTime(view[row][columnName]);
+            }
 
             return values;
         }
