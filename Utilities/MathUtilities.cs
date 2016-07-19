@@ -572,6 +572,14 @@ namespace APSIM.Shared.Utilities
                         if (e.Current as string != "")
                             return true;
                     }
+                    else if (e.Current is DateTime)
+                    {
+                        DateTime d = (DateTime)e.Current;
+                        if (d != DateTime.MinValue && d != DateTime.MaxValue)
+                            return true;
+                    }
+                    else
+                        return true;
                 }
             }
             return false;
