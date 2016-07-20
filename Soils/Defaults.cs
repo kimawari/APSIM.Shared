@@ -37,8 +37,10 @@ namespace APSIM.Shared.Soils
                     FillInKLForCrop(crop);
 
                 CheckCropForMissingValues(crop, soil);
-
             }
+
+            foreach (Sample sample in soil.Samples)
+                CheckSampleForMissingValues(sample, soil);
         }
 
         private static string[] cropNames = {"Wheat", "Oats",
@@ -134,6 +136,65 @@ namespace APSIM.Shared.Soils
                     crop.KL[i] = 0;
                 if (crop.XF != null && double.IsNaN(crop.XF[i]))
                     crop.XF[i] = 0;
+            }
+        }
+
+        /// <summary>Checks the sample for missing values.</summary>
+        /// <param name="sample">The sample.</param>
+        /// <param name="soil">The soil.</param>
+        private static void CheckSampleForMissingValues(Sample sample, Soil soil)
+        {
+            if (!MathUtilities.ValuesInArray(sample.SW))
+                sample.SW = null;
+            if (!MathUtilities.ValuesInArray(sample.NO3))
+                sample.NO3 = null;
+            if (!MathUtilities.ValuesInArray(sample.CL))
+                sample.CL = null;
+            if (!MathUtilities.ValuesInArray(sample.EC))
+                sample.EC = null;
+            if (!MathUtilities.ValuesInArray(sample.ESP))
+                sample.ESP = null;
+            if (!MathUtilities.ValuesInArray(sample.PH))
+                sample.PH = null;
+            if (!MathUtilities.ValuesInArray(sample.OC))
+                sample.OC = null;
+
+            if (sample.SW != null)
+                sample.SW = MathUtilities.FixArrayLength(sample.SW, sample.Thickness.Length);
+            if (sample.NO3 != null)
+                sample.NO3 = MathUtilities.FixArrayLength(sample.NO3, sample.Thickness.Length);
+            if (sample.NH4 != null)
+                sample.NH4 = MathUtilities.FixArrayLength(sample.NH4, sample.Thickness.Length);
+            if (sample.CL != null)
+                sample.CL = MathUtilities.FixArrayLength(sample.CL, sample.Thickness.Length);
+            if (sample.EC != null)
+                sample.EC = MathUtilities.FixArrayLength(sample.EC, sample.Thickness.Length);
+            if (sample.ESP != null)
+                sample.ESP = MathUtilities.FixArrayLength(sample.ESP, sample.Thickness.Length);
+            if (sample.PH != null)
+                sample.PH = MathUtilities.FixArrayLength(sample.PH, sample.Thickness.Length);
+            if (sample.OC != null)
+                sample.OC = MathUtilities.FixArrayLength(sample.OC, sample.Thickness.Length);
+
+            double[] ll15 = LayerStructure.LL15Mapped(soil, sample.Thickness);
+            for (int i = 0; i < sample.Thickness.Length; i++)
+            {
+                if (sample.SW != null && double.IsNaN(sample.SW[i]))
+                    sample.SW[i] = ll15[i];
+                if (sample.NO3 != null && double.IsNaN(sample.NO3[i]))
+                    sample.NO3[i] = 1.0;
+                if (sample.NH4 != null && double.IsNaN(sample.NH4[i]))
+                    sample.NH4[i] = 0.1;
+                if (sample.CL != null && double.IsNaN(sample.CL[i]))
+                    sample.CL[i] = 0;
+                if (sample.EC != null && double.IsNaN(sample.EC[i]))
+                    sample.EC[i] = 0;
+                if (sample.ESP != null && double.IsNaN(sample.ESP[i]))
+                    sample.ESP[i] = 0;
+                if (sample.PH != null && (double.IsNaN(sample.PH[i]) || sample.PH[i] == 0.0))
+                    sample.PH[i] = 7.0;
+                if (sample.OC != null && (double.IsNaN(sample.OC[i]) || sample.OC[i] == 0.0))
+                    sample.OC[i] = 0.5;
             }
         }
 

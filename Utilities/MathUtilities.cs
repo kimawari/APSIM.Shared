@@ -1177,6 +1177,28 @@ namespace APSIM.Shared.Utilities
             return NewValues.ToArray();
         }
 
+        /// <summary>
+        /// Make sure the specified array is of the specified length. Will pad
+        /// with double.NaN to make it the required length.
+        /// </summary>
+        /// <param name="values">The array of values to resize.</param>
+        /// <param name="length">The new size of the array.</param>
+        /// <returns>The new array.</returns>
+        public static double[] FixArrayLength(double[] values, int length)
+        {
+            if (values.Length != length)
+            {
+                int i = values.Length;
+                Array.Resize(ref values, length);
+                while (i < length)
+                {
+                    values[i] = double.NaN;
+                    i++;
+                }
+            }
+            return values;
+        }
+
         /// <summary>Return the last value that isn't a missing value.</summary>
         /// <param name="Values">The values.</param>
         /// <returns></returns>
