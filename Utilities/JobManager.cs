@@ -10,89 +10,123 @@ namespace APSIM.Shared.Utilities
     using System.ComponentModel;
     using System.Diagnostics;
     using System.Threading;
+    using System.Linq;
 
     /// <summary>A class for managing asynchronous running of jobs.</summary>
     [Serializable]
     public class JobManager
     {
+        /// <summary>An interface that defines a class as requiring a dedicated CPU core.</summary>
+        public interface IComputationalyTimeConsuming
+        {
+        }
+
         /// <summary>A runnable interface.</summary>
         public interface IRunnable
         {
-            /// <summary>Gets a value indicating whether this instance is computationally time consuming.</summary>
-            bool IsComputationallyTimeConsuming { get; }
-
-            /// <summary>Gets a value indicating whether this job is completed. Set by JobManager.</summary>
-            bool IsCompleted { get; set; }
-
-            /// <summary>Gets the error message. Can be null if no error. Set by JobManager.</summary>
-            string ErrorMessage { get; set; }
-
             /// <summary>Called to start the job. Can throw on error.</summary>
-            /// <param name="sender">The sender.</param>
-            /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
-            void Run(object sender, DoWorkEventArgs e);
+            /// <param name="jobManager">The job manager this job is running in.</param>
+            /// <param name="workerThread">Is cancellation pending?</param>
+            void Run(JobManager jobManager, BackgroundWorker workerThread);
         }
 
         /// <summary>The maximum number of processors used by this job manager.</summary>
-        private int MaximumNumOfProcessors = 1;
+        [NonSerialized]
+        private int MaximumNumOfProcessors = 2;
 
-        /// <summary>A job queue containing all jobs.</summary>
-        private List<KeyValuePair<BackgroundWorker, IRunnable>> jobs = new List<KeyValuePair<BackgroundWorker, IRunnable>>();
+        /// <summary>A job queue of running jobs.</summary>
+        [NonSerialized]
+        private List<Job> jobs = new List<Job>();
 
         /// <summary>Main scheduler thread that goes through all jobs and sets them running.</summary>
         [NonSerialized]
         private BackgroundWorker schedulerThread = null;
 
-        /// <summary>All jobs done?</summary>
-        private bool allDone = false;
-
-        /// <summary>
-        /// Gets a value indicating whether there are more jobs to run.
-        /// </summary>
-        /// <value><c>true</c> if [more jobs to run]; otherwise, <c>false</c>.</value>
+        /// <summary>Gets a value indicating whether there are more jobs to run.</summary>
         private bool MoreJobsToRun
         {
             get
             {
                 lock (this)
                 {
-                    return !allDone;
+                    return jobs.Find(job => !job.IsCompleted) != null;
                 }
             }
         }
 
-        /// <summary>
-        /// Gets the number of jobs still to run.
-        /// </summary>
-        /// <value><c>true</c> if [more jobs to run]; otherwise, <c>false</c>.</value>
-        public int JobCount
+        /// <summary>Gets the number of jobs still to run.</summary>
+        public int NumberOfJobsStillToComplete
         {
             get
             {
                 lock (this)
                 {
-                    return jobs.Count;
+                    return jobs.Count(job => !job.IsCompleted);
                 }
             }
         }
 
-        /// <summary>A list of all completed jobs.</summary>
-        public List<IRunnable> CompletedJobs { get; set; }
+        /// <summary>Gets the percentage of jobs completed.</summary>
+        public double PercentComplete
+        {
+            get
+            {
+                lock (this)
+                {
+                    if (jobs.Count == 0)
+                        return 0;
+                    else
+                        return jobs.Count(job => job.IsCompleted) * 1.0 / jobs.Count * 100.0;
+                }
+            }
+        }
+
+        /// <summary>Clear all completed jobs.</summary>
+        public void ClearCompletedJobs()
+        {
+            lock (this)
+            {
+                jobs.RemoveAll(job => job.IsCompleted);
+            }
+        }
 
         /// <summary>Occurs when all jobs completed.</summary>
         public event EventHandler AllJobsCompleted;
 
-        /// <summary>
-        /// Gets or sets a value indicating whether some jobs had errors.
-        /// </summary>
-        public bool SomeHadErrors { get; set; }
-
-        /// <summary>Returns true if the specified job type is already in the queue of jobs, otherwise returns false</summary>
-        public bool IsJobTypeInQueue<T>()
+        /// <summary>Count the number of specified job types in the queue of jobs</summary>
+        public int CountJobTypeInQueue<T>()
         {
             lock (this)
             {
-                return jobs.Exists(job => (job.Value is T));
+                return jobs.Count(job => job.RunnableJob is T);
+            }
+        }
+
+        /// <summary>Has the specified job and all its child jobs finished?</summary>
+        /// <param name="runnableJob">The job to check.</param>
+        public bool IsJobCompleted(IRunnable runnableJob)
+        {
+            lock (this)
+            {
+                Job job = jobs.Find(j => j.RunnableJob == runnableJob);
+                if (job == null)
+                    throw new Exception("Cannot find job");
+                return job.IsJobAndChildJobsComplete();
+            }
+        }
+
+        /// <summary>Get exceptions from the specified job</summary>
+        /// <param name="runnableJob">The job to check.</param>
+        public List<Exception> Errors(IRunnable runnableJob)
+        {
+            lock (this)
+            {
+                Job job = jobs.Find(j => j.RunnableJob == runnableJob);
+                if (job == null)
+                    throw new Exception("Cannot find job");
+                List<Exception> errors = new List<Exception>();
+                job.Errors(errors);
+                return errors;
             }
         }
 
@@ -112,10 +146,30 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>Add a job to the list of jobs that need running.</summary>
-        /// <param name="job">The job to add to the queue</param>
-        public void AddJob(IRunnable job)
+        /// <param name="runnableJob">The job to add to the queue</param>
+        public void AddJob(IRunnable runnableJob)
         {
-            lock (this) { jobs.Add(new KeyValuePair<BackgroundWorker, IRunnable>(null, job)); }
+            lock (this)
+            {
+                Job newJob = new Job(this, runnableJob);
+                jobs.Add(newJob);
+            }
+        }
+
+        /// <summary>Add a job to the list of jobs that need running.</summary>
+        /// <param name="parentRunnableJob">The parent job</param>
+        /// <param name="runnableJob">The job to add to the parent job</param>
+        public void AddChildJob(IRunnable parentRunnableJob, IRunnable runnableJob)
+        {
+            lock (this)
+            {
+                Job parentJob = jobs.Find(job => job.RunnableJob == parentRunnableJob);
+                if (parentJob == null)
+                    throw new Exception("Cannot find job");
+                Job newJob = new Job(this, runnableJob);
+                parentJob.ChildJobs.Add(newJob);
+                jobs.Add(newJob);
+            }
         }
 
         /// <summary>
@@ -125,9 +179,6 @@ namespace APSIM.Shared.Utilities
         /// <param name="waitUntilFinished">if set to <c>true</c> [wait until finished].</param>
         public void Start(bool waitUntilFinished)
         {
-            CompletedJobs = new List<IRunnable>();
-            SomeHadErrors = false;
-            allDone = false;
             schedulerThread = new BackgroundWorker();
             schedulerThread.WorkerSupportsCancellation = true;
             schedulerThread.WorkerReportsProgress = true;
@@ -146,27 +197,9 @@ namespace APSIM.Shared.Utilities
         /// <remarks>Non threaded runs are useful for profiling.</remarks>
         public void Run()
         {
-            CompletedJobs = new List<IRunnable>();
-            SomeHadErrors = false;
-            allDone = false;
-            DoWorkEventArgs args = new DoWorkEventArgs(this);
-            while (jobs.Count > 0)
-            {
-                IRunnable job = jobs[0].Value;
-                try
-                {
-                    job.Run(this, args);
-                    job.IsCompleted = true;
-                    CompletedJobs.Add(job);
-                    jobs.RemoveAt(0);
-                }
-                catch (Exception err)
-                {
-                    job.ErrorMessage = err.ToString();
-                    SomeHadErrors = true;
-                }
-            }
-            allDone = true;
+            foreach (Job job in jobs)
+                job.Run(this, null);
+            
             if (AllJobsCompleted != null)
                 AllJobsCompleted.Invoke(this, new EventArgs());
         }
@@ -177,32 +210,21 @@ namespace APSIM.Shared.Utilities
             lock (this)
             {
                 // Change status of jobs.
-                foreach (KeyValuePair<BackgroundWorker, IRunnable> job in jobs)
-                {
-                    job.Value.IsCompleted = true;
-                    if (job.Key.IsBusy)
-                        job.Key.CancelAsync();
-                }
+                foreach (Job job in jobs)
+                    job.Stop();
             }
 
             if (schedulerThread != null)
                 schedulerThread.CancelAsync();            
         }
 
-        /// <summary>Called when [worker completed].</summary>
+        /// <summary>Called when main worker thread has exited.</summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
         private void OnWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (AllJobsCompleted != null)
                 AllJobsCompleted.Invoke(this, new EventArgs());
-
-            // Look for errors in jobs.
-            foreach (IRunnable job in CompletedJobs)
-                if (job.ErrorMessage != null)
-                    SomeHadErrors = true;
-
-            allDone = true;
         }
 
         /// <summary>
@@ -215,7 +237,7 @@ namespace APSIM.Shared.Utilities
             BackgroundWorker bw = sender as BackgroundWorker;
             
             // Main worker thread for keeping jobs running
-            while (!bw.CancellationPending && JobCount > 0)
+            while (!bw.CancellationPending && NumberOfJobsStillToComplete > 0)
             {
                 int i = GetNextJobToRun();
                 if (i != -1)
@@ -223,52 +245,14 @@ namespace APSIM.Shared.Utilities
                     lock (this) 
                     {
                         BackgroundWorker worker = new BackgroundWorker();
-                        jobs[i] = new KeyValuePair<BackgroundWorker,IRunnable>(worker, jobs[i].Value);
-                        worker.DoWork += jobs[i].Value.Run;
-                        worker.RunWorkerCompleted += OnJobCompleted;
+                        jobs[i].Start(worker);
+                        worker.DoWork += jobs[i].DoWork;
                         worker.WorkerSupportsCancellation = true;
                         worker.RunWorkerAsync(this);
                     }
                 }
                 Thread.Sleep(300);
             }
-        }
-
-        /// <summary>
-        /// This event handler will be invoked, on the scheduler thread, everytime a job is completed.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
-        private void OnJobCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            BackgroundWorker bw = sender as BackgroundWorker;
-            
-            lock (this)
-            {
-                int i = GetJob(bw);
-                jobs[i].Value.IsCompleted = true;
-                if (e.Error != null)
-                {
-                    SomeHadErrors = true;
-                    jobs[i].Value.ErrorMessage = e.Error.Message;
-                }
-                CompletedJobs.Add(jobs[i].Value);
-                jobs.RemoveAt(i);
-            }
-        }
-        
-        /// <summary>Gets a job</summary>
-        /// <param name="bw">Background worker of job to find</param>
-        /// <returns>The IRunnable job.</returns>
-        private int GetJob(BackgroundWorker bw)
-        {
-            for (int i = 0; i < jobs.Count; i++)
-            {
-                if (jobs[i].Key == bw)
-                    return i;
-            }
-
-            throw new Exception("Cannot find job.");
         }
 
         /// <summary>Return the index of next job to run or -1 if nothing to run.</summary>
@@ -279,24 +263,125 @@ namespace APSIM.Shared.Utilities
             {
                 int index = 0;
                 int countRunning = 0;
-                foreach (KeyValuePair<BackgroundWorker, IRunnable> job in jobs)
+                foreach (Job job in jobs)
                 {
                     if (countRunning == MaximumNumOfProcessors)
-                    {
                         return -1;
-                    }
 
                     // Is this job running?
-                    if (job.Key == null)
-                        return index;     // not running so return it to be run next.
-                    else if (job.Value.IsComputationallyTimeConsuming)
-                        countRunning++;   // is running.
-
+                    if (!job.IsCompleted)
+                    {
+                        if (!job.IsRunning)
+                            return index;     // not running so return it to be run next.
+                        else if (job.RunnableJob.GetType().GetInterface("IComputationalyTimeConsuming") != null)
+                            countRunning++;   // is running.
+                    }
                     index++;
                 }
             }
             
             return -1;
         }
+
+
+
+        /// <summary>A job class used only by JobManager.</summary>
+        class Job
+        {
+            private JobManager jobManager;
+
+            /// <summary>The background worker thread.</summary>
+            private BackgroundWorker worker;
+
+            /// <summary>Has the job finished running.</summary>
+            private bool isCompleted = false;
+
+            /// <summary>Gets the exception. Can be null if no error. Set by JobManager.</summary>
+            internal Exception Error { get; private set; }
+
+            /// <summary>Called to start the job. Can throw on error.</summary>
+            internal JobManager.IRunnable RunnableJob { get; private set; }
+
+            /// <summary>A collection of child jobs spawned by this job.</summary>
+            internal List<Job> ChildJobs { get; set; }
+
+
+
+            /// <summary>Constructor</summary>
+            /// <param name="jobManager">Parent job manager.</param>
+            /// <param name="runnableJob">Runnable job</param>
+            internal Job(JobManager jobManager, IRunnable runnableJob)
+            {
+                this.jobManager = jobManager;
+                this.RunnableJob = runnableJob;
+                ChildJobs = new List<Job>();
+            }
+
+            /// <summary>Returns true if job and all child jobs are completed.</summary>
+            internal bool IsCompleted {  get { return isCompleted; } }
+
+            /// <summary>Returns true if job and all child jobs are completed.</summary>
+            internal bool IsJobAndChildJobsComplete()
+            {
+                return isCompleted && ChildJobs.TrueForAll(job => job.IsJobAndChildJobsComplete());
+            }
+
+            /// <summary>Returns true if job and all child jobs are completed.</summary>
+            internal bool IsRunning {  get { return worker != null; } }
+
+            /// <summary>Returns a list of exceptions from this job and all child jobs.</summary>
+            internal void Errors(List<Exception> errors)
+            {
+                if (Error != null)
+                    errors.Add(Error);
+                if (ChildJobs != null)
+                    ChildJobs.ForEach(job => job.Errors(errors));
+            }
+
+            /// <summary>Begin this job.</summary>
+            /// <param name="workerThread">The thread the job is running on.</param>
+            internal void Start(BackgroundWorker workerThread)
+            {
+                worker = workerThread;
+            }
+
+            /// <summary>Run the job on the current thread</summary>
+            /// <param name="jobManager">The parent job manager.</param>
+            /// <param name="workerThread">Cancellation pending?</param>
+            internal void Run(JobManager jobManager, BackgroundWorker workerThread)
+            {
+                try
+                {
+                    RunnableJob.Run(jobManager, workerThread);
+                }
+                catch (Exception err)
+                {
+                    Error = err;
+                }
+                finally
+                {
+                    worker = null;
+                    isCompleted = true;
+                }
+            }
+
+            /// <summary>Do work event handler.</summary>
+            /// <param name="sender">Job manager</param>
+            /// <param name="e">Thread arguments</param>
+            internal void DoWork(object sender, DoWorkEventArgs e)
+            {
+                Run(jobManager, sender as System.ComponentModel.BackgroundWorker);
+            }
+
+            /// <summary>Stop the job.</summary>
+            internal void Stop()
+            {
+                if (IsRunning && worker.IsBusy)
+                    worker.CancelAsync();
+                worker = null;
+                isCompleted = true;
+            }
+        }
+
     }
 }
