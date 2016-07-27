@@ -5,10 +5,8 @@
 //-----------------------------------------------------------------------
 namespace APSIM.Shared.Utilities
 {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
+    using System.ComponentModel;
     using System.Threading;
 
     /// <summary>
@@ -17,55 +15,29 @@ namespace APSIM.Shared.Utilities
     /// </summary>
     public class JobSequence : JobManager.IRunnable
     {
-        /// <summary>Gets a value indicating whether this instance is computationally time consuming.</summary>
-        public bool IsComputationallyTimeConsuming { get { return false; } }
-
         /// <summary>A list of jobs that will be run in sequence.</summary>
         public List<JobManager.IRunnable> Jobs { get; set; }
-        
-        /// <summary>Gets a value indicating whether this job is completed. Set by JobManager.</summary>
-        public bool IsCompleted { get; set; }
 
-        /// <summary>Gets the error message. Can be null if no error. Set by JobManager.</summary>
-        public string ErrorMessage { get; set; }
+        /// <summary>Constructor</summary>
+        public JobSequence()
+        {
+            Jobs = new List<JobManager.IRunnable>();
+        }
 
         /// <summary>Called to start the job.</summary>
-        /// <param name="sender">Event sender</param>
-        /// <param name="e">Event arguments</param>
-        public void Run(object sender, System.ComponentModel.DoWorkEventArgs e)
+        /// <param name="jobManager">The job manager running this job.</param>
+        /// <param name="workerThread">The thread this job is running on.</param>
+        public void Run(JobManager jobManager, BackgroundWorker workerThread)
         {
-            // Get a reference to the JobManager so that we can add jobs to it.
-            JobManager jobManager = e.Argument as JobManager;
-
             for (int j = 0; j < Jobs.Count; j++)
             {
                 // Add job to the queue
-                jobManager.AddJob(Jobs[j]);
+                jobManager.AddChildJob(this, Jobs[j]);
 
                 // Wait for it to be completed.
-                while (!Jobs[j].IsCompleted)
+                while (!jobManager.IsJobCompleted(Jobs[j]))
                     Thread.Sleep(200);
-
-                if (Jobs[j].ErrorMessage != null)
-                    throw new Exception(Jobs[j].ErrorMessage);
             }            
         }
-
-        /// <summary>
-        /// Gets a value indicating whether all jobs are completed.
-        /// </summary>
-        /// <value><c>true</c> if completed; otherwise, <c>false</c>.</value>
-        private bool AllCompleted
-        {
-            get
-            {
-                foreach (JobManager.IRunnable job in Jobs)
-                    if (!job.IsCompleted)
-                        return false;
-
-                return true;
-            }
-        }
-
     }
 }
