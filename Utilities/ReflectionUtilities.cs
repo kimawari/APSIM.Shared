@@ -318,14 +318,23 @@ namespace APSIM.Shared.Utilities
                     {
                         CompilerParameters Params = new CompilerParameters();
 
+                        string[] source = new string[1];
                         if (assemblyFileName == null)
                         {
                             Params.GenerateInMemory = true;
+                            source[0] = code;
                         }
                         else
                         {
                             Params.GenerateInMemory = false;
                             Params.OutputAssembly = assemblyFileName;
+                            string sourceFileName;
+                            if (VB)
+                                sourceFileName = Path.ChangeExtension(assemblyFileName, ".vb");
+                            else
+                                sourceFileName = Path.ChangeExtension(assemblyFileName, ".cs");
+                            File.WriteAllText(sourceFileName, code);
+                            source[0] = sourceFileName;
                         }
                         Params.TreatWarningsAsErrors = false;
                         Params.IncludeDebugInformation = true;
@@ -341,9 +350,11 @@ namespace APSIM.Shared.Utilities
                             Params.ReferencedAssemblies.Add(System.IO.Path.Combine(Assembly.GetCallingAssembly().Location));
                         Params.TempFiles = new TempFileCollection(Path.GetTempPath());  // ensure that any temp files are in a writeable area
                         Params.TempFiles.KeepFiles = false;
-                        string[] source = new string[1];
-                        source[0] = code;
-                        CompilerResults results = Provider.CompileAssemblyFromSource(Params, source);
+                        CompilerResults results;
+                        if (assemblyFileName == null)
+                            results = Provider.CompileAssemblyFromSource(Params, source);
+                        else
+                            results = Provider.CompileAssemblyFromFile(Params, source);
                         string Errors = "";
                         foreach (CompilerError err in results.Errors)
                         {
