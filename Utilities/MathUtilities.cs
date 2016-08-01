@@ -761,8 +761,8 @@ namespace APSIM.Shared.Utilities
             double SumY2 = 0;
             double CSSX, CSSXY;
             double Xbar, Ybar;
-            double TSS, TSSM;
-            double REGSS, REGSSM;
+            double TSS;
+            double REGSS;
             double RESIDSS, RESIDSSM;
             double S2;
             double SumOfSquaredResiduals = 0;   //SUM i=1->n  ((P(i) - O(i)) ^ 2)
@@ -830,9 +830,7 @@ namespace APSIM.Shared.Utilities
             stats.Intercept = Ybar - stats.Slope * Xbar;  // Calculate intercept
 
             TSS = SumY2 - SumY * SumY / Num_points;       // Corrected SS for Y = Sum((y-ybar)^2)
-            TSSM = TSS / (Num_points - 1);                // Total mean SS
             REGSS = stats.Slope * CSSXY;                  // SS due to regression = Sum((yest-ybar)^2)
-            REGSSM = REGSS;                               // Regression mean SS
             RESIDSS = TSS - REGSS;                        // SS about the regression = Sum((y-yest)^2)
 
             if (Num_points > 2)                           // MUST HAVE MORE THAN TWO POINTS FOR REG
