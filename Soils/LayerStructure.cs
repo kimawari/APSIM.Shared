@@ -176,8 +176,6 @@ namespace APSIM.Shared.Soils
         {
             if (!MathUtilities.AreEqual(thickness, sample.Thickness))
             {
-                string[] metadata = StringUtilities.CreateStringArray("Mapped", thickness.Length);
-
                 sample.Name = sample.Name;
                 sample.Date = sample.Date;
 

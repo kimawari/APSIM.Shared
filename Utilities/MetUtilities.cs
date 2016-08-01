@@ -494,7 +494,6 @@ namespace APSIM.Shared.Utilities
             // ------------------------------------------------------------------------
             double dHS = 0;
             double start = 0;
-            double finish = 0;
             double T = 0;
             double M1 = 0;
             double M2 = 0;
@@ -502,10 +501,8 @@ namespace APSIM.Shared.Utilities
 
             dHS = System.Math.Abs(HS2 - HS1);
             start = System.Math.Min(HS1, HS2);
-            finish = System.Math.Max(HS1, HS2);
 
             functionReturnValue = 0.0;
-
 
             for (i = 1; i <= Convert.ToInt32(itns); i++)
             {
@@ -516,7 +513,6 @@ namespace APSIM.Shared.Utilities
             }
             return functionReturnValue;
             //Beep
-
         }
 
         // ------------------------------------------------------------------------
