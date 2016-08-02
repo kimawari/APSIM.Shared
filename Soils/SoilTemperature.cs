@@ -3,9 +3,12 @@
 //     Copyright (c) APSIM Initiative
 // </copyright>
 // -----------------------------------------------------------------------
+using System;
+
 namespace APSIM.Shared.Soils
 {
     /// <summary>Soil temperature parameters.</summary>
+    [Serializable]
     public class SoilTemperature
     {
         /// <summary>Gets or sets the boundary layer conductance.</summary>

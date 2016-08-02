@@ -1,7 +1,10 @@
 ﻿
+using System;
+
 namespace APSIM.Shared.Soils
 {
     /// <summary>A soil analysis class.</summary>
+    [Serializable]
     public class Analysis
     {
         /// <summary>Gets or sets the thickness.</summary>

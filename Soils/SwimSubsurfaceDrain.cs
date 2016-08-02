@@ -3,9 +3,12 @@
 //     Copyright (c) APSIM Initiative
 // </copyright>
 // -----------------------------------------------------------------------
+using System;
+
 namespace APSIM.Shared.Soils
 {
     /// <summary>SWIM subsurface drain parameters.</summary>
+    [Serializable]
     public class SwimSubsurfaceDrain
     {
         /// <summary>Gets or sets the drain depth.</summary>

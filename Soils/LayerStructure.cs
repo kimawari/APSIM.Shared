@@ -12,6 +12,7 @@ namespace APSIM.Shared.Soils
     using APSIM.Shared.Utilities;
 
     /// <summary>Methods to manipulate the layer structure of a soil.</summary>
+    [Serializable]
     public class LayerStructure
     {
         /// <summary>Gets or sets the thickness.</summary>

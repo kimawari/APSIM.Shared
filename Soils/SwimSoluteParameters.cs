@@ -3,9 +3,12 @@
 //     Copyright (c) APSIM Initiative
 // </copyright>
 // -----------------------------------------------------------------------
+using System;
+
 namespace APSIM.Shared.Soils
 {
     /// <summary>SWIM solute parameters.</summary>
+    [Serializable]
     public class SwimSoluteParameters
     {
         /// <summary>Gets or sets the dis.</summary>

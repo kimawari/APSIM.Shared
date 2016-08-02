@@ -3,9 +3,12 @@
 //     Copyright (c) APSIM Initiative
 // </copyright>
 // -----------------------------------------------------------------------
+using System;
+
 namespace APSIM.Shared.Soils
 {
     /// <summary>SWIM water table parameters.</summary>
+    [Serializable]
     public class SwimWaterTable
     {
         /// <summary>Gets or sets the water table depth.</summary>

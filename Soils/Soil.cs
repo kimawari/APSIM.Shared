@@ -5,10 +5,12 @@
 // -----------------------------------------------------------------------
 namespace APSIM.Shared.Soils
 {
+    using System;
     using System.Collections.Generic;
     using System.Xml.Serialization;
 
     /// <summary>The soil class encapsulates a soil characterisation and 0 or more soil samples.</summary>
+    [Serializable]
     public class Soil
     {
         /// <summary>Gets or sets the name.</summary>

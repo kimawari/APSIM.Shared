@@ -9,6 +9,7 @@ namespace APSIM.Shared.Soils
     /// <summary>
     /// A soil crop parameterisation
     /// </summary>
+    [Serializable]
     public class SoilCrop
     {
         /// <summary>

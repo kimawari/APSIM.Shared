@@ -5,11 +5,13 @@
 // -----------------------------------------------------------------------
 namespace APSIM.Shared.Soils
 {
+    using System;
     using System.Xml.Serialization;
 
     /// <summary>
     /// Phosphorus model.
     /// </summary>
+    [Serializable]
     public class Phosphorus
     {
         /// <summary>Gets or sets the name.</summary>

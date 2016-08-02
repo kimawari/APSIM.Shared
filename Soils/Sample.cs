@@ -5,9 +5,11 @@
 // -----------------------------------------------------------------------
 namespace APSIM.Shared.Soils
 {
+    using System;
     using System.Xml.Serialization;
 
     /// <summary>Represents a soil sample.</summary>
+    [Serializable]
     public class Sample
     {
         /// <summary>Gets or sets the name.</summary>

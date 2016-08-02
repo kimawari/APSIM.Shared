@@ -3,9 +3,12 @@
 //     Copyright (c) APSIM Initiative
 // </copyright>
 // -----------------------------------------------------------------------
+using System;
+
 namespace APSIM.Shared.Soils
 {
     /// <summary>Represents the initial nitrogen state of a soil.</summary>
+    [Serializable]
     public class Nitrogen
     {
         /// <summary>Gets or sets the thickness.</summary>

@@ -5,11 +5,13 @@
 // -----------------------------------------------------------------------
 namespace APSIM.Shared.Soils
 {
+    using System;
     using System.Collections.Generic;
     using System.Xml;
     using System.Xml.Serialization;
 
     /// <summary>A water specification for a soil.</summary>
+    [Serializable]
     public class Water
     {
         /// <summary>Gets or sets the thickness.</summary>

@@ -3,9 +3,12 @@
 //     Copyright (c) APSIM Initiative
 // </copyright>
 // -----------------------------------------------------------------------
+using System;
+
 namespace APSIM.Shared.Soils
 {
     /// <summary>A soil organic matter class.</summary>
+    [Serializable]
     public class SoilOrganicMatter
     {
         /// <summary>Gets or sets the root cn.</summary>

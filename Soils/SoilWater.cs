@@ -3,9 +3,12 @@
 //     Copyright (c) APSIM Initiative
 // </copyright>
 // -----------------------------------------------------------------------
+using System;
+
 namespace APSIM.Shared.Soils
 {
     /// <summary>A specification of soil water model constants and parameters.</summary>
+    [Serializable]
     public class SoilWater
     {
         /// <summary>Gets or sets the summer cona.</summary>

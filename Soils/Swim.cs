@@ -3,9 +3,12 @@
 //     Copyright (c) APSIM Initiative
 // </copyright>
 // -----------------------------------------------------------------------
+using System;
+
 namespace APSIM.Shared.Soils
 {
     /// <summary>SWIM parameters.</summary>
+    [Serializable]
     public class Swim
     {
         /// <summary>Gets or sets the salb.</summary>

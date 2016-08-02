@@ -3,10 +3,13 @@
 //     Copyright (c) APSIM Initiative
 // </copyright>
 // -----------------------------------------------------------------------
+using System;
+
 namespace APSIM.Shared.Soils
 {
 
     /// <summary>Soil temperature 2 parameters.</summary>
+    [Serializable]
     public class SoilTemperature2
     {
         /// <summary>Gets or sets the maximum t time default.</summary>

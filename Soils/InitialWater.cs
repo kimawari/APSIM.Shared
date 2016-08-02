@@ -11,6 +11,7 @@ namespace APSIM.Shared.Soils
     using System.Collections.Generic;
 
     /// <summary>Class for holding information about the initial water state for a soil.</summary>
+    [Serializable]
     public class InitialWater
     {
         /// <summary>Gets or sets the name.</summary>
