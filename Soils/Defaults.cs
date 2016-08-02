@@ -8,7 +8,6 @@ namespace APSIM.Shared.Soils
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using APSIM.Shared.Utilities;
 
     /// <summary>Implements the defaults as listed in the soil protocol.</summary>
@@ -242,23 +241,23 @@ namespace APSIM.Shared.Soils
         /// <summary>
         /// The canola kl
         /// </summary>
-        private static double[] CanolaKL = new double[] { 0.06, 0.06, 0.06, 0.04, 0.04, 0.02, 0.01 };
+        /// private static double[] CanolaKL = new double[] { 0.06, 0.06, 0.06, 0.04, 0.04, 0.02, 0.01 };
         /// <summary>
         /// The pigeon pea kl
         /// </summary>
-        private static double[] PigeonPeaKL = new double[] { 0.06, 0.06, 0.06, 0.05, 0.04, 0.02, 0.01 };
+        /// private static double[] PigeonPeaKL = new double[] { 0.06, 0.06, 0.06, 0.05, 0.04, 0.02, 0.01 };
         /// <summary>
         /// The maize kl
         /// </summary>
-        private static double[] MaizeKL = new double[] { 0.06, 0.06, 0.06, 0.04, 0.04, 0.02, 0.01 };
+        /// private static double[] MaizeKL = new double[] { 0.06, 0.06, 0.06, 0.04, 0.04, 0.02, 0.01 };
         /// <summary>
         /// The cowpea kl
         /// </summary>
-        private static double[] CowpeaKL = new double[] { 0.06, 0.06, 0.06, 0.04, 0.04, 0.02, 0.01 };
+        /// private static double[] CowpeaKL = new double[] { 0.06, 0.06, 0.06, 0.04, 0.04, 0.02, 0.01 };
         /// <summary>
         /// The sunflower kl
         /// </summary>
-        private static double[] SunflowerKL = new double[] { 0.01, 0.01, 0.08, 0.06, 0.04, 0.02, 0.01 };
+        /// private static double[] SunflowerKL = new double[] { 0.01, 0.01, 0.08, 0.06, 0.04, 0.02, 0.01 };
         /// <summary>
         /// The fababean kl
         /// </summary>
@@ -266,11 +265,11 @@ namespace APSIM.Shared.Soils
         /// <summary>
         /// The lucerne kl
         /// </summary>
-        private static double[] LucerneKL = new double[] { 0.01, 0.01, 0.01, 0.01, 0.09, 0.09, 0.09 };
+        /// private static double[] LucerneKL = new double[] { 0.01, 0.01, 0.01, 0.01, 0.09, 0.09, 0.09 };
         /// <summary>
         /// The perennial kl
         /// </summary>
-        private static double[] PerennialKL = new double[] { 0.01, 0.01, 0.01, 0.01, 0.09, 0.07, 0.05 };
+        /// private static double[] PerennialKL = new double[] { 0.01, 0.01, 0.01, 0.01, 0.09, 0.07, 0.05 };
 
         /// <summary>
         /// 
@@ -508,7 +507,6 @@ namespace APSIM.Shared.Soils
         /// <returns></returns>
         private static double[] PredictedLL(Soil soil, double[] A, double B)
         {
-            double[] DepthCentre = SoilUtilities.ToMidPoints(PredictedThickness);
             double[] LL15 = LayerStructure.LL15Mapped(soil, PredictedThickness);
             double[] DUL = LayerStructure.DULMapped(soil, PredictedThickness);
             double[] LL = new double[PredictedThickness.Length];
