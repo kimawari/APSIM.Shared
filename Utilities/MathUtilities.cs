@@ -58,14 +58,22 @@ namespace APSIM.Shared.Utilities
             {
             return (value2 - value1) > tolerance;
             }
-       
+
+        /// <summary>
+        /// Return true if the true if value 1 is less than or equal to value 2
+        /// </summary>
+        public static bool IsLessThanOrEqual(double value1, double value2)
+        {
+            return (value2 - value1) >= tolerance;
+        }
+
         /// <summary>
         /// Round the specified value to zero if within the given tolerance
         /// </summary>
         public static double RoundToZero(double value, double tolerance)
-        {
-            return (System.Math.Abs(value) <= tolerance) ? 0.0 : value;
-        }
+            {
+                return (System.Math.Abs(value) <= tolerance) ? 0.0 : value;
+            }
         
         /// <summary>
         ///Round the specified value to zero if within 1x10e-15 of zero

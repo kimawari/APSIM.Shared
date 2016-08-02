@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 namespace APSIM.Shared.Soils
 {
+    using System;
     using System.IO;
     using System.Xml.Serialization;
 
@@ -75,5 +76,15 @@ namespace APSIM.Shared.Soils
             }
             return CumThickness;
         }
+
+        /// <summary>Return the index of the layer that contains the specified depth.</summary>
+        /// <param name="soil">The soil</param>
+        /// <param name="depth">The depth to search for.</param>
+        /// <returns></returns>
+        static public int FindLayerIndex(Soil soil, double depth)
+        {
+            return Array.FindIndex(ToCumThickness(soil.Water.Thickness), d => d > depth);
+        }
+
     }
 }
