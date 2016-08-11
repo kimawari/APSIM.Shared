@@ -150,6 +150,7 @@
     <Compile Include="Utilities\StreamReaderRandomAccess.cs" />
     <Compile Include="Utilities\StringUtilities.cs" />
     <Compile Include="Utilities\WebUtilities.cs" />
+    <Compile Include="Utilities\XmlReaderCustom.cs" />
     <Compile Include="Utilities\XmlUtilities.cs" />
   </ItemGroup>
   <ItemGroup>

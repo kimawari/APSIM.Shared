@@ -980,20 +980,20 @@ namespace APSIM.Shared.Utilities
             return ReturnObj;
         }
 
-        /// <summary>
-        /// Add a child model as specified by the ModelXml. Will call ModelAdded event if successful.
-        /// </summary>
-        /// <param name="component">The component.</param>
-        /// <param name="withNamespace">if set to <c>true</c> [with namespace].</param>
-        /// <param name="extraTypes">Optional extra types.</param>
-        /// <returns>Returns the full path of the added model if successful. Null otherwise.</returns>
-        public static string Serialise(object component, bool withNamespace, Type[] extraTypes = null)
-        {
-            // Try using the pre built serialization assembly first.
-            string DeserializerFileName = System.IO.Path.ChangeExtension(Assembly.GetCallingAssembly().Location,
-                                                                         ".XmlSerializers.dll");
 
-            return Serialise(component, withNamespace, DeserializerFileName, extraTypes);
+        private sealed class StringWriterWithEncoding : StringWriter
+        {
+            private readonly Encoding encoding;
+
+            public StringWriterWithEncoding(Encoding encoding)
+            {
+                this.encoding = encoding;
+            }
+
+            public override Encoding Encoding
+            {
+                get { return encoding; }
+            }
         }
 
         /// <summary>
@@ -1004,16 +1004,37 @@ namespace APSIM.Shared.Utilities
         /// <param name="extraTypes">Optional extra types.</param>
         /// <param name="deserializerFileName">Pre-compiled deserialiser file name</param>
         /// <returns>Returns the full path of the added model if successful. Null otherwise.</returns>
-        public static string Serialise(object component, bool withNamespace, string deserializerFileName, Type[] extraTypes = null)
+        public static string Serialise(object component, bool withNamespace, string deserializerFileName = null, Type[] extraTypes = null)
         {
+            StringWriterWithEncoding s = new StringWriterWithEncoding(Encoding.UTF8);
+            XmlTextWriter writer = new XmlTextWriter(s);
+            writer.Formatting = Formatting.Indented;
+
+            SerialiseWithOptions(component, withNamespace, deserializerFileName, extraTypes, writer);
+
+            return s.ToString();
+        }
+
+        /// <summary>
+        /// Serialise the specified component.
+        /// </summary>
+        /// <param name="component">The component.</param>
+        /// <param name="withNamespace">if set to <c>true</c> [with namespace].</param>
+        /// <param name="extraTypes">Optional extra types.</param>
+        /// <param name="deserializerFileName">Pre-compiled deserialiser file name</param>
+        /// <param name="writer">The writer to use.</param>
+        public static void SerialiseWithOptions(object component, bool withNamespace, string deserializerFileName = null, Type[] extraTypes = null, XmlTextWriter writer = null)
+        {
+            // Try using the pre built serialization assembly first.
+            if (deserializerFileName == null)
+                deserializerFileName = System.IO.Path.ChangeExtension(Assembly.GetCallingAssembly().Location,
+                                                                      ".XmlSerializers.dll");
+
             XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
             if (withNamespace)
                 ns.Add("xsi", "http://www.w3.org/2001/XMLSchema-instance");
             else
                 ns.Add("", "");
-
-            MemoryStream M = new MemoryStream();
-            StreamWriter Writer = new StreamWriter(M);
 
             // Under MONO it seems that if a class is not in the serialization assembly then exception will 
             // be thrown. Under windows this doesn't happen. For now, only use the prebuilt serialisation
@@ -1028,20 +1049,16 @@ namespace APSIM.Shared.Utilities
 
                 if (Serialiser != null)
                 {
-                    MethodInfo Serialise = Serialiser.GetType().GetMethod("Serialize", new Type[] { typeof(StreamWriter), typeof(object), typeof(XmlSerializerNamespaces) });
+                    MethodInfo Serialise = Serialiser.GetType().GetMethod("Serialize", new Type[] { typeof(XmlTextWriter), typeof(object), typeof(XmlSerializerNamespaces) });
                     if (Serialise != null)
-                        Serialise.Invoke(Serialiser, new object[] { Writer, component, ns });
+                        Serialise.Invoke(Serialiser, new object[] { writer, component, ns });
                 }
             }
             else
             {
                 XmlSerializer x = new XmlSerializer(component.GetType(), extraTypes);
-                x.Serialize(Writer, component, ns);
+                x.Serialize(writer, component, ns);
             }
-
-            M.Seek(0, SeekOrigin.Begin);
-            StreamReader R = new StreamReader(M);
-            return R.ReadToEnd();
         }
 
         /// <summary>Clones the specified object.</summary>
