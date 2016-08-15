@@ -1010,6 +1010,9 @@ namespace APSIM.Shared.Utilities
             XmlTextWriter writer = new XmlTextWriter(s);
             writer.Formatting = Formatting.Indented;
 
+            if (deserializerFileName == null)
+                deserializerFileName = System.IO.Path.ChangeExtension(Assembly.GetCallingAssembly().Location,
+                                                                      ".XmlSerializers.dll");
             SerialiseWithOptions(component, withNamespace, deserializerFileName, extraTypes, writer);
 
             return s.ToString();
