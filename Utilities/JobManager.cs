@@ -102,6 +102,15 @@ namespace APSIM.Shared.Utilities
             }
         }
 
+        /// <summary>Returns true if the specified job type is already in the queue of jobs, otherwise returns false</summary>
+        public bool IsJobTypeInQueue<T>()
+        {
+            lock (this)
+            {
+                return jobs.Exists(job => (job.RunnableJob is T));
+            }
+        }
+
         /// <summary>Has the specified job and all its child jobs finished?</summary>
         /// <param name="runnableJob">The job to check.</param>
         public bool IsJobCompleted(IRunnable runnableJob)
