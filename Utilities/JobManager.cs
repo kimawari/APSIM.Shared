@@ -123,6 +123,34 @@ namespace APSIM.Shared.Utilities
                 return job.IsJobAndChildJobsComplete();
             }
         }
+        
+        /// <summary>Returns true if all child jobs are completed.</summary>
+        public bool AreChildJobsComplete(IRunnable runnableJob)
+        {
+            lock (this)
+            {
+                Job job = jobs.Find(j => j.RunnableJob == runnableJob);
+                if (job == null)
+                    throw new Exception("Cannot find job");
+                return job.AreChildJobsComplete();
+            }
+        }
+
+        /// <summary>
+        /// Return the total elapsed time for the specified job and all child jobs (ms)
+        /// </summary>
+        /// <param name="runnableJob">The job to locate.</param>
+        /// <returns>The elapsed time in milliseconds</returns>
+        public long ElapsedTime(IRunnable runnableJob)
+        {
+            lock (this)
+            {
+                Job job = jobs.Find(j => j.RunnableJob == runnableJob);
+                if (job == null)
+                    throw new Exception("Cannot find job");
+                return job.TotalElapsedTime;
+            }
+        }
 
         /// <summary>Get exceptions from the specified job</summary>
         /// <param name="runnableJob">The job to check.</param>
@@ -305,6 +333,9 @@ namespace APSIM.Shared.Utilities
             /// <summary>Has the job finished running.</summary>
             private bool isCompleted = false;
 
+            /// <summary>The elapsed time for this job (ms) - not child jobs.</summary>
+            private long elapsedTime;
+
             /// <summary>Gets the exception. Can be null if no error. Set by JobManager.</summary>
             internal Exception Error { get; private set; }
 
@@ -335,8 +366,26 @@ namespace APSIM.Shared.Utilities
                 return isCompleted && ChildJobs.TrueForAll(job => job.IsJobAndChildJobsComplete());
             }
 
+            /// <summary>Returns true if all child jobs are completed.</summary>
+            internal bool AreChildJobsComplete()
+            {
+                return ChildJobs.TrueForAll(job => job.IsCompleted);
+            }
+
             /// <summary>Returns true if job and all child jobs are completed.</summary>
             internal bool IsRunning {  get { return worker != null; } }
+
+            /// <summary>Return total elapsed time of this job and any child jobs (ms).</summary>
+            internal long TotalElapsedTime
+            {
+                get
+                {
+                    long sum = elapsedTime;
+                    foreach (Job childJob in ChildJobs)
+                        sum += childJob.elapsedTime;
+                    return sum;
+                }
+            }
 
             /// <summary>Returns a list of exceptions from this job and all child jobs.</summary>
             internal void Errors(List<Exception> errors)
@@ -379,7 +428,11 @@ namespace APSIM.Shared.Utilities
             /// <param name="e">Thread arguments</param>
             internal void DoWork(object sender, DoWorkEventArgs e)
             {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
                 Run(jobManager, sender as System.ComponentModel.BackgroundWorker);
+                stopwatch.Stop();
+                elapsedTime = stopwatch.ElapsedMilliseconds;
             }
 
             /// <summary>Stop the job.</summary>
