@@ -10,6 +10,7 @@ namespace APSIM.Shared.Utilities
     using System.Collections.Generic;
     using System.Data;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Text;
 
@@ -589,7 +590,7 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Write the specified DataTable to a CSV string, excluding the specified column names.
         /// </summary>
-        static public string DataTableToText(DataTable data, int startColumnIndex, string delimiter, bool showHeadings, bool excelFriendly = false)
+        static public void DataTableToText(DataTable data, int startColumnIndex, string delimiter, bool showHeadings, TextWriter writer, bool excelFriendly = false)
         {
             // Convert the data table to a table of strings. This will make it easier for
             // calculating widths.
@@ -615,19 +616,18 @@ namespace APSIM.Shared.Utilities
             }
 
             // Write out column headings.
-            StringBuilder st = new StringBuilder(100000);
             if (showHeadings)
             {
                 for (int i = startColumnIndex; i < stringTable.Columns.Count; i++)
                 {
                     if (i > startColumnIndex) 
-                        st.Append(delimiter);
+                        writer.Write(delimiter);
                     if (excelFriendly)
-                        st.Append(stringTable.Columns[i].ColumnName);
+                        writer.Write(stringTable.Columns[i].ColumnName);
                     else
-                        st.AppendFormat("{0," + columnWidths[i] + "}", stringTable.Columns[i].ColumnName);
+                        writer.Write("{0," + columnWidths[i] + "}", stringTable.Columns[i].ColumnName);
                 }
-                st.Append(Environment.NewLine);
+                writer.Write(Environment.NewLine);
             }
 
             // Write out each row.
@@ -635,21 +635,20 @@ namespace APSIM.Shared.Utilities
             {
                 for (int i = startColumnIndex; i < stringTable.Columns.Count; i++)
                 {
-                    if (i > startColumnIndex) 
-                        st.Append(delimiter);
+                    if (i > startColumnIndex)
+                        writer.Write(delimiter);
                     if (excelFriendly)
                     {
                         if (data.Columns[i].DataType == typeof(string))
-                            st.Append("\"" + row[i] + "\"");
+                            writer.Write("\"" + row[i] + "\"");
                         else
-                            st.Append(row[i]);
+                            writer.Write(row[i]);
                     }
                     else
-                        st.AppendFormat("{0," + columnWidths[i] + "}", row[i]);
+                        writer.Write("{0," + columnWidths[i] + "}", row[i]);
                 }
-                st.Append(Environment.NewLine);
+                writer.Write(Environment.NewLine);
             }
-            return st.ToString();
         }
 
         /// <summary>
