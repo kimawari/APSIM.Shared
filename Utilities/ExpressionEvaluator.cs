@@ -569,7 +569,7 @@ namespace APSIM.Shared.Utilities
             result.m_type = ExpressionType.Result;
             result.m_value = 0;
             result.m_values = null;
-            switch (name)
+            switch (name.ToLower())
             {
                 case "value":
                     if (args.Length == 1)

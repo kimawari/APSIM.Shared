@@ -263,8 +263,11 @@ namespace APSIM.Shared.Utilities
         public static double Sum(IEnumerable Values)
         {
             double result = 0.0;
-            foreach (double Value in Values)
-                result += Value;
+            foreach (object Value in Values)
+            {
+                if (Value != null && !double.IsNaN((double)Value))
+                    result += (double)Value;
+            }
             return result;
         }
 
@@ -275,10 +278,13 @@ namespace APSIM.Shared.Utilities
         {
             double Sum = 0.0;
             int Count = 0;
-            foreach (double Value in Values)
+            foreach (object Value in Values)
             {
-                Sum += Value;
-                Count++;
+                if (Value != null && !double.IsNaN((double)Value))
+                {
+                    Sum += (double) Value;
+                    Count++;
+                }
             }
             if (Count > 0)
                 return Sum / Count;
@@ -982,11 +988,13 @@ namespace APSIM.Shared.Utilities
         public static double Min(IEnumerable Values)
         {
             double Minimum = 9999999;
-            foreach (double Value in Values)
+            foreach (object Value in Values)
             {
-                if (!double.IsNaN(Value))
-                    Minimum = System.Math.Min(Value, Minimum);
+                if (Value != null && !double.IsNaN((double)Value))
+                    Minimum = System.Math.Min((double)Value, Minimum);
             }
+            if (Minimum == 9999999)
+                return double.NaN;
             return Minimum;
         }
 
@@ -998,11 +1006,13 @@ namespace APSIM.Shared.Utilities
         public static double Max(IEnumerable Values)
         {
             double Maximum = -9999999;
-            foreach (double Value in Values)
+            foreach (object Value in Values)
             {
-                if (!double.IsNaN(Value))
-                    Maximum = System.Math.Max(Value, Maximum);
+                if (Value != null && !double.IsNaN((double)Value))
+                    Maximum = System.Math.Max((double)Value, Maximum);
             }
+            if (Maximum == -9999999)
+                return double.NaN;
             return Maximum;
         }
 
