@@ -263,10 +263,13 @@ namespace APSIM.Shared.Utilities
         public static double Sum(IEnumerable Values)
         {
             double result = 0.0;
-            foreach (object Value in Values)
+            if (Values != null)
             {
-                if (Value != null && !double.IsNaN((double)Value))
-                    result += (double)Value;
+                foreach (object Value in Values)
+                {
+                    if (Value != null && !double.IsNaN((double)Value))
+                        result += (double)Value;
+                }
             }
             return result;
         }
