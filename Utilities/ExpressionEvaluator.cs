@@ -399,7 +399,10 @@ namespace APSIM.Shared.Utilities
                 else if (sym.m_type == ExpressionType.Operator)
                 {
                     tpSym1 = (Symbol)tpStack.Pop();
-                    tpSym2 = (Symbol)tpStack.Pop();
+                    if (tpStack.Count > 0)
+                        tpSym2 = (Symbol)tpStack.Pop();
+                    else
+                        tpSym2 = new Symbol();
                     tpResult = Evaluate(tpSym2, sym, tpSym1);
                     if (tpResult.m_type == ExpressionType.Error)
                     {
