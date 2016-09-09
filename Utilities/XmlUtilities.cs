@@ -941,18 +941,17 @@ namespace APSIM.Shared.Utilities
                 reader = new XmlNodeReader(doc);
             }
             // Try using the pre built serialization assembly first.
-            string[] DeserializerFileNames = System.IO.Directory.GetFiles(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), 
-                                                                            "*.XmlSerializers.dll");
+            string deserializerFileName = Path.ChangeExtension(assembly.Location, 
+                                                               ".XmlSerializers.dll");
 
             // Under MONO it seems that if a class is not in the serialization assembly then exception will 
             // be thrown. Under windows this doesn't happen. For now, only use the prebuilt serialisation
             // dll if on windows.
             if ((Environment.OSVersion.Platform == PlatformID.Win32NT ||
                 Environment.OSVersion.Platform == PlatformID.Win32Windows) &&
-                DeserializerFileNames.Length > 0 &&
-                File.Exists(DeserializerFileNames[0]))
+                File.Exists(deserializerFileName))
             {
-                Assembly SerialiserAssembly = Assembly.LoadFile(DeserializerFileNames[0]);
+                Assembly SerialiserAssembly = Assembly.LoadFile(deserializerFileName);
                 string SerialiserFullName = "Microsoft.Xml.Serialization.GeneratedAssembly." + TypeName + "Serializer";
                 object Serialiser = SerialiserAssembly.CreateInstance(SerialiserFullName);
 

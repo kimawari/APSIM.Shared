@@ -23,10 +23,21 @@ namespace APSIM.Shared.Utilities
         XmlNodeType nodeType = XmlNodeType.None;
 
         /// <summary>The internal stack of elements.</summary>
-        private Stack<CustomElement> elements = new Stack<CustomElement>();
+        protected List<CustomElement> elements = new List<CustomElement>();
 
         /// <summary>True if currently reading attributes.</summary>
         private bool readingAttributeValue = false;
+
+        /// <summary>Is the current element an empty one?</summary>
+        protected bool emptyElement = false;
+
+        private bool popElementOffStackOnNextRead = false;
+
+        private bool endOfFile = false;
+
+        private int depth = 0;
+
+        private bool incrementDepthNextCall = false;
 
         /// <summary>
         /// An element node that 'GetNextElement' creates and returns. It is added to an
@@ -38,15 +49,21 @@ namespace APSIM.Shared.Utilities
             public string Name;
 
             /// <summary>The value of the XML element - can be null for text nodes.</summary>
-            public string Value;
+            public string Value = string.Empty;
 
             /// <summary>The attributes of the element</summary>
-            public List<KeyValuePair<string, string>> attributes = new List<KeyValuePair<string, string>>();
+            public List<KeyValuePair<string, string>> attributes = null;
+
+            /// <summary>Type of element</summary>
+            public XmlNodeType NodeType;
+
+            /// <summary>Is this element empty?</summary>
+            public bool IsEmptyElement;
         }
 
         /// <summary>Gets the next element.</summary>
         /// <returns>The element or null if an end element.</returns>
-        protected abstract CustomElement GetNextElement();
+        protected abstract void AddElements(List<CustomElement> elements);
 
         /// <summary>Constructor</summary>
         public XmlReaderCustom()
@@ -57,24 +74,49 @@ namespace APSIM.Shared.Utilities
         /// <returns>True if node was read.</returns>
         public override bool Read()
         {
-            if (elements.Count > 0 && elements.Peek().Name == string.Empty)
-                elements.Pop(); // get rid of value nodes.
-
-            CustomElement element = GetNextElement();
-            if (element == null)
+            if (incrementDepthNextCall)
             {
-                if (elements.Count > 0)
-                    elements.Pop();
+                incrementDepthNextCall = false;
+                depth++;
+            }
+            if (elements.Count > 0)
+                elements.RemoveAt(0);   // Done with this one.
+
+            if (elements.Count == 0)
+            {
+                AddElements(elements);
+                if (elements.Count == 0)
+                {
+                    depth = 0;
+                    endOfFile = true;
+                    return false;                // All finished.
+                }
+            }
+
+            CustomElement element = elements[0];
+            if (element.NodeType == XmlNodeType.CDATA)
+            {
+                nodeType = XmlNodeType.CDATA;
+            }
+            else if (element.NodeType == XmlNodeType.EndElement)
+            {
                 nodeType = XmlNodeType.EndElement;
+                depth--;
+            }
+            else if (element.Name == string.Empty)
+            {
+                nodeType = XmlNodeType.Text;
+                popElementOffStackOnNextRead = true;
             }
             else
             {
-                elements.Push(element);
-                if (element.Name == string.Empty)
-                    nodeType = XmlNodeType.Text;
-                else
-                    nodeType = XmlNodeType.Element;
+                if (!element.IsEmptyElement)
+                    incrementDepthNextCall = true;
+                nodeType = XmlNodeType.Element;
             }
+
+            if (emptyElement)
+                popElementOffStackOnNextRead = true;
 
             return elements.Count > 0;
         }
@@ -84,7 +126,10 @@ namespace APSIM.Shared.Utilities
         {
             get
             {
-                return elements.Peek().attributes.Count;
+                if (elements.Count == 0 || elements[0].attributes == null)
+                    return 0;
+                else
+                    return elements[0].attributes.Count;
             }
         }
 
@@ -93,7 +138,10 @@ namespace APSIM.Shared.Utilities
         /// <returns>Attribute value or null if not found.</returns>
         public override string GetAttribute(string name)
         {
-            foreach (KeyValuePair<string, string> attribute in elements.Peek().attributes)
+            if (elements.Count == 0 || elements[0].attributes == null)
+                return null;
+
+            foreach (KeyValuePair<string, string> attribute in elements[0].attributes)
             {
                 string key = attribute.Key;
                 if (key.Contains(':'))
@@ -118,10 +166,10 @@ namespace APSIM.Shared.Utilities
         /// <returns>Attribute value or null if not found.</returns>
         public override string GetAttribute(int i)
         {
-            if (i >= 0 && i < elements.Peek().attributes.Count)
-                return elements.Peek().attributes[i].Value;
+            if (i >= 0 && elements[0].attributes != null && i < elements[0].attributes.Count)
+                return elements[0].attributes[i].Value;
             else
-                return null;
+                return string.Empty;
         }
 
         /// <summary>Moves to the attribute with the specified Name.</summary>
@@ -129,18 +177,20 @@ namespace APSIM.Shared.Utilities
         /// <returns>True if found.</returns>
         public override bool MoveToAttribute(string name)
         {
-            for (int i = 0; i < elements.Peek().attributes.Count; i++)
+            if (elements[0].attributes != null)
             {
-                string key = elements.Peek().attributes[i].Key;
-                if (key.Contains(':'))
-                    key = key.Substring(key.IndexOf(':') + 1);
-                if (key == name)
+                for (int i = 0; i < elements[0].attributes.Count; i++)
                 {
-                    currentAttributeIndex = i;
-                    return true;
+                    string key = elements[0].attributes[i].Key;
+                    if (key.Contains(':'))
+                        key = key.Substring(key.IndexOf(':') + 1);
+                    if (key == name)
+                    {
+                        currentAttributeIndex = i;
+                        return true;
+                    }
                 }
             }
-
             return false;
         }
 
@@ -157,7 +207,7 @@ namespace APSIM.Shared.Utilities
         /// <returns>True if found.</returns>
         public override bool MoveToFirstAttribute()
         {
-            if (elements.Peek().attributes.Count > 0)
+            if (elements[0].attributes != null && elements[0].attributes.Count > 0)
             {
                 currentAttributeIndex = 0;
                 nodeType = XmlNodeType.Attribute;
@@ -170,11 +220,11 @@ namespace APSIM.Shared.Utilities
         /// <returns>True if OK.</returns>
         public override bool MoveToNextAttribute()
         {
-            if (currentAttributeIndex + 1 < elements.Peek().attributes.Count)
+            if (elements[0].attributes != null && currentAttributeIndex + 1 < elements[0].attributes.Count)
             {
                 nodeType = XmlNodeType.Attribute;
                 currentAttributeIndex++;
-                return currentAttributeIndex < elements.Peek().attributes.Count;
+                return currentAttributeIndex < elements[0].attributes.Count;
             }
             else
                 return false;
@@ -240,19 +290,9 @@ namespace APSIM.Shared.Utilities
                     return string.Empty;
 
                 if (currentAttributeIndex == -1)
-                    return elements.Peek().Name;
+                    return elements[0].Name;
                 else
-                    return elements.Peek().attributes[currentAttributeIndex].Key;
-            }
-        }
-
-        /// <summary>Gets the namespace URI</summary>
-        public override string NamespaceURI
-        {
-            get
-            {
-                throw new NotImplementedException();
-                //return reader.NamespaceURI;
+                    return elements[0].attributes[currentAttributeIndex].Key;
             }
         }
 
@@ -263,7 +303,7 @@ namespace APSIM.Shared.Utilities
             {
                 if (currentAttributeIndex != -1)
                 {
-                    string key = elements.Peek().attributes[currentAttributeIndex].Key;
+                    string key = elements[0].attributes[currentAttributeIndex].Key;
                     if (key.Contains(':'))
                         return key.Substring(0, key.IndexOf(':'));
                 }
@@ -277,27 +317,27 @@ namespace APSIM.Shared.Utilities
             get
             {
                 if (currentAttributeIndex != -1)
-                    return elements.Peek().attributes[currentAttributeIndex].Value;
+                {
+                    if (elements[0].attributes == null)
+                        return string.Empty;
+                    return elements[0].attributes[currentAttributeIndex].Value;
+                }
+                else if (elements.Count == 0)
+                    return string.Empty;
                 else
-                    return elements.Peek().Value;
+                    return elements[0].Value;
             }
         }
 
         /// <summary>Get the depth of the current element.</summary>
-        public override int Depth
-        {
-            get
-            {
-                return elements.Count;
-            }
-        }
+        public override int Depth { get { return depth; } }
 
         /// <summary>Gets the base URI</summary>
         public override string BaseURI
         {
             get
             {
-                return string.Empty;
+                return "http://www.w3.org/2001/XMLSchema-instance";
             }
         }
 
@@ -306,18 +346,12 @@ namespace APSIM.Shared.Utilities
         {
             get
             {
-                return false;
+                return elements[0].IsEmptyElement;
             }
         }
 
         /// <summary>Returns true if at end of file.</summary>
-        public override bool EOF
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public override bool EOF { get { return endOfFile; } }
 
         /// <summary>Returns the state of the reader.</summary>
         public override ReadState ReadState
