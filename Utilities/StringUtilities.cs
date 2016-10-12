@@ -233,7 +233,7 @@ namespace APSIM.Shared.Utilities
         /// <returns></returns>
         public static bool StringsAreEqual(string st1, string st2)
         {
-            return st1.ToLower() == st2.ToLower();
+            return st1.Equals(st2, StringComparison.InvariantCultureIgnoreCase);
         }
 
         /// <summary>
