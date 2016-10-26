@@ -113,5 +113,46 @@ namespace APSIM.Shared.Utilities
                 }
             }
         }
+
+
+        /// <summary>
+        /// Calls a url and returns the web response in a memory stream
+        /// </summary>
+        /// <param name="url">The url to call</param>
+        /// <returns>The data stream</returns>
+        public static MemoryStream ExtractDataFromURL(string url)
+        {
+            HttpWebRequest request = null;
+            HttpWebResponse response = null;
+            MemoryStream stream = new MemoryStream();
+            try
+            {
+                request = (HttpWebRequest)WebRequest.Create(url);
+                response = (HttpWebResponse)request.GetResponse();
+                Stream streamResponse = response.GetResponseStream();
+
+                // Reads 1024 characters at a time.    
+                byte[] read = new byte[1024];
+                int count = streamResponse.Read(read, 0, 1024);
+                while (count > 0)
+                {
+                    // Dumps the 1024 characters into our memory stream.
+                    stream.Write(read, 0, count);
+                    count = streamResponse.Read(read, 0, 1024);
+                }
+                return stream;
+            }
+            catch (Exception)
+            {
+                throw new Exception("Cannot get data from " + url);
+            }
+            finally
+            {
+                // Releases the resources of the response.
+                if (response != null)
+                    response.Close();
+            }
+        }
+
     }
 }

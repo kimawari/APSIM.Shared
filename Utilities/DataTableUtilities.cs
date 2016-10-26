@@ -709,5 +709,23 @@ namespace APSIM.Shared.Utilities
                 to.Rows.Add(newRow);
             }
         }
+
+        /// <summary>
+        /// Copy all rows in 'from' to the 'to' table, inserting them at 'index'
+        /// </summary>
+        /// <param name="from">Source data table</param>
+        /// <param name="to">Destination data table</param>
+        /// <param name="index">Index to insert the new rows.</param>
+        public static void InsertRowsAt(DataTable from, DataTable to, int index)
+        {
+            for (int i = 0; i < from.Rows.Count; i++)
+            {
+                // Create a new row.
+                DataRow newRow = to.NewRow();
+                newRow.ItemArray = from.Rows[i].ItemArray;
+                to.Rows.InsertAt(newRow, index + i);
+            }
+        }
+            
     }
 }
