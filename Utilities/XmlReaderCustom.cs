@@ -31,8 +31,6 @@ namespace APSIM.Shared.Utilities
         /// <summary>Is the current element an empty one?</summary>
         protected bool emptyElement = false;
 
-        private bool popElementOffStackOnNextRead = false;
-
         private bool endOfFile = false;
 
         private int depth = 0;
@@ -106,7 +104,6 @@ namespace APSIM.Shared.Utilities
             else if (element.Name == string.Empty)
             {
                 nodeType = XmlNodeType.Text;
-                popElementOffStackOnNextRead = true;
             }
             else
             {
@@ -114,9 +111,6 @@ namespace APSIM.Shared.Utilities
                     incrementDepthNextCall = true;
                 nodeType = XmlNodeType.Element;
             }
-
-            if (emptyElement)
-                popElementOffStackOnNextRead = true;
 
             return elements.Count > 0;
         }
