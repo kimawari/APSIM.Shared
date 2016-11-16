@@ -32,7 +32,7 @@ namespace APSIM.Shared.Utilities
 
         /// <summary>The maximum number of processors used by this job manager.</summary>
         [NonSerialized]
-        private int MaximumNumOfProcessors = 2;
+        protected int MaximumNumOfProcessors = 2;
 
         /// <summary>A job queue of running jobs.</summary>
         [NonSerialized]
@@ -42,12 +42,15 @@ namespace APSIM.Shared.Utilities
         [NonSerialized]
         private BackgroundWorker schedulerThread = null;
 
+        /// <summary>Exceptions that may be thrown</summary>
+        protected List<Exception> internalExceptions = new List<Exception>();
+
         /// <summary>Gets a value indicating whether there are more jobs to run.</summary>
         private bool MoreJobsToRun
         {
             get
             {
-                lock (this)
+                //lock (this)
                 {
                     return jobs.Find(job => !job.IsCompleted) != null;
                 }
@@ -59,7 +62,7 @@ namespace APSIM.Shared.Utilities
         {
             get
             {
-                lock (this)
+               // lock (this)
                 {
                     return jobs.Count(job => !job.IsCompleted);
                 }
@@ -162,6 +165,7 @@ namespace APSIM.Shared.Utilities
                 if (job == null)
                     throw new Exception("Cannot find job");
                 List<Exception> errors = new List<Exception>();
+                errors.AddRange(internalExceptions);
                 job.Errors(errors);
                 return errors;
             }
@@ -209,12 +213,35 @@ namespace APSIM.Shared.Utilities
             }
         }
 
+        /// <summary>Get the job with the specified job key</summary>
+        /// <param name="key">Unique job key</param>
+        protected IRunnable GetJob(Guid key)
+        {
+            Job job = jobs.Find(j => j.Key == key);
+            if (job == null)
+                throw new Exception("Cannot find job");
+            return job.RunnableJob;
+        }
+
+        /// <summary>Set the job with the specified key as completed.</summary>
+        /// <param name="key">Unique job key</param>
+        /// <param name="errorMessage">Error message. May be null.</param>
+        protected void SetJobCompleted(Guid key, string errorMessage)
+        {
+            Job jobCompleted = jobs.Find(job => job.Key == key);
+            if (jobCompleted == null)
+                throw new Exception("Cannot find job");
+            jobCompleted.isCompleted = true;
+            if (errorMessage != null)
+                jobCompleted.Error = new Exception(errorMessage);
+        }
+
         /// <summary>
         /// Start the jobs asynchronously. If 'waitUntilFinished'
         /// is true then control won't return until all jobs have finished.
         /// </summary>
         /// <param name="waitUntilFinished">if set to <c>true</c> [wait until finished].</param>
-        public void Start(bool waitUntilFinished)
+        public virtual void Start(bool waitUntilFinished)
         {
             schedulerThread = new BackgroundWorker();
             schedulerThread.WorkerSupportsCancellation = true;
@@ -242,7 +269,7 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>Stop all jobs currently running in the scheduler.</summary>
-        public void Stop()
+        public virtual void Stop()
         {
             lock (this)
             {
@@ -274,21 +301,13 @@ namespace APSIM.Shared.Utilities
             BackgroundWorker bw = sender as BackgroundWorker;
             
             // Main worker thread for keeping jobs running
-            while (!bw.CancellationPending && NumberOfJobsStillToComplete > 0)
+            while (!bw.CancellationPending && MoreJobsToRun)
             {
                 int i = GetNextJobToRun();
                 if (i != -1)
-                {
-                    lock (this) 
-                    {
-                        BackgroundWorker worker = new BackgroundWorker();
-                        jobs[i].Start(worker);
-                        worker.DoWork += jobs[i].DoWork;
-                        worker.WorkerSupportsCancellation = true;
-                        worker.RunWorkerAsync(this);
-                    }
-                }
-                Thread.Sleep(300);
+                    RunJob(jobs[i]);
+                else
+                    Thread.Sleep(100);
             }
         }
 
@@ -296,34 +315,47 @@ namespace APSIM.Shared.Utilities
         /// <returns>Index of job or -1.</returns>
         private int GetNextJobToRun()
         {
+            int index = 0;
+            int countRunning = 0;
             lock (this)
             {
-                int index = 0;
-                int countRunning = 0;
                 foreach (Job job in jobs)
                 {
                     if (countRunning == MaximumNumOfProcessors)
                         return -1;
 
-                    // Is this job running?
-                    if (!job.IsCompleted)
-                    {
-                        if (!job.IsRunning)
-                            return index;     // not running so return it to be run next.
-                        else if (job.RunnableJob.GetType().GetInterface("IComputationalyTimeConsuming") != null)
-                            countRunning++;   // is running.
-                    }
+                        // Is this job running?
+                        if (!job.IsCompleted)
+                        {
+                            if (!job.IsRunning)
+                            {
+                                job.IsRunning = true;
+                                return index;     // not running so return it to be run next.
+                            }
+                            else if (job.RunnableJob.GetType().GetInterface("IComputationalyTimeConsuming") != null)
+                                countRunning++;   // is running.
+                        }
+
                     index++;
                 }
             }
-            
+
             return -1;
         }
 
+        /// <summary>Run the specified job</summary>
+        /// <param name="job">The job to run.</param>
+        protected virtual void RunJob(Job job)
+        {
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += job.DoWork;
+            worker.WorkerSupportsCancellation = true;
+            worker.RunWorkerAsync(this);
+        }
 
 
         /// <summary>A job class used only by JobManager.</summary>
-        class Job
+        protected class Job
         {
             private JobManager jobManager;
 
@@ -331,52 +363,55 @@ namespace APSIM.Shared.Utilities
             private BackgroundWorker worker;
 
             /// <summary>Has the job finished running.</summary>
-            private bool isCompleted = false;
+            public bool isCompleted { get; set; }
 
             /// <summary>The elapsed time for this job (ms) - not child jobs.</summary>
             private long elapsedTime;
 
             /// <summary>Gets the exception. Can be null if no error. Set by JobManager.</summary>
-            internal Exception Error { get; private set; }
+            public Exception Error { get; set; }
 
             /// <summary>Called to start the job. Can throw on error.</summary>
-            internal JobManager.IRunnable RunnableJob { get; private set; }
+            public JobManager.IRunnable RunnableJob { get; private set; }
 
             /// <summary>A collection of child jobs spawned by this job.</summary>
-            internal List<Job> ChildJobs { get; set; }
+            public List<Job> ChildJobs { get; set; }
 
+            /// <summary>A unique key for this job.</summary>
+            public Guid Key { get; private set; }
 
 
             /// <summary>Constructor</summary>
             /// <param name="jobManager">Parent job manager.</param>
             /// <param name="runnableJob">Runnable job</param>
-            internal Job(JobManager jobManager, IRunnable runnableJob)
+            public Job(JobManager jobManager, IRunnable runnableJob)
             {
                 this.jobManager = jobManager;
                 this.RunnableJob = runnableJob;
                 ChildJobs = new List<Job>();
+                Key = Guid.NewGuid();
             }
 
             /// <summary>Returns true if job and all child jobs are completed.</summary>
-            internal bool IsCompleted {  get { return isCompleted; } }
+            public bool IsCompleted {  get { return isCompleted; } }
 
             /// <summary>Returns true if job and all child jobs are completed.</summary>
-            internal bool IsJobAndChildJobsComplete()
+            public bool IsJobAndChildJobsComplete()
             {
                 return isCompleted && ChildJobs.TrueForAll(job => job.IsJobAndChildJobsComplete());
             }
 
             /// <summary>Returns true if all child jobs are completed.</summary>
-            internal bool AreChildJobsComplete()
+            public bool AreChildJobsComplete()
             {
                 return ChildJobs.TrueForAll(job => job.IsCompleted);
             }
 
             /// <summary>Returns true if job and all child jobs are completed.</summary>
-            internal bool IsRunning {  get { return worker != null; } }
+            public bool IsRunning { get; set; }
 
             /// <summary>Return total elapsed time of this job and any child jobs (ms).</summary>
-            internal long TotalElapsedTime
+            public long TotalElapsedTime
             {
                 get
                 {
@@ -388,7 +423,7 @@ namespace APSIM.Shared.Utilities
             }
 
             /// <summary>Returns a list of exceptions from this job and all child jobs.</summary>
-            internal void Errors(List<Exception> errors)
+            public void Errors(List<Exception> errors)
             {
                 if (Error != null)
                     errors.Add(Error);
@@ -396,17 +431,10 @@ namespace APSIM.Shared.Utilities
                     ChildJobs.ForEach(job => job.Errors(errors));
             }
 
-            /// <summary>Begin this job.</summary>
-            /// <param name="workerThread">The thread the job is running on.</param>
-            internal void Start(BackgroundWorker workerThread)
-            {
-                worker = workerThread;
-            }
-
             /// <summary>Run the job on the current thread</summary>
             /// <param name="jobManager">The parent job manager.</param>
             /// <param name="workerThread">Cancellation pending?</param>
-            internal void Run(JobManager jobManager, BackgroundWorker workerThread)
+            public void Run(JobManager jobManager, BackgroundWorker workerThread)
             {
                 try
                 {
@@ -420,13 +448,14 @@ namespace APSIM.Shared.Utilities
                 {
                     worker = null;
                     isCompleted = true;
+                    IsRunning = false;
                 }
             }
 
             /// <summary>Do work event handler.</summary>
             /// <param name="sender">Job manager</param>
             /// <param name="e">Thread arguments</param>
-            internal void DoWork(object sender, DoWorkEventArgs e)
+            public void DoWork(object sender, DoWorkEventArgs e)
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
@@ -436,12 +465,13 @@ namespace APSIM.Shared.Utilities
             }
 
             /// <summary>Stop the job.</summary>
-            internal void Stop()
+            public void Stop()
             {
-                if (IsRunning && worker.IsBusy)
+                if (IsRunning && worker != null && worker.IsBusy)
                     worker.CancelAsync();
                 worker = null;
                 isCompleted = true;
+                IsRunning = false;
             }
         }
 

@@ -152,6 +152,7 @@
     <Compile Include="Utilities\PathUtilities.cs" />
     <Compile Include="Utilities\ProcessUtilities.cs" />
     <Compile Include="Utilities\ReflectionUtilities.cs" />
+    <Compile Include="Utilities\SocketServer.cs" />
     <Compile Include="Utilities\SQLite.cs" />
     <Compile Include="Utilities\StreamReaderRandomAccess.cs" />
     <Compile Include="Utilities\StringUtilities.cs" />

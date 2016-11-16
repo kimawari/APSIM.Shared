@@ -6,7 +6,10 @@
 namespace APSIM.Shared.Utilities
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
+    using System.Text;
+    using System.Threading;
 
     /// <summary>
     /// A collection of utilities for dealing with processes (threads)
@@ -108,57 +111,6 @@ namespace APSIM.Shared.Utilities
             }
         }
 
-        /// <summary>
-        /// Run the specified executable with the specified arguments and working directory.
-        /// Returns the Process object to caller.
-        /// </summary>
-        public static System.Diagnostics.Process RunProcess(string executable, string arguments, string workingDirectory)
-        {
-            if (!File.Exists(executable))
-                throw new System.Exception("Cannot execute file: " + executable + ". File not found.");
-            System.Diagnostics.Process PlugInProcess = new System.Diagnostics.Process();
-            PlugInProcess.StartInfo.FileName = executable;
-            PlugInProcess.StartInfo.Arguments = arguments;
-            // Determine whether or not the file is an executable; execute from the shell if it's not
-            PlugInProcess.StartInfo.UseShellExecute = isManaged(executable) == CompilationMode.Invalid;
-            PlugInProcess.StartInfo.CreateNoWindow = true;
-            if (!PlugInProcess.StartInfo.UseShellExecute)
-            {
-                PlugInProcess.StartInfo.RedirectStandardOutput = true;
-                PlugInProcess.StartInfo.RedirectStandardError = true;
-            }
-            PlugInProcess.StartInfo.WorkingDirectory = workingDirectory;
-            PlugInProcess.Start();
-            return PlugInProcess;
-        }
-
-        /// <summary>
-        /// Checks whether the specified process has finished ok. Will wait for process to complete. 
-        /// Will throw Exception with error message from process if Process exits with a non-zero
-        /// exit code.
-        /// </summary>
-        public static string CheckProcessExitedProperly(System.Diagnostics.Process plugInProcess)
-        {
-            if (!plugInProcess.StartInfo.UseShellExecute)
-            {
-                string msg = "";
-                if (plugInProcess.StartInfo.RedirectStandardOutput)
-                    msg = plugInProcess.StandardOutput.ReadToEnd();
-                plugInProcess.WaitForExit();
-                if (plugInProcess.ExitCode != 0)
-                {
-                    if (plugInProcess.StartInfo.RedirectStandardError)
-                        msg += plugInProcess.StandardError.ReadToEnd();
-                    if (msg != "")
-                        throw new System.Exception("Error from " + System.IO.Path.GetFileName(plugInProcess.StartInfo.FileName) + ": "
-                                                                 + msg);
-                }
-                return msg;
-            }
-            else
-                return "";
-        }
-		
 		/// <summary>
         /// 
         /// </summary>
@@ -175,5 +127,106 @@ namespace APSIM.Shared.Utilities
             return (UInt16)(p[offset + 1] << 8 | p[offset]);
         }
 
+        /// <summary>A class for running an external process, redirecting all stdout and stderr.</summary>
+        public class ProcessWithRedirectedOutput
+        {
+            private StringBuilder output = new StringBuilder();
+            private StringBuilder error = new StringBuilder();
+            private Process process;
+
+            /// <summary>Invoked when the process exits.</summary>
+            public EventHandler Exited;
+
+            /// <summary>Executable</summary>
+            public string Executable { get; private set; }
+
+            /// <summary>Arguments</summary>
+            public string Arguments { get; private set; }
+
+            /// <summary>Return the exit code</summary>
+            public int ExitCode { get { return process.ExitCode; } }
+
+            /// <summary>Return the standard output</summary>
+            public string StdOut { get { if (output.Length == 0) return null; else return output.ToString(); } }
+
+            /// <summary>Return the standard error</summary>
+            public string StdErr { get { if (error.Length == 0) return null; else return error.ToString(); } }
+
+            /// <summary>Run the specified executable with the specified arguments and working directory.</summary>
+            public void Start(string executable, string arguments, string workingDirectory, bool redirectOutput)
+            {
+                Executable = executable;
+                Arguments = arguments;
+                if (!File.Exists(executable))
+                    throw new Exception("Cannot find executable " + executable + ". File not found.");
+                process = new Process();
+                process.StartInfo.FileName = executable;
+                process.StartInfo.Arguments = arguments;
+                // Determine whether or not the file is an executable; execute from the shell if it's not
+                process.StartInfo.UseShellExecute = isManaged(executable) == CompilationMode.Invalid;
+                process.StartInfo.CreateNoWindow = true;
+                if (!process.StartInfo.UseShellExecute)
+                {
+                    process.StartInfo.RedirectStandardOutput = redirectOutput;
+                    process.StartInfo.RedirectStandardError = redirectOutput;
+                }
+                process.StartInfo.WorkingDirectory = workingDirectory;
+
+                // Set our event handler to asynchronously read the output.
+                if (redirectOutput)
+                {
+                    process.OutputDataReceived += new DataReceivedEventHandler(OutputHandler);
+                    process.ErrorDataReceived += new DataReceivedEventHandler(ErrorHandler);
+                }
+                process.Exited += OnExited;
+                process.EnableRaisingEvents = true;
+                process.Start();
+                if (redirectOutput)
+                {
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                }
+            }
+
+            /// <summary>Process has exited</summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
+            private void OnExited(object sender, EventArgs e)
+            {
+                Thread.Sleep(500);  // wait for any stdout/stderr writing.
+                if (Exited != null)
+                    Exited.Invoke(this, e);
+            }
+
+            /// <summary>Wait until process exits.</summary>
+            public void WaitForExit()
+            {
+                process.WaitForExit();
+            }
+
+            /// <summary>Kill the process.</summary>
+            public void Kill()
+            {
+                process.Kill();
+            }
+
+            /// <summary>Handler for all strings written to StdOut</summary>
+            /// <param name="sendingProcess"></param>
+            /// <param name="outLine"></param>
+            private void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
+            {
+                if (outLine.Data != null && outLine.Data != string.Empty)
+                    output.Append(outLine.Data + Environment.NewLine);
+            }
+
+            /// <summary>Handler for all strings written to StdErr</summary>
+            /// <param name="sendingProcess"></param>
+            /// <param name="outLine"></param>
+            private void ErrorHandler(object sendingProcess, DataReceivedEventArgs outLine)
+            {
+                if (outLine.Data != null && outLine.Data != string.Empty)
+                    error.Append(outLine.Data + Environment.NewLine);
+            }
+        }
     }
 }
