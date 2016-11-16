@@ -947,9 +947,7 @@ namespace APSIM.Shared.Utilities
             // Under MONO it seems that if a class is not in the serialization assembly then exception will 
             // be thrown. Under windows this doesn't happen. For now, only use the prebuilt serialisation
             // dll if on windows.
-            if ((Environment.OSVersion.Platform == PlatformID.Win32NT ||
-                Environment.OSVersion.Platform == PlatformID.Win32Windows) &&
-                File.Exists(deserializerFileName))
+            if (File.Exists(deserializerFileName))
             {
                 Assembly SerialiserAssembly = Assembly.LoadFile(deserializerFileName);
                 string SerialiserFullName = "Microsoft.Xml.Serialization.GeneratedAssembly." + TypeName + "Serializer";
@@ -959,7 +957,16 @@ namespace APSIM.Shared.Utilities
                 {
                     MethodInfo Deserialise = Serialiser.GetType().GetMethod("Deserialize", new Type[] { typeof(XmlReader) });
                     if (Deserialise != null)
-                        ReturnObj = Deserialise.Invoke(Serialiser, new object[] { reader });
+                    {
+                        try
+                        {
+                            ReturnObj = Deserialise.Invoke(Serialiser, new object[] { reader });
+                        }
+                        catch
+                        {
+                            ReturnObj = null;
+                        }
+                    }
                 }
             }
 
@@ -1041,22 +1048,30 @@ namespace APSIM.Shared.Utilities
             // Under MONO it seems that if a class is not in the serialization assembly then exception will 
             // be thrown. Under windows this doesn't happen. For now, only use the prebuilt serialisation
             // dll if on windows.
-            if ((Environment.OSVersion.Platform == PlatformID.Win32NT ||
-                Environment.OSVersion.Platform == PlatformID.Win32Windows) &&
-                File.Exists(deserializerFileName))
+            object Serialiser = null;
+            if (File.Exists(deserializerFileName))
             {
                 Assembly SerialiserAssembly = Assembly.LoadFile(deserializerFileName);
                 string SerialiserFullName = "Microsoft.Xml.Serialization.GeneratedAssembly." + component.GetType().Name + "Serializer";
-                object Serialiser = SerialiserAssembly.CreateInstance(SerialiserFullName);
+                Serialiser = SerialiserAssembly.CreateInstance(SerialiserFullName);
 
                 if (Serialiser != null)
                 {
                     MethodInfo Serialise = Serialiser.GetType().GetMethod("Serialize", new Type[] { typeof(XmlTextWriter), typeof(object), typeof(XmlSerializerNamespaces) });
                     if (Serialise != null)
-                        Serialise.Invoke(Serialiser, new object[] { writer, component, ns });
+                    {
+                        try
+                        {
+                            Serialise.Invoke(Serialiser, new object[] { writer, component, ns });
+                        }
+                        catch
+                        {
+                            Serialiser = null;
+                        }
+                    }
                 }
             }
-            else
+            if (Serialiser == null)
             {
                 XmlSerializer x = new XmlSerializer(component.GetType(), extraTypes);
                 x.Serialize(writer, component, ns);

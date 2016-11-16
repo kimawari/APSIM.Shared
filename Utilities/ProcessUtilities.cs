@@ -6,10 +6,11 @@
 namespace APSIM.Shared.Utilities
 {
     using System;
-    using System.Diagnostics;
     using System.IO;
-    using System.Text;
+    using System.Runtime.InteropServices;
+    using System.Diagnostics;
     using System.Threading;
+    using System.Text;
 
     /// <summary>
     /// A collection of utilities for dealing with processes (threads)
@@ -111,22 +112,6 @@ namespace APSIM.Shared.Utilities
             }
         }
 
-		/// <summary>
-        /// 
-        /// </summary>
-        static private UInt32 UInt32FromBytes(byte[] p, uint offset)
-        {
-            return (UInt32)(p[offset + 3] << 24 | p[offset + 2] << 16 | p[offset + 1] << 8 | p[offset]);
-        }
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        static private UInt16 UInt16FromBytes(byte[] p, uint offset)
-        {
-            return (UInt16)(p[offset + 1] << 8 | p[offset]);
-        }
-
         /// <summary>A class for running an external process, redirecting all stdout and stderr.</summary>
         public class ProcessWithRedirectedOutput
         {
@@ -226,6 +211,210 @@ namespace APSIM.Shared.Utilities
             {
                 if (outLine.Data != null && outLine.Data != string.Empty)
                     error.Append(outLine.Data + Environment.NewLine);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        static private UInt32 UInt32FromBytes(byte[] p, uint offset)
+        {
+            return (UInt32)(p[offset + 3] << 24 | p[offset + 2] << 16 | p[offset + 1] << 8 | p[offset]);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        static private UInt16 UInt16FromBytes(byte[] p, uint offset)
+        {
+            return (UInt16)(p[offset + 1] << 8 | p[offset]);
+        }
+
+        /// <summary>
+        /// CurrentOS Class by blez
+        /// Detects the current OS (Windows, Linux, MacOS)
+        /// Blatantly copied from https://blez.wordpress.com/2012/09/17/determine-os-with-netmono/
+        /// </summary>
+        public static class CurrentOS
+        {
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="T:APSIM.Shared.Utilities.ProcessUtilities.CurrentOS"/>
+            /// is windows.
+            /// </summary>
+            /// <value><c>true</c> if is windows; otherwise, <c>false</c>.</value>
+            public static bool IsWindows { get; private set; }
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="T:APSIM.Shared.Utilities.ProcessUtilities.CurrentOS"/>
+            /// is unix.
+            /// </summary>
+            /// <value><c>true</c> if is unix; otherwise, <c>false</c>.</value>
+            public static bool IsUnix { get; private set; }
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="T:APSIM.Shared.Utilities.ProcessUtilities.CurrentOS"/>
+            /// is mac.
+            /// </summary>
+            /// <value><c>true</c> if is mac; otherwise, <c>false</c>.</value>
+            public static bool IsMac { get; private set; }
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="T:APSIM.Shared.Utilities.ProcessUtilities.CurrentOS"/>
+            /// is linux.
+            /// </summary>
+            /// <value><c>true</c> if is linux; otherwise, <c>false</c>.</value>
+            public static bool IsLinux { get; private set; }
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="T:APSIM.Shared.Utilities.ProcessUtilities.CurrentOS"/>
+            /// is unknown.
+            /// </summary>
+            /// <value><c>true</c> if is unknown; otherwise, <c>false</c>.</value>
+            public static bool IsUnknown { get; private set; }
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="T:APSIM.Shared.Utilities.ProcessUtilities.CurrentOS"/>
+            /// is is32bit.
+            /// </summary>
+            /// <value><c>true</c> if is32bit; otherwise, <c>false</c>.</value>
+            public static bool Is32bit { get; private set; }
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="T:APSIM.Shared.Utilities.ProcessUtilities.CurrentOS"/>
+            /// is is64bit.
+            /// </summary>
+            /// <value><c>true</c> if is64bit; otherwise, <c>false</c>.</value>
+            public static bool Is64bit { get; private set; }
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="T:APSIM.Shared.Utilities.ProcessUtilities.CurrentOS"/>
+            /// is64 bit process.
+            /// </summary>
+            /// <value><c>true</c> if is64 bit process; otherwise, <c>false</c>.</value>
+            public static bool Is64BitProcess { get { return (IntPtr.Size == 8); } }
+            /// <summary>
+            /// Gets a value indicating whether this <see cref="T:APSIM.Shared.Utilities.ProcessUtilities.CurrentOS"/>
+            /// is32 bit process.
+            /// </summary>
+            /// <value><c>true</c> if is32 bit process; otherwise, <c>false</c>.</value>
+            public static bool Is32BitProcess { get { return (IntPtr.Size == 4); } }
+            /// <summary>
+            /// Gets the name of the current operating system.
+            /// </summary>
+            /// <value>The name.</value>
+            public static string Name { get; private set; }
+
+            [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            private static extern bool IsWow64Process([In] IntPtr hProcess, [Out] out bool wow64Process);
+
+            private static bool Is64bitWindows
+            {
+                get
+                {
+                    if ((Environment.OSVersion.Version.Major == 5 && Environment.OSVersion.Version.Minor >= 1) || Environment.OSVersion.Version.Major >= 6)
+                    {
+                        using (Process p = Process.GetCurrentProcess())
+                        {
+                            bool retVal;
+                            if (!IsWow64Process(p.Handle, out retVal)) return false;
+                            return retVal;
+                        }
+                    }
+                    else return false;
+                }
+            }
+
+            static CurrentOS()
+            {
+                IsWindows = Path.DirectorySeparatorChar == '\\';
+                if (IsWindows)
+                {
+                    Name = Environment.OSVersion.VersionString;
+
+                    Name = Name.Replace("Microsoft ", "");
+                    Name = Name.Replace("  ", " ");
+                    Name = Name.Replace(" )", ")");
+                    Name = Name.Trim();
+
+                    Name = Name.Replace("NT 6.2", "8 %bit 6.2");
+                    Name = Name.Replace("NT 6.1", "7 %bit 6.1");
+                    Name = Name.Replace("NT 6.0", "Vista %bit 6.0");
+                    Name = Name.Replace("NT 5.", "XP %bit 5.");
+                    Name = Name.Replace("%bit", (Is64bitWindows ? "64bit" : "32bit"));
+
+                    if (Is64bitWindows)
+                        Is64bit = true;
+                    else
+                        Is32bit = true;
+                }
+                else {
+                    string UnixName = ReadProcessOutput("uname");
+                    if (UnixName.Contains("Darwin"))
+                    {
+                        IsUnix = true;
+                        IsMac = true;
+
+                        Name = "MacOS X " + ReadProcessOutput("sw_vers", "-productVersion");
+                        Name = Name.Trim();
+
+                        string machine = ReadProcessOutput("uname", "-m");
+                        if (machine.Contains("x86_64"))
+                            Is64bit = true;
+                        else
+                            Is32bit = true;
+
+                        Name += " " + (Is32bit ? "32bit" : "64bit");
+                    }
+                    else if (UnixName.Contains("Linux"))
+                    {
+                        IsUnix = true;
+                        IsLinux = true;
+
+                        Name = ReadProcessOutput("lsb_release", "-d");
+                        Name = Name.Substring(Name.IndexOf(":") + 1);
+                        Name = Name.Trim();
+
+                        string machine = ReadProcessOutput("uname", "-m");
+                        if (machine.Contains("x86_64"))
+                            Is64bit = true;
+                        else
+                            Is32bit = true;
+
+                        Name += " " + (Is32bit ? "32bit" : "64bit");
+                    }
+                    else if (UnixName != "")
+                    {
+                        IsUnix = true;
+                    }
+                    else {
+                        IsUnknown = true;
+                    }
+                }
+            }
+
+            private static string ReadProcessOutput(string name)
+            {
+                return ReadProcessOutput(name, null);
+            }
+
+            private static string ReadProcessOutput(string name, string args)
+            {
+                try
+                {
+                    Process p = new Process();
+                    p.StartInfo.UseShellExecute = false;
+                    p.StartInfo.RedirectStandardOutput = true;
+                    if (args != null && args != "") p.StartInfo.Arguments = " " + args;
+                    p.StartInfo.FileName = name;
+                    p.Start();
+                    // Do not wait for the child process to exit before
+                    // reading to the end of its redirected stream.
+                    // p.WaitForExit();
+                    // Read the output stream first and then wait.
+                    string output = p.StandardOutput.ReadToEnd();
+                    p.WaitForExit();
+                    if (output == null) output = "";
+                    output = output.Trim();
+                    return output;
+                }
+                catch
+                {
+                    return "";
+                }
             }
         }
     }
