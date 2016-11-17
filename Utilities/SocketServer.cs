@@ -11,6 +11,7 @@ namespace APSIM.Shared.Utilities
     using System.Net;
     using System.Net.Sockets;
     using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// An asynchronous socket server based on the MicroSoft one here:
@@ -80,24 +81,16 @@ namespace APSIM.Shared.Utilities
                 IPEndPoint localEndPoint = new IPEndPoint(ipAddress, portNumber);
 
                 // Create a TCP/IP socket.
-                using (Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                using (Socket ServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {
                     // Bind the socket to the local endpoint and listen for incoming connections.
-                    listener.Bind(localEndPoint);
-                    listener.Listen(1000);
+                    ServerSocket.Bind(localEndPoint);
+                    ServerSocket.Listen(1000);
 
-                    AsyncCallback ar;
-                    while (keepListening)
+                    while (true)
                     {
-                        // Set the event to nonsignaled state.
-                        allDone.Reset();
-
-                        // Start an asynchronous socket to listen for connections.
-                        ar = new AsyncCallback(AcceptCallback);
-                        listener.BeginAccept(ar, listener);
-
-                        // Wait until a connection is made before continuing.
-                        allDone.WaitOne();
+                        Socket clientSocket = ServerSocket.Accept();
+                        Task.Run(() => ProcessClient(clientSocket));
                     }
                 }
             }
@@ -116,69 +109,36 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>Accept a socket connection</summary>
-        /// <param name="ar">Socket parameters.</param>
-        public void AcceptCallback(IAsyncResult ar)
+        /// <param name="obj">Socket parameters.</param>
+        public void ProcessClient(object obj)
         {
             try
             {
-                if (keepListening)
+                using (Socket clientSocket = obj as Socket)
                 {
-                    // Signal the main thread to continue.
-                    allDone.Set();
-
-                    // Get the socket that handles the client request.
-                    Socket listener = (Socket)ar.AsyncState;
-                    Socket handler = listener.EndAccept(ar);
-
-                    // Create the state object.
-                    StateObject state = new StateObject();
-                    state.workSocket = handler;
-                    handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
-                                         new AsyncCallback(ReadCallback), state);
-                }
-            }
-            catch (Exception err)
-            {
-                if (Error != null)
-                    Error.Invoke(this, new ErrorArgs() { message = err.ToString() });
-            }
-        }
-
-        /// <summary>Callback for a socket read.</summary>
-        /// <param name="ar">Socket parameters.</param>
-        public void ReadCallback(IAsyncResult ar)
-        {
-            try
-            { 
-                string content = string.Empty;
-
-                // Retrieve the state object and the handler socket
-                // from the asynchronous state object.
-                StateObject state = (StateObject)ar.AsyncState;
-                Socket handler = state.workSocket;
-
-                // Read data from the client socket. 
-                int bytesRead = handler.EndReceive(ar);
-
-                if (bytesRead > 0)
-                {
-                    // There  might be more data, so store the data received so far.
-                    state.data.Write(state.buffer, 0, bytesRead);
-
-                    if (state.numBytesExpected == 0)
-                        state.numBytesExpected = BitConverter.ToInt32(state.buffer, 0);
-
-                    // Check for correct number of bytes
-                    if (state.data.Length != state.numBytesExpected + 4)
+                    byte[] bytes = new byte[16384];
+                    if (keepListening)
                     {
-                        // Not all data received. Get more.
-                        handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
-                                             new AsyncCallback(ReadCallback), state);
-                    }
-                    else
-                    {
+                        // Receive data from client
+                        MemoryStream s = new MemoryStream();
+                        int totalNumBytes = 0;
+                        int numBytesExpected = 0;
+                        bool allDone = false;
+                        do
+                        {
+                            int NumBytesRead = clientSocket.Receive(bytes, SocketFlags.None);
+                            s.Write(bytes, 0, NumBytesRead);
+                            totalNumBytes += NumBytesRead;
+
+                            if (numBytesExpected == 0 && totalNumBytes > 4)
+                                numBytesExpected = BitConverter.ToInt32(bytes, 0);
+                            if (numBytesExpected + 4 == totalNumBytes)
+                                allDone = true;
+                        }
+                        while (!allDone);
+
                         // All done process command.
-                        ProcessCommand(DecodeData(state.data.ToArray()), state.workSocket);
+                        ProcessCommand(DecodeData(s.ToArray()), clientSocket);
                     }
                 }
             }
@@ -204,43 +164,17 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>Send data through socket.</summary>
-        /// <param name="handler">The socket.</param>
+        /// <param name="socket">The socket.</param>
         /// <param name="obj">Object to send</param>
-        public void Send(Socket handler, object obj)
+        public void Send(Socket socket, object obj)
         {
-            // Convert the string data to byte data using ASCII encoding.
-            byte[] byteData = EncodeData(obj);
-
-            // Begin sending the data to the remote device.
-            handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
-        }
-
-        /// <summary>Callback for sending data.</summary>
-        /// <param name="ar">Socket parameters.</param>
-        private static void SendCallback(IAsyncResult ar)
-        {
-            try
-            {
-                // Retrieve the socket from the state object.
-                Socket handler = (Socket)ar.AsyncState;
-
-                // Complete sending the data to the remote device.
-                int bytesSent = handler.EndSend(ar);
-
-                handler.Shutdown(SocketShutdown.Both);
-                handler.Close();
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+            socket.Send(EncodeData(obj));
         }
 
         /// <summary>Encode the object into a series of bytes</summary>
         /// <param name="o">The object to encode</param>
         /// <returns>The encoded object as a byte array.</returns>
-        private static byte[] EncodeData(object o)
+        public static byte[] EncodeData(object o)
         {
             MemoryStream memStream = ReflectionUtilities.BinarySerialise(o) as MemoryStream;
             byte[] bytes = new byte[memStream.Length + 4];
@@ -252,30 +186,12 @@ namespace APSIM.Shared.Utilities
         /// <summary>Decode a byte array into an object.</summary>
         /// <param name="bytes">The byte array.</param>
         /// <returns>The newly created object</returns>
-        private static object DecodeData(byte[] bytes)
+        public static object DecodeData(byte[] bytes)
         {
             MemoryStream memStream = new MemoryStream(bytes);
             memStream.Seek(4, SeekOrigin.Begin);
             return ReflectionUtilities.BinaryDeserialise(memStream);
         }
-
-        /// <summary>
-        /// State object for reading client data asynchronously
-        /// </summary>
-        private class StateObject
-        {
-            /// <summary>Client socket</summary>
-            public Socket workSocket = null;
-            /// <summary>Size of receive buffer.</summary>
-            public const int BufferSize = 16384;
-            /// <summary>Number of bytes expected.</summary>
-            public int numBytesExpected;
-            /// <summary>Receive buffer.</summary>
-            public byte[] buffer = new byte[BufferSize];
-            /// <summary>Received data.</summary>
-            public MemoryStream data = new MemoryStream();
-        }
-
 
         /////////////////////////////////////////////////////////////////////////
         // The following method is useful for socket client applications
@@ -297,7 +213,7 @@ namespace APSIM.Shared.Utilities
             {
                 Byte[] bData = EncodeData(obj);
                 Server.GetStream().Write(bData, 0, bData.Length);
-                Byte[] bytes = new Byte[819200];
+                Byte[] bytes = new Byte[65536];
 
                 // Loop to receive all the data sent by the client.
                 int numBytesExpected = 0;

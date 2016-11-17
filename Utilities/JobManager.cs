@@ -36,7 +36,7 @@ namespace APSIM.Shared.Utilities
 
         /// <summary>A job queue of running jobs.</summary>
         [NonSerialized]
-        private List<Job> jobs = new List<Job>();
+        protected List<Job> jobs = new List<Job>();
 
         /// <summary>Main scheduler thread that goes through all jobs and sets them running.</summary>
         [NonSerialized]
@@ -228,12 +228,16 @@ namespace APSIM.Shared.Utilities
         /// <param name="errorMessage">Error message. May be null.</param>
         protected void SetJobCompleted(Guid key, string errorMessage)
         {
-            Job jobCompleted = jobs.Find(job => job.Key == key);
-            if (jobCompleted == null)
-                throw new Exception("Cannot find job");
-            jobCompleted.isCompleted = true;
-            if (errorMessage != null)
-                jobCompleted.Error = new Exception(errorMessage);
+            lock(this)
+            {
+                Job jobCompleted = jobs.Find(job => job.Key == key);
+                if (jobCompleted == null)
+                    throw new Exception("Cannot find job");
+                jobCompleted.isCompleted = true;
+                jobCompleted.IsRunning = false;
+                if (errorMessage != null)
+                    jobCompleted.Error = new Exception(errorMessage);
+            }
         }
 
         /// <summary>
@@ -329,7 +333,6 @@ namespace APSIM.Shared.Utilities
                         {
                             if (!job.IsRunning)
                             {
-                                job.IsRunning = true;
                                 return index;     // not running so return it to be run next.
                             }
                             else if (job.RunnableJob.GetType().GetInterface("IComputationalyTimeConsuming") != null)
@@ -347,6 +350,7 @@ namespace APSIM.Shared.Utilities
         /// <param name="job">The job to run.</param>
         protected virtual void RunJob(Job job)
         {
+            job.IsRunning = true;
             BackgroundWorker worker = new BackgroundWorker();
             worker.DoWork += job.DoWork;
             worker.WorkerSupportsCancellation = true;
