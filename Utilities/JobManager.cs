@@ -57,6 +57,16 @@ namespace APSIM.Shared.Utilities
             }
         }
 
+        /// <summary>Gets the number of jobs completed of type T.</summary>
+        public int GetNumberOfJobsCompleted<T>()
+        {
+            lock (this)
+            {
+                return jobs.Count(job => job.IsCompleted && (job.RunnableJob is T));
+            }
+        }
+
+
         /// <summary>Gets the number of jobs still to run.</summary>
         public int NumberOfJobsStillToComplete
         {
