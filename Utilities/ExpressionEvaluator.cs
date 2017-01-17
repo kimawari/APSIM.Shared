@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 
 namespace APSIM.Shared.Utilities
 {
@@ -187,7 +188,7 @@ namespace APSIM.Shared.Utilities
         public void Parse(string equation)
         {
             int state = 1;
-            string temp = "";
+            StringBuilder temp = new StringBuilder();
             
             Symbol ctSymbol;
             ctSymbol.m_values = null;
@@ -198,7 +199,7 @@ namespace APSIM.Shared.Utilities
             m_equation.Clear();
             m_postfix.Clear();
 
-            int nPos = 0;
+            int nPos;
             //-- Remove all white spaces from the equation string --
             equation = equation.Trim();
             while ((nPos = equation.IndexOf(' ')) != -1)
@@ -212,12 +213,12 @@ namespace APSIM.Shared.Utilities
                         if (Char.IsNumber(equation[i]))
                         {
                             state = 2;
-                            temp += equation[i];
+                            temp.Append(equation[i]);
                         }
                         else if (Char.IsLetter(equation[i]) || equation[i] == '[' || equation[i] == ']')
                         {
                             state = 3;
-                            temp += equation[i];
+                            temp.Append(equation[i]);
                         }
                         else
                         {
@@ -242,13 +243,13 @@ namespace APSIM.Shared.Utilities
                         }
                         break;
                     case 2:
-                        if ((Char.IsNumber(equation[i])) || (equation[i] == '.'))
-                            temp += equation[i];
+                        if (Char.IsNumber(equation[i]) || (equation[i] == '.'))
+                            temp.Append(equation[i]);
                         else if (!Char.IsLetter(equation[i]))
                         {
                             state = 1;
-                            ctSymbol.m_name = temp;
-                            ctSymbol.m_value = Double.Parse(temp);
+                            ctSymbol.m_name = temp.ToString();
+                            ctSymbol.m_value = Double.Parse(temp.ToString());
                             ctSymbol.m_type = ExpressionType.Value;
                             m_equation.Add(ctSymbol);
                             ctSymbol.m_name = equation[i].ToString();
@@ -269,26 +270,26 @@ namespace APSIM.Shared.Utilities
                                     break;
                             }
                             m_equation.Add(ctSymbol);
-                            temp = "";
+                            temp.Clear();
                         }
                         break;
                     case 3:
                         if (Char.IsLetterOrDigit(equation[i]) || (equation[i] == '.') ||
                             (equation[i] == '[') || (equation[i] == ']') || (equation[i] == ':') || (equation[i] == '_'))
-                            temp += equation[i];
+                            temp.Append(equation[i]);
                         else
                         {
                             state = 1;
-                            ctSymbol.m_name = temp;
+                            ctSymbol.m_name = temp.ToString();
                             ctSymbol.m_value = 0;
                             if (equation[i] == '(')
                                 ctSymbol.m_type = ExpressionType.EvalFunction;
                             else
                             {
                                 if (ctSymbol.m_name == "pi")
-                                    ctSymbol.m_value = System.Math.PI;
+                                    ctSymbol.m_value = Math.PI;
                                 else if (ctSymbol.m_name == "e")
-                                    ctSymbol.m_value = System.Math.E;
+                                    ctSymbol.m_value = Math.E;
                                 ctSymbol.m_type = ExpressionType.Variable;
                             }
                             m_equation.Add(ctSymbol);
@@ -310,25 +311,25 @@ namespace APSIM.Shared.Utilities
                                     break;
                             }
                             m_equation.Add(ctSymbol);
-                            temp = "";
+                            temp.Clear();
                         }
                         break;
                 }
             }
-            if (temp != "")
+            if (temp.ToString() != "")
             {
-                ctSymbol.m_name = temp;
+                ctSymbol.m_name = temp.ToString();
                 if (state == 2)
                 {
-                    ctSymbol.m_value = Double.Parse(temp);
+                    ctSymbol.m_value = Double.Parse(temp.ToString());
                     ctSymbol.m_type = ExpressionType.Value;
                 }
                 else
                 {
                     if (ctSymbol.m_name == "pi")
-                        ctSymbol.m_value = System.Math.PI;
+                        ctSymbol.m_value = Math.PI;
                     else if (ctSymbol.m_name == "e")
-                        ctSymbol.m_value = System.Math.E;
+                        ctSymbol.m_value = Math.E;
                     else
                         ctSymbol.m_value = 0;
                     ctSymbol.m_type = ExpressionType.Variable;
