@@ -87,10 +87,13 @@ namespace APSIM.Shared.Utilities
                     ServerSocket.Bind(localEndPoint);
                     ServerSocket.Listen(1000);
 
-                    while (true)
+                    while (keepListening)
                     {
                         Socket clientSocket = ServerSocket.Accept();
-                        Task.Run(() => ProcessClient(clientSocket));
+                        if (keepListening)
+                            Task.Run(() => ProcessClient(clientSocket));
+                        else
+                            Send(clientSocket, "OK");
                     }
                 }
             }
@@ -106,6 +109,10 @@ namespace APSIM.Shared.Utilities
         {
             keepListening = false;
             allDone.Set();
+
+            // Open a socket connection with dummy data (0) so that the ServerSocket.Accept
+            // method in 'StartListening' method will return an then the method exits cleanly.
+            Send("127.0.0.1", 2222, 0);
         }
 
         /// <summary>Accept a socket connection</summary>
