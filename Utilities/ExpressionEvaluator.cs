@@ -523,6 +523,10 @@ namespace APSIM.Shared.Utilities
                     {
                         if (sym1.m_values != null && sym2.m_values != null)
                             result.m_values = MathUtilities.Divide(sym1.m_values, sym2.m_values);
+                        else if (sym1.m_values != null)
+                            result.m_values = MathUtilities.Divide_Value(sym1.m_values, sym2.m_value);
+                        else if (sym2.m_values != null)
+                            result.m_values = MathUtilities.Divide_Value(sym2.m_values, sym1.m_value);
                         else
                         {
                             if (sym2.m_value > 0)
@@ -538,8 +542,12 @@ namespace APSIM.Shared.Utilities
                 case "*":
                     if (sym1.m_values != null && sym2.m_values != null)
                         result.m_values = MathUtilities.Multiply(sym1.m_values, sym2.m_values);
+                    else if (sym1.m_values != null)
+                        result.m_values = MathUtilities.Multiply_Value(sym1.m_values, sym2.m_value);
+                    else if (sym2.m_values != null)
+                        result.m_values = MathUtilities.Multiply_Value(sym2.m_values, sym1.m_value);
                     else
-                        result.m_value = sym1.m_value * sym2.m_value;
+                        result.m_value = sym1.m_value + sym2.m_value;
                     break;
                 case "%":
                     result.m_value = sym1.m_value % sym2.m_value;
@@ -547,12 +555,20 @@ namespace APSIM.Shared.Utilities
                 case "+":
                     if (sym1.m_values != null && sym2.m_values != null)
                         result.m_values = MathUtilities.Add(sym1.m_values, sym2.m_values);
+                    else if (sym1.m_values != null)
+                        result.m_values = MathUtilities.AddValue(sym1.m_values, sym2.m_value);
+                    else if (sym2.m_values != null)
+                        result.m_values = MathUtilities.AddValue(sym2.m_values, sym1.m_value);
                     else
                         result.m_value = sym1.m_value + sym2.m_value;
                     break;
                 case "-":
                     if (sym1.m_values != null && sym2.m_values != null)
                         result.m_values = MathUtilities.Subtract(sym1.m_values, sym2.m_values);
+                    else if (sym1.m_values != null)
+                        result.m_values = MathUtilities.Subtract_Value(sym1.m_values, sym2.m_value);
+                    else if (sym2.m_values != null)
+                        result.m_values = MathUtilities.Subtract_Value(sym2.m_values, sym1.m_value);
                     else
                         result.m_value = sym1.m_value - sym2.m_value;
                     break;
