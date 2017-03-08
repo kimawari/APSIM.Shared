@@ -526,7 +526,11 @@ namespace APSIM.Shared.Utilities
                         else if (sym1.m_values != null)
                             result.m_values = MathUtilities.Divide_Value(sym1.m_values, sym2.m_value);
                         else if (sym2.m_values != null)
-                            result.m_values = MathUtilities.Divide_Value(sym2.m_values, sym1.m_value);
+                        {
+                            result.m_values = new double[sym2.m_values.Length];
+                            for (int i = 0; i < result.m_values.Length; i++)
+                                result.m_values[i] = MathUtilities.Divide(sym1.m_value, sym2.m_values[i], 0);
+                        }
                         else
                         {
                             if (sym2.m_value > 0)
@@ -547,7 +551,7 @@ namespace APSIM.Shared.Utilities
                     else if (sym2.m_values != null)
                         result.m_values = MathUtilities.Multiply_Value(sym2.m_values, sym1.m_value);
                     else
-                        result.m_value = sym1.m_value + sym2.m_value;
+                        result.m_value = sym1.m_value * sym2.m_value;
                     break;
                 case "%":
                     result.m_value = sym1.m_value % sym2.m_value;
@@ -568,7 +572,11 @@ namespace APSIM.Shared.Utilities
                     else if (sym1.m_values != null)
                         result.m_values = MathUtilities.Subtract_Value(sym1.m_values, sym2.m_value);
                     else if (sym2.m_values != null)
-                        result.m_values = MathUtilities.Subtract_Value(sym2.m_values, sym1.m_value);
+                    {
+                        result.m_values = new double[sym2.m_values.Length];
+                        for (int i = 0; i < result.m_values.Length; i++)
+                            result.m_values[i] = sym1.m_value - sym2.m_values[i];
+                    }
                     else
                         result.m_value = sym1.m_value - sym2.m_value;
                     break;
