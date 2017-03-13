@@ -9,7 +9,10 @@ namespace APSIM.Shared.Utilities
     using System.Collections.Generic;
     using System.IO;
 
-    class DirectoryUtilities
+    /// <summary>
+    /// A collection of directory utilities.
+    /// </summary>
+    public class DirectoryUtilities
     {
         /// <summary>
         /// Ensure the specified filename is unique (by appending a number). 
@@ -92,5 +95,26 @@ namespace APSIM.Shared.Utilities
             return "";
         }
 
+        /// <summary>
+        /// Find the specified file in the specified directory structure. If not found
+        /// in the specified directory it will recursively look under parent directories.
+        /// </summary>
+        /// <param name="fileName">The file name to look for</param>
+        /// <param name="directory">The directory to search.</param>
+        /// <returns></returns>
+        public static string FindFileInDirectoryStructure(string fileName, string directory)
+        {
+            string path = directory;
+            string[] files = Directory.GetFiles(path, fileName, SearchOption.AllDirectories);
+            while (Path.GetDirectoryName(path) != null && files.Length == 0)
+            {
+                path = Path.GetFullPath(Path.Combine(path, ".."));
+                files = Directory.GetFiles(path, fileName, SearchOption.AllDirectories);
+            }
+            if (files.Length >= 1)
+                return files[0];
+            else
+                throw new Exception("Cannot find: " + fileName);
+        }
     }
 }
