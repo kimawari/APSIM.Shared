@@ -517,7 +517,14 @@ namespace APSIM.Shared.Utilities
             switch (opr.m_name)
             {
                 case "^":
-                    result.m_value = System.Math.Pow(sym1.m_value, sym2.m_value);
+                    if (sym1.m_values != null)
+                    {
+                        result.m_values = new double[sym1.m_values.Length];
+                        for (int i = 0; i < sym1.m_values.Length; i++)
+                            result.m_values[i] = Math.Pow(sym1.m_values[i], sym2.m_value);
+                    }
+                    else
+                        result.m_value = System.Math.Pow(sym1.m_value, sym2.m_value);
                     break;
                 case "/":
                     {
