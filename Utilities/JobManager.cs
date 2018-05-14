@@ -183,7 +183,7 @@ namespace APSIM.Shared.Utilities
 
         /// <summary>Initializes a new instance of the <see cref="JobManager"/> class.</summary>
         /// <param name="maximumNumberOfProcessors">The maximum number of cores to use.</param>
-        public JobManager(int maximumNumberOfProcessors = -1)
+        public JobManager(int maximumNumberOfProcessors = 2000)  //YUXI: was -1. To cancel the limit of max number of threads.
         {
             if (maximumNumberOfProcessors != -1)
                 MaximumNumOfProcessors = maximumNumberOfProcessors;
@@ -267,7 +267,7 @@ namespace APSIM.Shared.Utilities
             if (waitUntilFinished)
             {
                 while (MoreJobsToRun)
-                    Thread.Sleep(200);
+                    Thread.Sleep(100);
             }
         }
 
